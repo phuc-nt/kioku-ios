@@ -1,0 +1,205 @@
+# Business Requirements Document (BRD)
+## AI-Powered Personal Journal iOS App
+
+**Version:** 2.0  
+**Date:** September 11, 2025  
+**Document Type:** Business Requirements Document  
+**Project Type:** Personal Development Project
+
+***
+
+## Concept & Inspiration
+
+### Ý Tưởng Gốc
+Ứng dụng được lấy cảm hứng từ **sổ nhật ký vật lý 10 năm trên 2 trang** - một concept độc đáo cho phép người dùng viết cùng một ngày qua nhiều năm trên cùng một spread, tạo ra **hiệu ứng "nhìn lại"** tự nhiên khi thấy những gì đã viết vào cùng ngày này những năm trước.
+
+### Triết Lý Thiết Kế
+- **Micro-journaling**: Khuyến khích viết ngắn gọn nhưng đều đặn, tập trung vào những suy nghĩ quan trọng nhất trong ngày
+- **Nostalgic Experience**: Tạo ra những khoảnh khắc cảm xúc khi đọc lại và so sánh hành trình phát triển cá nhân
+- **AI-Enhanced Memory**: Sử dụng công nghệ AI để không chỉ lưu trữ mà còn **tạo liên kết thông minh** giữa các sự kiện và cảm xúc
+
+### Vấn Đề Được Giải Quyết
+Trong thời đại số, chúng ta thường có **những suy nghĩ thoáng qua** cần ghi lại nhưng không phải lúc nào cũng có sổ vật lý bên cạnh. App này tạo ra **cầu nối kỹ thuật số** cho phép capture nhanh những moments này, đồng thời sử dụng AI để biến chúng thành **knowledge graph cá nhân** - một bản đồ trí tuệ về cuộc sống và sự phát triển của bản thân.
+
+***
+
+## 1. Executive Summary
+
+### 1.1 Project Overview
+Phát triển ứng dụng nhật ký cá nhân trên iOS với tính năng AI thông minh, được thiết kế để hỗ trợ **capture nhanh suy nghĩ** và tạo ra trải nghiệm **self-reflection sâu sắc** thông qua **knowledge graph** và **conversational AI**.
+
+### 1.2 Personal Value Proposition
+- **Immediate Capture**: Ghi lại thoughts ngay khi chúng xuất hiện, không bị giới hạn bởi việc có sổ vật lý hay không
+- **AI-Powered Insights**: Transform raw thoughts thành structured knowledge với khả năng tự động tìm patterns và connections
+- **Conversational Memory**: Tương tác với AI như một người bạn hiểu biết về personal journey để nhận insights và guidance
+- **Flexible AI Experience**: Thử nghiệm với different AI models để có different perspectives về cùng một set memories
+
+### 1.3 Vision Statement
+Tạo ra **digital companion** giúp người dùng không chỉ ghi lại ký ức mà còn **hiểu sâu hơn về bản thân**, **khám phá patterns trong cuộc sống**, và **phát triển khả năng self-reflection** thông qua việc đối thoại với AI về chính những trải nghiệm cá nhân của mình.
+
+***
+
+## 2. Project Context & Objectives
+
+### 2.1 Personal Development Context
+- **Self-Reflection Trend**: Ngày càng nhiều người quan tâm đến mental wellness và personal growth
+- **Digital Native Behavior**: Xu hướng sử dụng mobile device để capture và organize personal information  
+- **AI Integration**: Sự phát triển của LLM models tạo cơ hội mới cho personalized AI experiences
+
+### 2.2 Project Objectives
+
+#### Core Objectives:
+1. **Create Digital Extension** của physical journaling experience với AI enhancement
+2. **Enable Quick Capture** của thoughts và feelings bất cứ lúc nào, bất cứ đâu
+3. **Build Personal Knowledge Graph** để tạo connections giữa events, emotions, và experiences  
+4. **Provide Conversational Interface** để explore personal insights thông qua AI dialogue
+
+#### Technical Objectives:
+1. **Implement Multi-Model AI Integration** với OpenRouter API để flexibility trong AI approaches
+2. **Ensure Privacy-First Design** với local storage và optional cloud backup
+3. **Create Intuitive UX** flows từ writing → reviewing → conversing about personal memories
+4. **Build Scalable Architecture** cho future enhancements và community features
+
+***
+
+## 3. High-Level Requirements
+
+### 3.1 Epic-Level Features
+
+#### **EPIC-1: Core Journaling Experience**
+**Business Value**: Foundation cho tất cả AI-powered features  
+**Description**: Enable users to quickly create, save, và browse personal journal entries với security và reliability
+
+#### **EPIC-2: AI Knowledge Processing**  
+**Business Value**: Transform raw thoughts thành actionable insights  
+**Description**: Integrate với OpenRouter API để automatically analyze entries và build personal knowledge graph
+
+#### **EPIC-3: Intelligent Memory Review**
+**Business Value**: Enhanced self-reflection experience  
+**Description**: AI-powered review capabilities cho discovering patterns và connections trong personal history
+
+#### **EPIC-4: Conversational AI Companion**
+**Business Value**: Personalized insights và guidance  
+**Description**: Chat interface để dialogue với AI về personal experiences và receive tailored suggestions  
+
+#### **EPIC-5: Privacy & Data Control**
+**Business Value**: User trust và data sovereignty  
+**Description**: Complete control over personal data với local storage, encryption, và optional backup options
+
+#### **EPIC-6: Voice Integration** *(Future Release)*
+**Business Value**: Accessibility và convenience  
+**Description**: Voice-to-text entry creation và voice conversations với AI
+
+### 3.2 Technical Constraints & Assumptions
+
+#### **Platform Constraints:**
+- **iOS 15.0+** exclusively initially
+- **SwiftUI** framework cho modern, maintainable UI  
+- **Core Data** hoặc SQLite cho local persistence
+- **OpenRouter API** cho AI model access
+
+#### **Key Assumptions:**
+- Users will write **2-3 times per week minimum** để generate meaningful patterns
+- **Internet connectivity** available cho AI features (graceful offline degradation)
+- Users comfortable với **AI analyzing personal content** với proper privacy controls
+- **OpenRouter API** remains stable và cost-effective long-term
+
+***
+
+## 4. Non-Functional Requirements
+
+### 4.1 Performance Standards
+- **App Launch**: <2 seconds on average iOS devices
+- **Entry Creation**: Immediate responsiveness, <1 second save time  
+- **AI Processing**: <5 seconds cho knowledge graph updates
+- **Search & Navigation**: <1 second response time
+
+### 4.2 Security & Privacy
+- **Data Encryption**: AES-256 encryption cho all stored content
+- **API Security**: Secure API key management via iOS Keychain
+- **Privacy-First**: No data sharing với third parties without explicit user consent
+- **Local Processing**: Maximum data processing on-device when feasible
+
+### 4.3 Reliability & Availability  
+- **Data Integrity**: 99.9% data preservation với backup verification
+- **App Stability**: <0.1% crash rate during normal operation
+- **Offline Capability**: Core journaling functions work without internet
+- **Sync Reliability**: 99% success rate cho optional cloud backups
+
+### 4.4 Usability Standards
+- **Learning Curve**: New users productive trong <5 minutes
+- **Accessibility**: Full VoiceOver support và Dynamic Type compatibility
+- **Writing Flow**: Zero friction từ app launch đến writing first words
+- **Natural Interface**: Conversation với AI feels intuitive và helpful
+
+***
+
+## 5. Success Definition
+
+### 5.1 Personal Success Metrics
+- **Consistency**: Personal usage 3+ times per week for 3+ months
+- **Insight Quality**: AI provides meaningful patterns và actionable suggestions
+- **Habit Formation**: App becomes integral part của personal reflection routine
+- **Data Growth**: 50+ meaningful entries trong first 6 months
+
+### 5.2 Technical Success Criteria  
+- **Feature Completion**: All MVP epics implemented và tested
+- **Performance Benchmarks**: All non-functional requirements met
+- **Security Validation**: No data breaches, proper encryption verification
+- **User Experience**: Smooth, intuitive flows với minimal friction
+
+### 5.3 Long-term Vision Validation
+- **AI Enhancement**: Clear evidence rằng AI adds value beyond simple storage
+- **Pattern Discovery**: Ability to surface insights không visible through manual review
+- **Behavioral Impact**: Positive influence on self-awareness và personal growth
+- **Technical Foundation**: Architecture supports future enhancements và scaling
+
+***
+
+## 6. Cross-References & Related Documents
+
+### 6.1 Detailed Implementation
+→ **Feature Breakdown**: Product-Backlog.md  
+→ **Sprint Implementation**: Sprint-X-Planning.md files  
+→ **Architecture Decisions**: /docs/adrs/ directory
+
+### 6.2 Document Relationships
+```
+BRD (This Document) - Strategic Foundation
+├── Informs → Product Backlog (Feature prioritization)
+├── Validates → Sprint Goals (Business alignment) 
+└── References ← Sprint Retrospectives (Assumption validation)
+```
+
+### 6.3 Living Document Updates
+- **Epic Scope Changes**: Update Section 3.1 với new business requirements
+- **Assumption Validation**: Update Section 3.2 based on development learnings  
+- **Success Metric Evolution**: Refine Section 5 với actual usage data
+- **Vision Refinement**: Adjust Section 1.3 với user feedback và market changes
+
+***
+
+## 7. Approval & Next Steps
+
+### 7.1 Document Status
+- **Current Status**: Draft for Review
+- **Review Required**: Self-validation của business objectives và technical feasibility
+- **Approval Criteria**: Alignment với personal goals và available development resources
+
+### 7.2 Immediate Next Steps
+1. **Validate BRD** với personal objectives và time constraints
+2. **Create Product Backlog** với detailed feature breakdown
+3. **Plan Sprint 1** với foundational features và technical setup
+
+### 7.3 Documentation Roadmap
+- **Next Document**: Product-Backlog.md (detailed epic breakdown)
+- **Development Docs**: Sprint planning documents per development cycle
+- **Architecture Records**: ADRs documenting key technical decisions
+
+***
+
+**Document Prepared By**: AI Requirements Analyst  
+**Document Type**: Personal Project Business Requirements  
+**Version Control**: v2.0 - Restructured for agile development approach  
+**Last Updated**: September 11, 2025  
+**Next Review**: Upon Product Backlog completion
