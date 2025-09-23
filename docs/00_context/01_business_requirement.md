@@ -93,9 +93,9 @@ Tạo ra **digital companion** giúp người dùng không chỉ ghi lại ký �
 ### 3.2 Technical Constraints & Assumptions
 
 #### **Platform Constraints:**
-- **iOS 15.0+** exclusively initially
+- **iOS 17.0+** exclusively initially
 - **SwiftUI** framework cho modern, maintainable UI  
-- **Core Data** hoặc SQLite cho local persistence
+- **SwiftData** cho modern local persistence
 - **OpenRouter API** cho AI model access
 
 #### **Key Assumptions:**

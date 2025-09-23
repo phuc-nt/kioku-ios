@@ -1,7 +1,7 @@
 # ADR-001: iOS Architecture Pattern Selection
 
-**Status:** Approved  
-**Date:** September 12, 2025  
+**Status:** Revised  
+**Date:** September 23, 2025 (Updated from September 12, 2025)  
 **Deciders:** Solo Developer/Product Owner  
 **Related Sprint:** Sprint-1-Planning.md → Task 1.1
 
@@ -12,20 +12,20 @@
 The AI-Powered Personal Journal iOS app requires a robust architecture pattern that supports:
 
 - **SwiftUI declarative UI** with state-driven data flow
-- **Core Data integration** for local persistence with encryption
+- **SwiftData integration** for local persistence with encryption
 - **Future AI integration** via OpenRouter API (Sprint 4+)
 - **Solo development** with emphasis on maintainability and simplicity
 - **Rapid iteration** capabilities for agile development approach
 
 ### Technical Environment
 - **Platform**: iOS 15.0+, SwiftUI framework
-- **Data Layer**: Core Data with encryption
+- **Data Layer**: SwiftData with encryption
 - **External APIs**: OpenRouter (future), Google Drive (future)
 - **Complexity**: Medium (journaling + AI processing + chat interface)
 
 ### Key Architectural Challenges
 1. **State Management**: Handle complex UI state across writing, reviewing, and chat interfaces
-2. **Data Flow**: Seamless integration between Core Data, AI processing, and UI updates  
+2. **Data Flow**: Seamless integration between SwiftData, AI processing, and UI updates  
 3. **Testability**: Enable comprehensive testing for personal data handling
 4. **Scalability**: Foundation that supports AI features and multi-model switching
 5. **Separation of Concerns**: Clear boundaries between UI, business logic, and data layers
@@ -34,58 +34,52 @@ The AI-Powered Personal Journal iOS app requires a robust architecture pattern t
 
 ## Decision
 
-**Selected Architecture: MVVM (Model-View-ViewModel) with Service Layer**
+**Selected Architecture: Modern SwiftUI MV Pattern with @Observable Services**
 
 ### Core Components:
 
 #### **Views (SwiftUI)**
 - `EntryCreationView`, `EntryDetailView`, `CalendarView`, `ChatView`
-- Purely declarative UI with minimal logic
-- State binding to ViewModels via `@StateObject` and `@ObservedObject`
+- Pure state expressions using SwiftUI's native data flow
+- State management via `@State`, `@Environment`, and `@Binding`
 
-#### **ViewModels (ObservableObject)**
-- `EntryCreationViewModel`, `EntryListViewModel`, `ChatViewModel` 
-- Handle UI state, user interactions, and business logic coordination
-- Communicate with Service layer for data operations
-- Publish state changes via `@Published` properties
-
-#### **Services (Protocol-based)**
-- `DataService`: Core Data operations with encryption
-- `AIService`: Future OpenRouter API integration  
-- `BackupService`: Future Google Drive integration
-- Dependency injection via Environment or explicit initialization
-
-#### **Models**  
-- `Entry` (Core Data NSManagedObject)
+#### **Models (@Model with SwiftData)**
+- `Entry` (@Model class for SwiftData persistence)
 - `AIResponse`, `KnowledgeGraphNode` (future data models)
 - Value types for UI state and API responses
 
+#### **Services (@Observable)**
+- `DataService`: SwiftData operations with encryption
+- `AIService`: Future OpenRouter API integration  
+- `BackupService`: Future Google Drive integration
+- Dependency injection via `@Environment`
+
 ### Architecture Flow:
 ```
-SwiftUI Views ↔ ViewModels ↔ Services ↔ Core Data/APIs
+SwiftUI Views (@State) ↔ @Observable Services ↔ SwiftData Models
 ```
 
 ***
 
 ## Rationale
 
-### **Why MVVM over MVC:**
-- **SwiftUI Compatibility**: MVVM aligns naturally with SwiftUI's declarative, state-driven approach[5]
-- **Testability**: ViewModels can be unit tested independently of UI components
-- **State Management**: `@Published` properties integrate seamlessly with SwiftUI's data binding
-- **Scalability**: Clear separation enables complex features like AI chat without massive controllers
+### **Why Modern MV Pattern over MVVM:**
+- **SwiftUI Native**: Leverages SwiftUI's built-in state management instead of fighting it
+- **Less Boilerplate**: No ViewModels needed - views are lightweight and disposable
+- **@Observable Performance**: Tracks only accessed properties, more efficient than @Published
+- **Future-Proof**: Aligns with Apple's latest SwiftUI best practices (2025)
 
-### **Why MVVM over Redux/TCA:**
-- **Learning Curve**: Solo developer benefits from familiar, well-documented pattern
-- **Complexity Match**: MVVM sufficient for app complexity without Redux overhead  
-- **Community Support**: Extensive SwiftUI + MVVM resources and best practices available
-- **Development Speed**: Faster initial development crucial for personal project timeline
+### **Why SwiftData over Core Data:**
+- **Type Safety**: Compile-time safety vs Core Data's runtime errors
+- **SwiftUI Integration**: Native integration with @Query and @Environment
+- **Less Code**: Significantly less boilerplate than Core Data
+- **Modern API**: Clean, Swift-native API designed for SwiftUI
 
-### **Service Layer Benefits:**
-- **Future-Proofing**: Clean abstraction for AI integration in Sprint 4+
-- **Testing**: Mock services for comprehensive unit testing
-- **Reusability**: Services shared across multiple ViewModels
-- **Single Responsibility**: Each service handles one domain (data, AI, backup)
+### **@Observable Services Benefits:**
+- **Environment Integration**: Clean dependency injection via @Environment
+- **Testing**: Mock services easily for comprehensive unit testing
+- **Performance**: Only notifies views of actually accessed properties
+- **Future-Ready**: Clean abstraction for AI integration in Sprint 4+
 
 ***
 
