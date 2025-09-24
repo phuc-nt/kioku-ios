@@ -64,11 +64,9 @@ public struct ContentView: View {
 }
 
 struct EntryStatsView: View {
-    @Environment(DataService.self) private var dataService
+    @Query(sort: \Entry.createdAt, order: .reverse) private var entries: [Entry]
     
     var body: some View {
-        let entries = dataService.fetchAllEntries()
-        
         VStack(spacing: 8) {
             Text("\(entries.count)")
                 .font(.title2)

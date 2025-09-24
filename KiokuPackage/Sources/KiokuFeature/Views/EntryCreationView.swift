@@ -3,6 +3,7 @@ import SwiftData
 
 struct EntryCreationView: View {
     @Environment(DataService.self) private var dataService
+    @Environment(\.dismiss) private var dismiss
     @State private var content: String = ""
     @State private var isAutoSaving: Bool = false
     @State private var lastSavedContent: String = ""
@@ -137,14 +138,14 @@ struct EntryCreationView: View {
         if hasUnsavedChanges {
             performAutoSave()
         }
-        // TODO: Dismiss view (handled by parent)
+        dismiss()
     }
     
     private func cancelEntry() {
         // If we have an auto-saved entry but user cancels, we might want to delete it
         // For now, we'll keep it as the user might have intended to save it
         cancelAutoSaveTimer()
-        // TODO: Dismiss view (handled by parent)
+        dismiss()
     }
 }
 
