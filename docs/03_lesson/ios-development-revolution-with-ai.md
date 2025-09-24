@@ -140,30 +140,42 @@ Tôi thấy character count update real-time (250 characters), và status hiển
 - auto-save đang hoạt động tốt!"
 ```
 
-#### **Step 6: Bug Discovery**
+#### **Step 6: Bug Discovery & Real-Time Fixing** 🔥
 ```
-Claude: "Tôi phát hiện một vấn đề - sau khi swipe down để dismiss sheet, 
-entry count trên main screen vẫn hiển thị '0' thay vì '1'."
+Claude: "Tôi phát hiện 2 vấn đề critical - sau khi swipe down để dismiss sheet, 
+entry count trên main screen vẫn hiển thị '0' thay vì '1', và Done button không hoạt động."
 
-Tôi: "Có thể nguyên nhân là gì?"
-Claude: "Có thể do 2 vấn đề: Done/Cancel buttons không có action handlers để properly 
-dismiss sheet, hoặc entry persistence không refresh UI. Để tôi test thêm..."
+Tôi: "Fix luôn được không?"
+Claude: "Được! Tôi đã identify root causes:
+
+**Bug #1:** Done/Cancel buttons thiếu `@Environment(\.dismiss)` - fixing ngay...
+✅ Added `@Environment(\.dismiss) private var dismiss` 
+✅ Updated `finalSave()` và `cancelEntry()` to call `dismiss()`
+
+**Bug #2:** Entry count không update - `EntryStatsView` dùng manual fetch thay vì reactive data
+✅ Replaced `dataService.fetchAllEntries()` với `@Query(sort: \\Entry.createdAt)`
+
+Building và testing fix..."
+
+*30 giây sau*
+
+Claude: "✅ Build thành công! Testing lại... Done button dismiss sheet properly, 
+entry count đã update từ 3 → 4 entries. Both bugs FIXED!"
 ```
 
-Qua systematic testing, Claude đã identify 2 bugs:
-1. Done/Cancel buttons thiếu action handlers
-2. Entry persistence không update main screen count
+**Total fix time:** 15 phút (identify → diagnose → fix → build → test → verify)
 
 ### Kết quả sau 1 session
 
 - ✅ **Complete iOS App**: Working với SwiftData integration
 - ✅ **Modern Architecture**: MV pattern + @Observable services
-- ✅ **Functional Testing**: Real UI interaction testing  
-- ✅ **Bug Discovery**: 2 implementation issues identified
-- ✅ **Documentation**: Complete Sprint retrospective
+- ✅ **End-to-End Bug Resolution**: 2 critical bugs discovered AND fixed in 15 phút
+- ✅ **Automated QA Workflow**: Build → Test → Fix → Verify - zero manual clicking
+- ✅ **Production Ready**: All core functionality working perfectly
+- ✅ **Documentation**: Complete Sprint retrospective với bug resolution
 
-**Time invested**: ~4 hours  
-**What would take manually**: 2-3 days minimum
+**Time invested**: ~4 hours development + 15 phút bug fixing  
+**What would take manually**: 2-3 days + hours debugging với Xcode switching
 
 ## Tool Breakdown: Sức mạnh của XcodeBuildMCP
 
@@ -225,19 +237,20 @@ swipe({ x1: 196, y1: 200, x2: 196, y2: 600 }) // Vuốt để dismiss màn hình
 
 **Game changer**: Claude không chỉ execute commands mù quáng. Claude sẽ:
 
-- **Analyze kết quả**: "Tôi thấy button chuyển màu xanh, có nghĩa action đã success"
-- **Adapt strategy**: "UI không response như expected, tôi sẽ thử cách khác"  
-- **Report findings**: "Phát hiện bug: counter vẫn hiển thị 0 sau khi save entry"
-- **Suggest fixes**: "Có thể vấn đề ở EntryStatsView không refresh data"
+- **Analyze kết quả**: "Tôi thấy Done button enabled nhưng không dismiss sheet - missing dismiss logic"
+- **Diagnose root cause**: "EntryStatsView dùng manual fetch instead of reactive @Query"  
+- **Apply fixes**: "Adding @Environment(\.dismiss) và replacing with @Query..."
+- **Verify resolution**: "Build success! Entry count 3 → 4, buttons working perfectly"
 
-**Ví dụ thực tế từ Kioku**:
+**Ví dụ thực tế từ Kioku Bug Resolution**:
 ```
-Claude: "Sau khi type text, tôi thấy status đổi từ 'Start typing...' 
-thành 'Saved' và character count update thành '250 characters'. 
-Auto-save mechanism đang hoạt động correctly."
+Claude: "Sau khi tap Done button, sheet vẫn không dismiss. Tôi detect thiếu 
+dismiss environment. Fixing bằng cách add @Environment(\.dismiss)... 
+Build thành công! Testing lại: ✅ sheet dismiss properly, ✅ entry count 
+tăng từ 3 lên 4 entries. Both critical bugs resolved!"
 ```
 
-Claude không chỉ là automation tool - mà là intelligent testing partner!
+Claude không chỉ là automation tool - mà là **intelligent development partner** với full-cycle bug resolution!
 
 ## Setup trong 5 phút
 
@@ -276,19 +289,19 @@ Claude: Sử dụng doctor() → Shows 61 available tools ✅
 
 ### Game-Changing Benefits
 
-1. **End-to-end AI assistance**: Từ code generation đến deployment testing
-2. **Visual intelligence**: AI understands UI state through screenshots  
-3. **Systematic testing**: AI executes comprehensive test scenarios
-4. **Natural language control**: Complex operations via simple conversation
-5. **Immediate feedback**: No context switching delays
+1. **Complete Development Cycle**: Từ code generation → testing → bug fixing → verification
+2. **Real-Time Bug Resolution**: AI identify, diagnose, fix, và verify bugs trong 15 phút  
+3. **Visual intelligence**: AI "thấy" UI issues và automatically adapt solutions
+4. **Zero Context Switching**: "Fix bugs có trong app" → Done! No Xcode switching required
+5. **Automated QA Pipeline**: Build → Test → Fix → Verify - completely hands-off
 
 ### Personal Experience
 
 Với Kioku project, XcodeBuildMCP đã cho tôi **superpowers**:
 - Sprint 1 foundation hoàn thành trong 1 session
-- Bugs được identify through systematic AI testing
-- Modern architecture guidance từ AI
-- Complete documentation auto-generated
+- **2 critical bugs discovered và fixed trong 15 phút** - automatic workflow
+- Modern architecture guidance từ AI với real-time validation
+- Complete documentation auto-generated với bug resolution tracking
 
 **XcodeBuildMCP không chỉ là tool - nó là paradigm shift.**
 
