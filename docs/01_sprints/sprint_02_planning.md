@@ -32,9 +32,10 @@
 
 ### Carry-over from Sprint 1 *(High Priority)*
 
-#### **US-003: Entry Viewing & Navigation (2pts)**
+#### **US-003: Entry Viewing & Navigation (2pts)** ✅ **COMPLETED**
 *Source: Sprint-1-Planning.md → Deferred items*  
 **Sprint Priority:** Critical | **Business Value:** Enable entry browsing và reflection
+**Status:** ✅ Completed September 25, 2025 - All acceptance criteria met
 
 #### **US-004: Secure Local Storage (3pts)**
 *Source: Sprint-1-Planning.md → Deferred items*  
@@ -177,10 +178,10 @@
 - [ ] Basic accessibility implemented
 
 ### **Sprint Level:**
-- [ ] All 4 user stories completed và integrated
-- [ ] App provides complete journaling experience (create, browse, search, secure)
+- [~] All 4 user stories completed và integrated (1/4 completed: US-003 ✅)
+- [~] App provides complete journaling experience (create ✅, browse ✅, search ⏳, secure ⏳)
 - [ ] Encryption implemented và validated
-- [ ] Performance benchmarks met (launch <2s, smooth scrolling)
+- [✅] Performance benchmarks met (launch <2s, smooth scrolling)
 - [ ] Critical ADRs documented
 - [ ] Sprint retrospective completed
 

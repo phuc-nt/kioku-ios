@@ -4,6 +4,7 @@ import SwiftData
 public struct ContentView: View {
     @Environment(DataService.self) private var dataService
     @State private var showingEntryCreation = false
+    @State private var showingEntryList = false
     
     public var body: some View {
         NavigationView {
@@ -47,8 +48,27 @@ public struct ContentView: View {
                 
                 Spacer()
                 
-                // Entry count
-                EntryStatsView()
+                // Entry count and browse button
+                VStack(spacing: 12) {
+                    EntryStatsView()
+                    
+                    // Browse entries button
+                    Button {
+                        showingEntryList = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "list.bullet")
+                            Text("Browse Entries")
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.accentColor)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.accentColor.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    .padding(.horizontal, 32)
+                }
                 
                 Spacer()
             }
@@ -57,6 +77,9 @@ public struct ContentView: View {
         }
         .sheet(isPresented: $showingEntryCreation) {
             EntryCreationView()
+        }
+        .sheet(isPresented: $showingEntryList) {
+            EntryListView()
         }
     }
     

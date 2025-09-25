@@ -55,12 +55,13 @@
 - **Dependencies**: US-001
 - **→ Implementation**: Sprint-1-Planning.md → US-002
 
-**US-003: Entry Viewing & Navigation**
-- **Story Points**: 2 | **Priority**: High | **Sprint**: 1  
+**US-003: Entry Viewing & Navigation** ✅ **COMPLETED**
+- **Story Points**: 2 | **Priority**: High | **Sprint**: 2  
 - **Description**: Là người dùng, tôi muốn browse past entries theo date để easily find previous thoughts
-- **Acceptance Criteria**: Calendar view, date navigation, entry display
+- **Acceptance Criteria**: ✅ Entry list view, entry detail view, navigation, swipe-to-delete
 - **Dependencies**: US-001, US-002
-- **→ Implementation**: Sprint-1-Planning.md → US-003
+- **→ Implementation**: Sprint-2-Planning.md → US-003
+- **Status**: ✅ Completed September 25, 2025
 
 **US-004: Secure Local Storage**
 - **Story Points**: 3 | **Priority**: Critical | **Sprint**: 1

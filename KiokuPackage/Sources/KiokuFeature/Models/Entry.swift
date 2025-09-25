@@ -2,20 +2,20 @@ import SwiftData
 import Foundation
 
 @Model
-final class Entry {
-    var id: UUID
-    var content: String
-    var createdAt: Date
-    var updatedAt: Date
+public final class Entry {
+    public var id: UUID
+    public var content: String
+    public var createdAt: Date
+    public var updatedAt: Date
     
-    init(content: String) {
+    public init(content: String) {
         self.id = UUID()
         self.content = content
         self.createdAt = Date()
         self.updatedAt = Date()
     }
     
-    func updateContent(_ newContent: String) {
+    public func updateContent(_ newContent: String) {
         content = newContent
         updatedAt = Date()
     }
