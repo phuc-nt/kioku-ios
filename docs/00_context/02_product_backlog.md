@@ -77,11 +77,12 @@
 - **Acceptance Criteria**: Full CRUD operations, version tracking, edit indicators
 - **Dependencies**: US-003
 
-**US-006: Basic Search Functionality**
-- **Story Points**: 3 | **Priority**: Medium | **Sprint**: 3
+**US-006: Basic Search Functionality** ✅ **COMPLETED**
+- **Story Points**: 2 | **Priority**: Medium | **Sprint**: 2
 - **Description**: Là người dùng, tôi muốn search trong entries để quickly find specific content
-- **Acceptance Criteria**: Text search, date filtering, results highlighting
+- **Acceptance Criteria**: ✅ Text search, case-insensitive filtering, clear functionality, results highlighting
 - **Dependencies**: US-003
+- **Status**: ✅ Completed September 25, 2025 - Real-time search với responsive UI
 
 ***
 

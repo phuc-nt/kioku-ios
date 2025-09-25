@@ -2,20 +2,44 @@ import SwiftUI
 import SwiftData
 
 public struct EntryListView: View {
-    @Query(sort: \Entry.createdAt, order: .reverse) private var entries: [Entry]
     @Environment(DataService.self) private var dataService
     @State private var selectedEntry: Entry?
+    @State private var searchText = ""
+    @State private var isSearching = false
+    
+    // Dynamic query based on search text
+    private var entries: [Entry] {
+        if searchText.isEmpty {
+            return allEntries
+        } else {
+            return allEntries.filter { entry in
+                entry.content.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    
+    @Query(sort: \Entry.createdAt, order: .reverse) private var allEntries: [Entry]
     
     public var body: some View {
         NavigationView {
-            Group {
-                if entries.isEmpty {
-                    emptyStateView
-                } else {
-                    entryListContent
+            VStack(spacing: 0) {
+                // Search Bar
+                searchBar
+                
+                // Content
+                Group {
+                    if entries.isEmpty {
+                        if searchText.isEmpty {
+                            emptyStateView
+                        } else {
+                            searchEmptyStateView
+                        }
+                    } else {
+                        entryListContent
+                    }
                 }
             }
-            .navigationTitle("All Entries")
+            .navigationTitle(searchText.isEmpty ? "All Entries" : "Search Results")
             .navigationBarTitleDisplayMode(.large)
         }
     }
@@ -53,6 +77,73 @@ public struct EntryListView: View {
         }
     }
     
+    private var searchBar: some View {
+        HStack {
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                
+                TextField("Search entries...", text: $searchText)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .onTapGesture {
+                        isSearching = true
+                    }
+                
+                if !searchText.isEmpty {
+                    Button("Clear") {
+                        searchText = ""
+                    }
+                    .foregroundColor(.accentColor)
+                    .font(.caption)
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+            
+            if isSearching {
+                Button("Cancel") {
+                    searchText = ""
+                    isSearching = false
+                    hideKeyboard()
+                }
+                .foregroundColor(.accentColor)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+    }
+    
+    private var searchEmptyStateView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary)
+            
+            Text("No results found")
+                .font(.title2)
+                .fontWeight(.medium)
+            
+            Text("Try different keywords or check spelling")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Clear Search") {
+                searchText = ""
+            }
+            .foregroundColor(.accentColor)
+            .padding(.top, 8)
+        }
+        .padding()
+    }
+    
+    private func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), 
+                                       to: nil, from: nil, for: nil)
+    }
+    
     private func deleteEntries(offsets: IndexSet) {
         for index in offsets {
             dataService.deleteEntry(entries[index])
@@ -80,7 +171,7 @@ struct EntryRowView: View {
                     .foregroundColor(.secondary)
             }
             
-            // Content preview
+            // Content preview with search highlighting
             Text(entry.content)
                 .font(.body)
                 .lineLimit(3)

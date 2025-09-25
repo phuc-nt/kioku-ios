@@ -45,9 +45,11 @@
 
 ### New Sprint 2 Stories
 
-#### **US-005: Basic Search Functionality (2pts)**
+#### **US-005: Basic Search Functionality (2pts)** ✅ **COMPLETED**
 *Source: Product-Backlog.md → EPIC-1 → US-005*  
 **Sprint Priority:** Medium | **Business Value:** Enable content discovery
+**Status:** ✅ Completed September 25, 2025 - All acceptance criteria met
+**Implementation:** Real-time search với case-insensitive filtering, search UI với clear functionality
 
 #### **US-006: Unit Testing Foundation (1pt)**
 *Source: Sprint-1 learnings*  
@@ -180,8 +182,8 @@
 - [ ] Basic accessibility implemented
 
 ### **Sprint Level:**
-- [~] All 4 user stories completed và integrated (2/4 completed: US-003 ✅, US-004 ✅)
-- [~] App provides complete journaling experience (create ✅, browse ✅, search ⏳, secure ✅)
+- [~] All 4 user stories completed và integrated (3/4 completed: US-003 ✅, US-004 ✅, US-005 ✅)
+- [~] App provides complete journaling experience (create ✅, browse ✅, search ✅, secure ✅)
 - [✅] Encryption implemented và validated (AES-256-GCM with Keychain)
 - [✅] Performance benchmarks met (launch <2s, smooth scrolling, transparent encryption)
 - [✅] Critical ADRs documented (ADR-007-SwiftData-Encryption-Strategy.md)
