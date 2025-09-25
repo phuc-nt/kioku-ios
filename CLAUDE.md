@@ -1,78 +1,91 @@
-### Quy tắc cơ bản
-
-- **Luôn sử dụng tiếng Việt để trả lời**
-- Đọc project documentation trước khi bắt đầu bất kỳ task nào
-- Tuân thủ workflow đã được định nghĩa trong project
-
-### Git Commit Guidelines
-
-- **Không sử dụng emoji** trong commit messages
-- **Không thêm thông tin về Claude Code** hoặc AI tools trong commit message
-- Sử dụng conventional commit format: `type: description`
-- Ví dụ: `feat: add user authentication`, `fix: resolve memory leak in chat view`
-
 ### Startup Workflow (Each Session)
 
 1. Check the project setup.
-2. **Read `docs/00_context/01_business_requirement.md`** - To understand project vision and objectives.
-3. **Read `docs/00_context/02_product_backlog.md`** - To understand current features and priorities.
-4. **Check `docs/01_sprints/sprint_XX_planning.md`** - For current sprint tasks and progress.
+2. **Read `docs/00_context/01_business_requirement.md`** - To understand the project vision and core objectives.
+3. **Check `docs/00_context/02_product_backlog.md`** - To understand current sprint scope and story priorities.
+4. **Reference current sprint** - `docs/01_sprints/sprint_xx_planning.md` for active tasks and progress.
+5. **Review architecture decisions** - `docs/02_adrs/` folder for technical context as needed.
 
 ### Task Management Process
 
 Task Lifecycle:
-  1. Identify task: From the current sprint or user request.
+  1. Identify task: From the current sprint planning document or user request.
   2. Focus mode: Work on one task at a time, do not jump around.
-  3. Implement feature: Code implementation with proper error handling.
-  4. Test Suite Update: MANDATORY - Update the test suite for every new feature.
-  5. Quality validation: All tests must PASS before marking a task as complete.
-  6. Update progress: Update the sprint document only when ALL TESTS PASS.
-  7. Commit clean: Use a clear commit message following conventions.
-  8. Update status: Update the sprint document and product backlog as needed.
+  3. Check dependencies: Review related ADRs for architecture decisions.
+  4. Implement feature: Code implementation with proper error handling.
+  5. UI Automation Testing: MANDATORY - Test feature using XcodeBuildMCP tools for integration validation.
+  6. Test Suite Update: Create or update test scenarios in `/docs/03_testing/` directory.
+  7. Quality validation: All automated tests must PASS before marking a task as complete.
+  8. Update progress: Update the sprint document only when ALL TESTS PASS.
+  9. Commit clean: Use a clear commit message following conventions.
+  10. Update status: Update sprint document and create new ADRs if needed.
 
 Quality Gates:
-  - Code compiles: The build must succeed.
-  - Test Suite: All automated tests (connection + functional) must PASS.
-  - No regressions: Existing functionality must not be broken.
-  - No token leaks: Do not commit sensitive data.
-  - Documentation: Update docs with test results.
+  - Code compiles: The build must succeed with `build_sim()` or `build_run_sim()`.
+  - UI Integration Tests: All XcodeBuildMCP automated tests must PASS.
+  - No regressions: Existing functionality must not be broken (validated via UI automation).
+  - Security validation: Encryption and key management working properly (transparent to user).
+  - Documentation: Update sprint progress with test results and scenarios.
 
 Test Requirements:
-  - Every new feature requires corresponding tests.
-  - Tests must PASS before a sprint task can be completed.
-  - The test suite must be maintained and updated consistently.
+  - Every new feature requires corresponding UI test scenarios.
+  - XcodeBuildMCP automation must validate feature end-to-end before completion.
+  - UI workflows must be tested: tap(), type_text(), swipe(), gesture(), screenshot().
+  - Test scenarios documented in `/docs/03_testing/` with clear acceptance criteria.
+  - Performance validation: app launch <2s, smooth UI interactions, no memory leaks.
+
+XcodeBuildMCP Testing Workflow:
+  1. **Setup**: build_run_sim() với appropriate scheme và simulator.
+  2. **Interaction**: Use tap(), type_text(), swipe(), gesture() for user actions.
+  3. **Validation**: screenshot() để capture states, describe_ui() để get coordinates.
+  4. **Coverage**: Test happy path, edge cases, error conditions, performance.
+  5. **Documentation**: Record test scenarios với expected results trong testing docs.
 
 ### Role of Document Groups
 
-**`docs/00_context/` - Strategic Foundation (DO NOT EDIT WITHOUT EXPLICIT APPROVAL)**:
-- `01_business_requirement.md`: Project vision, objectives, success criteria, and epic-level features.
-- `02_product_backlog.md`: Feature inventory, user stories, prioritization, and sprint assignments.
+**`00_context/` - Strategic Foundation (READ-ONLY, DO NOT EDIT WITHOUT EXPLICIT APPROVAL)**:
+- `01_business_requirement.md`: Business vision, value proposition, high-level requirements.
+- `02_product_backlog.md`: Complete feature inventory, user stories, epic breakdown, sprint assignments.
 
-**`docs/01_sprints/` - Sprint Execution (UPDATED DAILY)**:
-- `sprint_XX_planning.md`: Detailed task breakdown, acceptance criteria, daily progress tracking.
+**`01_sprints/` - Sprint Execution (UPDATED DAILY)**:
+- `sprint_*_planning.md`: Detailed Sprint tasks, acceptance criteria, technical breakdown.
 
-**`docs/02_adrs/` - Architecture Decision Records (CREATE AS NEEDED)**:
-- `adr_XX.md`: Architectural decisions with context, rationale, and consequences.
+**`02_adrs/` - Architecture Decisions (CREATED AS NEEDED)**:
+- `adr_*.md`: Technical decisions for iOS architecture, data models, concurrency, UI libraries, encryption, and key management.
+- Create new ADRs when making significant technical decisions during implementation.
+
+**`03_testing/` - UI Testing Documentation (UPDATED PER FEATURE)**:
+- `ui_test_scenarios.md`: Comprehensive UI test scenarios với XcodeBuildMCP automation.
+- Test case documentation với step-by-step XcodeBuildMCP commands.
+- Performance benchmarks và regression test suites.
 
 ### Documentation Rules
 
 Update Rules:
-  - `02_product_backlog.md`: Update for story refinement, priority changes, sprint assignments.
-  - `sprint_XX_planning.md`: Update for daily progress, task completion, blockers.
-  - `00_context/`: Never update without explicit approval (business requirements, product backlog structure).
+  - `sprint_*.md`: Update daily for task progress, completion status, blockers.
+  - `00_context/*.md`: Never update without explicit approval (business requirements, product backlog).
+  - `02_adrs/*.md`: Create new ADRs for major technical decisions during development.
+  - `03_testing/*.md`: Update test scenarios và automation workflows for each completed feature.
 
 Maintenance Principles:
-  - AVOID DUPLICATION: Link instead of repeating information.
-  - KEEP CONCISE: Overview docs stay short, details go in specific docs.
-  - SINGLE SOURCE OF TRUTH: Each piece of information lives in one place.
-  - CROSS-REFERENCE: Use links to connect related information.
-  - STATUS FIRST: Always show the current status clearly.
+  - AVOID DUPLICATION: Reference other documents using cross-links.
+  - KEEP CONCISE: Sprint docs focus on current tasks, context docs provide background.
+  - SINGLE SOURCE OF TRUTH: Business logic in BRD, technical decisions in ADRs, tasks in sprint docs.
+  - CROSS-REFERENCE: Link sprint tasks back to product backlog user stories.
+  - STATUS FIRST: Always show current sprint progress and blockers clearly.
 
 Writing Style:
-  - Concise and actionable.
+  - Concise and actionable for sprint documentation.
   - Use status indicators: Not Started, In Progress, Completed, Blocked.
-  - Include time estimates and actual time spent.
-  - Link related documents instead of duplicating content.
+  - Include time estimates and actual time spent for each task.
+  - Link to related ADRs and user stories instead of duplicating content.
+  - Technical decisions get their own ADR documents.
 
-Document Flow: `business_requirement.md` → `product_backlog.md` → `sprint_XX_planning.md` → specific implementation details.
-Never put detailed task lists in overview documents.
+Document Flow: 
+  - Strategic: `01_business_requirement.md` → `02_product_backlog.md`
+  - Tactical: `product_backlog.md` → `sprint_*.md` → task implementation
+  - Technical: `sprint_*.md` → `02_adrs/adr_*.md` → code implementation
+  - Testing: `sprint_*.md` → `03_testing/*.md` → XcodeBuildMCP automation validation
+  
+Never put detailed technical architecture in sprint documents - create ADRs instead.
+Never put sprint task details in business requirement or product backlog documents.

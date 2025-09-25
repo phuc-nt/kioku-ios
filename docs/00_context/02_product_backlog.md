@@ -55,31 +55,42 @@
 - **Dependencies**: US-001
 - **→ Implementation**: Sprint-1-Planning.md → US-002
 
-**US-003: Entry Viewing & Navigation**
-- **Story Points**: 2 | **Priority**: High | **Sprint**: 1  
+**US-003: Entry Viewing & Navigation** ✅ **COMPLETED**
+- **Story Points**: 2 | **Priority**: High | **Sprint**: 2  
 - **Description**: Là người dùng, tôi muốn browse past entries theo date để easily find previous thoughts
-- **Acceptance Criteria**: Calendar view, date navigation, entry display
+- **Acceptance Criteria**: ✅ Entry list view, entry detail view, navigation, swipe-to-delete
 - **Dependencies**: US-001, US-002
-- **→ Implementation**: Sprint-1-Planning.md → US-003
+- **→ Implementation**: Sprint-2-Planning.md → US-003
+- **Status**: ✅ Completed September 25, 2025
 
-**US-004: Secure Local Storage**
-- **Story Points**: 3 | **Priority**: Critical | **Sprint**: 1
-- **Description**: Là người dùng, tôi muốn personal data được securely stored để maintain privacy
-- **Acceptance Criteria**: AES-256 encryption, Keychain integration, transparent operation
+**US-004: Secure Local Storage** ✅ **COMPLETED**
+- **Story Points**: 3 | **Priority**: Critical | **Sprint**: 2
+- **Description**: Là người dùng, tôi muốn personal data được securely stored để maintain privacy  
+- **Acceptance Criteria**: ✅ AES-256-GCM encryption, iOS Keychain integration, transparent operation
 - **Dependencies**: US-001
-- **→ Implementation**: Sprint-1-Planning.md → US-004
+- **→ Implementation**: Sprint-2-Planning.md → US-004
+- **Status**: ✅ Completed September 25, 2025 - Full field-level encryption implemented
 
-**US-005: Entry Editing Capabilities**
-- **Story Points**: 2 | **Priority**: High | **Sprint**: 2
+**US-005: Basic Search Functionality** ✅ **COMPLETED**
+- **Story Points**: 2 | **Priority**: Medium | **Sprint**: 2
+- **Description**: Là người dùng, tôi muốn search trong entries để quickly find specific content
+- **Acceptance Criteria**: ✅ Text search, case-insensitive filtering, clear functionality, results highlighting
+- **Dependencies**: US-003
+- **Status**: ✅ Completed September 25, 2025 - Real-time search với responsive UI
+
+**US-006: UI Testing Foundation với XcodeBuildMCP** ✅ **COMPLETED**
+- **Story Points**: 1 | **Priority**: Medium | **Sprint**: 2
+- **Description**: Là developer, tôi muốn comprehensive UI testing suite để ensure quality và prevent regressions
+- **Acceptance Criteria**: ✅ Complete test scenarios cho all Sprint 1-2 features, XcodeBuildMCP automation, regression prevention
+- **Dependencies**: US-001, US-002, US-003, US-004, US-005
+- **Status**: ✅ Completed September 25, 2025 - Full UI testing coverage với automation
+
+**US-007: Entry Editing Capabilities** *(Moved from US-005)*
+- **Story Points**: 2 | **Priority**: High | **Sprint**: 3
 - **Description**: Là người dùng, tôi muốn edit past entries để correct mistakes hoặc add thoughts
 - **Acceptance Criteria**: Full CRUD operations, version tracking, edit indicators
 - **Dependencies**: US-003
-
-**US-006: Basic Search Functionality**
-- **Story Points**: 3 | **Priority**: Medium | **Sprint**: 3
-- **Description**: Là người dùng, tôi muốn search trong entries để quickly find specific content
-- **Acceptance Criteria**: Text search, date filtering, results highlighting
-- **Dependencies**: US-003
+- **Status**: Deferred to Sprint 3 - Renumbered due to US-006 scope change
 
 ***
 
