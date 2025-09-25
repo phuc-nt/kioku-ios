@@ -13,24 +13,33 @@ Task Lifecycle:
   2. Focus mode: Work on one task at a time, do not jump around.
   3. Check dependencies: Review related ADRs for architecture decisions.
   4. Implement feature: Code implementation with proper error handling.
-  5. Test Suite Update: MANDATORY - Update the test suite for every new feature.
-  6. Quality validation: All tests must PASS before marking a task as complete.
-  7. Update progress: Update the sprint document only when ALL TESTS PASS.
-  8. Commit clean: Use a clear commit message following conventions.
-  9. Update status: Update sprint document and create new ADRs if needed.
+  5. UI Automation Testing: MANDATORY - Test feature using XcodeBuildMCP tools for integration validation.
+  6. Test Suite Update: Create or update test scenarios in `/docs/03_testing/` directory.
+  7. Quality validation: All automated tests must PASS before marking a task as complete.
+  8. Update progress: Update the sprint document only when ALL TESTS PASS.
+  9. Commit clean: Use a clear commit message following conventions.
+  10. Update status: Update sprint document and create new ADRs if needed.
 
 Quality Gates:
-  - Code compiles: The build must succeed.
-  - Test Suite: All automated tests (unit + integration) must PASS.
-  - No regressions: Existing functionality must not be broken.
-  - Security validation: Encryption and key management working properly.
-  - Documentation: Update sprint progress with test results.
+  - Code compiles: The build must succeed with `build_sim()` or `build_run_sim()`.
+  - UI Integration Tests: All XcodeBuildMCP automated tests must PASS.
+  - No regressions: Existing functionality must not be broken (validated via UI automation).
+  - Security validation: Encryption and key management working properly (transparent to user).
+  - Documentation: Update sprint progress with test results and scenarios.
 
 Test Requirements:
-  - Every new feature requires corresponding tests.
-  - Tests must PASS before a sprint task can be completed.
-  - Core Data operations must be tested with encryption enabled.
-  - UI tests for SwiftUI components following MVVM pattern.
+  - Every new feature requires corresponding UI test scenarios.
+  - XcodeBuildMCP automation must validate feature end-to-end before completion.
+  - UI workflows must be tested: tap(), type_text(), swipe(), gesture(), screenshot().
+  - Test scenarios documented in `/docs/03_testing/` with clear acceptance criteria.
+  - Performance validation: app launch <2s, smooth UI interactions, no memory leaks.
+
+XcodeBuildMCP Testing Workflow:
+  1. **Setup**: build_run_sim() với appropriate scheme và simulator.
+  2. **Interaction**: Use tap(), type_text(), swipe(), gesture() for user actions.
+  3. **Validation**: screenshot() để capture states, describe_ui() để get coordinates.
+  4. **Coverage**: Test happy path, edge cases, error conditions, performance.
+  5. **Documentation**: Record test scenarios với expected results trong testing docs.
 
 ### Role of Document Groups
 
@@ -45,12 +54,18 @@ Test Requirements:
 - `adr_*.md`: Technical decisions for iOS architecture, data models, concurrency, UI libraries, encryption, and key management.
 - Create new ADRs when making significant technical decisions during implementation.
 
+**`03_testing/` - UI Testing Documentation (UPDATED PER FEATURE)**:
+- `ui_test_scenarios.md`: Comprehensive UI test scenarios với XcodeBuildMCP automation.
+- Test case documentation với step-by-step XcodeBuildMCP commands.
+- Performance benchmarks và regression test suites.
+
 ### Documentation Rules
 
 Update Rules:
   - `sprint_*.md`: Update daily for task progress, completion status, blockers.
   - `00_context/*.md`: Never update without explicit approval (business requirements, product backlog).
   - `02_adrs/*.md`: Create new ADRs for major technical decisions during development.
+  - `03_testing/*.md`: Update test scenarios và automation workflows for each completed feature.
 
 Maintenance Principles:
   - AVOID DUPLICATION: Reference other documents using cross-links.
@@ -70,6 +85,7 @@ Document Flow:
   - Strategic: `01_business_requirement.md` → `02_product_backlog.md`
   - Tactical: `product_backlog.md` → `sprint_*.md` → task implementation
   - Technical: `sprint_*.md` → `02_adrs/adr_*.md` → code implementation
+  - Testing: `sprint_*.md` → `03_testing/*.md` → XcodeBuildMCP automation validation
   
 Never put detailed technical architecture in sprint documents - create ADRs instead.
 Never put sprint task details in business requirement or product backlog documents.

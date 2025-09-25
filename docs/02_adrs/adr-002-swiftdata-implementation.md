@@ -1,16 +1,16 @@
-# ADR-002: Data Model Schema Design
+# ADR-002: SwiftData Implementation Strategy
 
-**Status:** Approved  
 **Date:** September 12, 2025  
-**Deciders:** Solo Developer/Product Owner  
-**Related Sprint:** Sprint-1-Planning.md → Task 1.3  
-**Related ADR:** ADR-001 (Architecture Pattern), ADR-003 (Core Data Concurrency)
+**Status:** Decided  
+**Context:** Sprint 1 - US-001, US-002 Data Persistence Requirements  
+**Decision Maker:** Development Team  
+**Related ADR:** ADR-001 (iOS Architecture Pattern)
 
 ***
 
 ## Context
 
-The AI-Powered Personal Journal app requires a Core Data schema that supports:
+The AI-Powered Personal Journal app requires a SwiftData implementation that supports:
 
 - **Sprint 1 Requirements**: Basic journal entry creation, storage, and retrieval
 - **Future AI Integration**: Knowledge graph generation, entity extraction, relationship mapping  
@@ -34,9 +34,9 @@ The AI-Powered Personal Journal app requires a Core Data schema that supports:
 
 ## Decision
 
-**Selected Schema: Minimal Viable Entity Model with Future Extensibility**
+**Selected Approach: SwiftData @Model với Field-Level Encryption Support**
 
-### Sprint 1 Core Data Model
+### Sprint 1 SwiftData Model
 
 #### **Entry Entity (Primary)**
 ```
@@ -49,12 +49,12 @@ Entry
 └── encryptionMetadata: String? (IV, salt info for decryption)
 ```
 
-#### **Core Data Configuration**
-- **Model Name**: `JournalDataModel.xcdatamodeld`
-- **Entity Codegen**: `Manual/None` (custom NSManagedObject subclasses)
-- **Delete Rule**: Cascade for future relationships
+#### **SwiftData Configuration**
+- **Model Container**: In-app SQLite storage với encryption layer
+- **Entity Definition**: @Model class với computed properties cho encryption
+- **Relationships**: @Relationship attributes cho future AI entities
 - **Validation**: Content length max 50,000 characters
-- **Migration**: Lightweight migration enabled
+- **Migration**: Schema evolution support via @Model versioning
 
 ### Future Schema Extensions (Sprint 4+)
 
@@ -125,50 +125,63 @@ ChatMessage
 
 ## Implementation Guidelines
 
-### **Entry NSManagedObject Implementation:**
+### **Entry @Model Implementation:**
 ```swift
-@objc(Entry)
-public class Entry: NSManagedObject {
+@Model
+public final class Entry {
+    public var id: UUID
+    private var encryptedContent: Data?
+    public var createdAt: Date
+    public var updatedAt: Date
     
-    // Encrypted content with transparent encryption/decryption
-    var encryptedContent: String {
+    // Computed property for transparent encryption/decryption
+    public var content: String {
         get {
-            guard let encrypted = content else { return "" }
-            return EncryptionService.shared.decrypt(encrypted, 
-                                                  metadata: encryptionMetadata) ?? ""
+            // Try to decrypt from encryptedContent first
+            if let encryptedData = encryptedContent {
+                return (try? EncryptionService.shared.decrypt(encryptedData)) ?? ""
+            }
+            return ""
         }
         set {
-            let (encrypted, metadata) = EncryptionService.shared.encrypt(newValue)
-            content = encrypted
-            encryptionMetadata = metadata
-            modifiedAt = Date()
+            // Encrypt and store
+            encryptedContent = try? EncryptionService.shared.encrypt(newValue)
+            updatedAt = Date()
         }
     }
     
-    // Convenience computed properties
-    var dayKey: String {
-        Calendar.current.dateInterval(of: .day, for: createdAt)?.start
-            .formatted(.iso8601.year().month().day()) ?? ""
+    public init(content: String) {
+        self.id = UUID()
+        self.createdAt = Date()
+        self.updatedAt = Date()
+        self.content = content // This will trigger encryption
     }
 }
 ```
 
-### **Core Data Stack Configuration:**
+### **SwiftData Container Configuration:**
 ```swift
-// DataController.swift
-class DataController: ObservableObject {
-    let container = NSPersistentContainer(name: "JournalDataModel")
+// DataService.swift
+@Observable
+public final class DataService {
+    private var modelContainer: ModelContainer
+    private var modelContext: ModelContext
     
-    init() {
-        container.loadPersistentStores { _, error in
-            if let error = error {
-                fatalError("Core Data failed to load: \(error.localizedDescription)")
-            }
+    public init() {
+        do {
+            modelContainer = try ModelContainer(for: Entry.self)
+            modelContext = ModelContext(modelContainer)
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
         }
-        
-        // Configure for development
-        container.viewContext.automaticallyMergesChangesFromParent = true
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+    }
+    
+    public func save() {
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save context: \(error)")
+        }
     }
 }
 ```
