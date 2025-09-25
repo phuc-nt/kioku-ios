@@ -2,9 +2,10 @@ import SwiftData
 import Foundation
 
 @Observable
-public final class DataService {
+public final class DataService: @unchecked Sendable {
     private let modelContainer: ModelContainer
     private let modelContext: ModelContext
+    private let encryptionService = EncryptionService.shared
     
     public init() {
         do {
@@ -21,6 +22,12 @@ public final class DataService {
             )
             
             self.modelContext = ModelContext(modelContainer)
+            
+            // Validate encryption service
+            try encryptionService.validateEncryption()
+            
+            print("DataService initialized with encryption support")
+            
         } catch {
             fatalError("Failed to initialize SwiftData container: \(error)")
         }
@@ -94,6 +101,62 @@ public final class DataService {
     
     public var container: ModelContainer {
         modelContainer
+    }
+    
+    // MARK: - Migration
+    
+    /// Migrates existing unencrypted entries to encrypted storage
+    public func migrateExistingEntriesToEncryption() {
+        let descriptor = FetchDescriptor<Entry>()
+        
+        do {
+            let allEntries = try modelContext.fetch(descriptor)
+            var migratedCount = 0
+            var alreadyEncryptedCount = 0
+            
+            for entry in allEntries {
+                if entry.isEncrypted {
+                    alreadyEncryptedCount += 1
+                    continue
+                }
+                
+                // Attempt to migrate this entry
+                do {
+                    try entry.migrateToEncrypted()
+                    migratedCount += 1
+                } catch {
+                    print("Failed to migrate entry \(entry.id): \(error)")
+                }
+            }
+            
+            // Save changes if any entries were migrated
+            if migratedCount > 0 {
+                saveContext()
+                print("Migration completed: \(migratedCount) entries migrated, \(alreadyEncryptedCount) already encrypted")
+            } else if alreadyEncryptedCount > 0 {
+                print("All \(alreadyEncryptedCount) entries are already encrypted")
+            } else {
+                print("No entries found to migrate")
+            }
+            
+        } catch {
+            print("Failed to fetch entries for migration: \(error)")
+        }
+    }
+    
+    /// Gets encryption status for all entries (for debugging/validation)
+    public func getEncryptionStatus() -> (encrypted: Int, unencrypted: Int) {
+        let descriptor = FetchDescriptor<Entry>()
+        
+        do {
+            let allEntries = try modelContext.fetch(descriptor)
+            let encryptedCount = allEntries.filter { $0.isEncrypted }.count
+            let unencryptedCount = allEntries.count - encryptedCount
+            return (encrypted: encryptedCount, unencrypted: unencryptedCount)
+        } catch {
+            print("Failed to fetch encryption status: \(error)")
+            return (encrypted: 0, unencrypted: 0)
+        }
     }
 }
 
