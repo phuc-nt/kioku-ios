@@ -3,6 +3,7 @@ import SwiftData
 
 public struct EntryListView: View {
     @Environment(DataService.self) private var dataService
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedEntry: Entry?
     @State private var searchText = ""
     @State private var isSearching = false
@@ -41,6 +42,13 @@ public struct EntryListView: View {
             }
             .navigationTitle(searchText.isEmpty ? "All Entries" : "Search Results")
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
     
