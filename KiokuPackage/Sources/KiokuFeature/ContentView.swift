@@ -3,8 +3,10 @@ import SwiftData
 
 public struct ContentView: View {
     @Environment(DataService.self) private var dataService
+    @Query(sort: \Entry.createdAt, order: .reverse) private var entries: [Entry]
     @State private var showingEntryCreation = false
     @State private var showingEntryList = false
+    @State private var showingBatchProcessing = false
     
     public var body: some View {
         NavigationView {
@@ -68,18 +70,52 @@ public struct ContentView: View {
                         .cornerRadius(8)
                     }
                     .padding(.horizontal, 32)
+                    
+                    // AI Tools section
+                    if entries.count > 1 {
+                        HStack(spacing: 12) {
+                            Button {
+                                showingBatchProcessing = true
+                            } label: {
+                                VStack(spacing: 4) {
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.title3)
+                                    Text("AI Tools")
+                                        .font(.caption)
+                                }
+                                .foregroundColor(.purple)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 60)
+                            .background(Color.purple.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal, 32)
+                    }
                 }
                 
                 Spacer()
             }
             .navigationTitle("Journal")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingBatchProcessing = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showingEntryCreation) {
             EntryCreationView()
         }
         .sheet(isPresented: $showingEntryList) {
             EntryListView()
+        }
+        .sheet(isPresented: $showingBatchProcessing) {
+            BatchProcessingView()
         }
     }
     

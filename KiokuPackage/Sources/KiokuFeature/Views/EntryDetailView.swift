@@ -10,6 +10,9 @@ public struct EntryDetailView: View {
     @State private var showingDeleteAlert = false
     @State private var analysisResult: AIAnalysisService.EntryAnalysis?
     @State private var isAnalyzing = false
+    @State private var storedAnalyses: [AIAnalysis] = []
+    @State private var showingAnalysisHistory = false
+    @State private var showingKnowledgeGraph = false
     
     public var body: some View {
         NavigationView {
@@ -74,6 +77,12 @@ public struct EntryDetailView: View {
                             Label("AI Analysis", systemImage: "brain.head.profile")
                         }
                         
+                        Button {
+                            showingKnowledgeGraph = true
+                        } label: {
+                            Label("Knowledge Graph", systemImage: "link.circle")
+                        }
+                        
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
@@ -88,6 +97,12 @@ public struct EntryDetailView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+        .task {
+            loadStoredAnalyses()
+        }
+        .sheet(isPresented: $showingKnowledgeGraph) {
+            KnowledgeGraphView(entry: entry)
+        }
     }
     
     private var aiAnalysisSection: some View {
@@ -98,10 +113,18 @@ public struct EntryDetailView: View {
                 
                 Spacer()
                 
+                if !storedAnalyses.isEmpty {
+                    Button("History (\(storedAnalyses.count))") {
+                        showingAnalysisHistory.toggle()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+                }
+                
                 if isAnalyzing {
                     ProgressView()
                         .scaleEffect(0.8)
-                } else if analysisResult == nil {
+                } else {
                     Button("Analyze") {
                         analyzeEntry()
                     }
@@ -110,7 +133,8 @@ public struct EntryDetailView: View {
                 }
             }
             
-            if let analysis = analysisResult {
+            // Show current analysis result or latest stored analysis
+            if let analysis = analysisResult ?? storedAnalyses.first?.analysis {
                 // Analysis results
                 VStack(alignment: .leading, spacing: 8) {
                     // Sentiment
@@ -202,8 +226,47 @@ public struct EntryDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(12)
                 
-            } else if !isAnalyzing {
+                // Quick actions for analyzed entries
+                if !storedAnalyses.isEmpty {
+                    HStack {
+                        Button {
+                            showingKnowledgeGraph = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "link.circle")
+                                Text("View Connections")
+                            }
+                            .font(.caption)
+                            .foregroundColor(.accentColor)
+                        }
+                        
+                        Spacer()
+                        
+                        if storedAnalyses.count > 1 {
+                            Button("Analysis History") {
+                                showingAnalysisHistory.toggle()
+                            }
+                            .font(.caption)
+                            .foregroundColor(.accentColor)
+                        }
+                    }
+                    .padding(.top, 8)
+                }
+                
+                // Analysis history section
+                if showingAnalysisHistory && storedAnalyses.count > 1 {
+                    analysisHistorySection
+                }
+                
+            } else if !isAnalyzing && storedAnalyses.isEmpty {
                 Text("Tap 'Analyze' to get AI insights about this entry")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+            } else if !isAnalyzing && !storedAnalyses.isEmpty {
+                Text("Previous analyses available. Tap 'History' to view or 'Analyze' for a new analysis.")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .padding()
@@ -211,6 +274,85 @@ public struct EntryDetailView: View {
                     .cornerRadius(8)
             }
         }
+    }
+    
+    private var analysisHistorySection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Analysis History")
+                .font(.subheadline)
+                .fontWeight(.medium)
+            
+            LazyVStack(spacing: 8) {
+                ForEach(storedAnalyses.dropFirst(), id: \.id) { storedAnalysis in
+                    if let analysis = storedAnalysis.analysis {
+                        analysisHistoryCard(analysis, storedAnalysis: storedAnalysis)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray5))
+        .cornerRadius(10)
+    }
+    
+    private func analysisHistoryCard(_ analysis: AIAnalysisService.EntryAnalysis, storedAnalysis: AIAnalysis) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                // Sentiment
+                HStack(spacing: 4) {
+                    sentimentIcon(analysis.sentiment.overall)
+                    Text(analysis.sentiment.overall.rawValue.capitalized)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                
+                Spacer()
+                
+                // Date and model
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(analysis.processingDate, style: .date)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text(analysis.modelUsed.components(separatedBy: "/").last ?? "AI")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            // Themes (compact view)
+            if !analysis.themes.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 4) {
+                        ForEach(analysis.themes.prefix(3), id: \.name) { theme in
+                            Text(theme.name)
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color(.systemGray4))
+                                .cornerRadius(4)
+                        }
+                        
+                        if analysis.themes.count > 3 {
+                            Text("+\(analysis.themes.count - 3)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            
+            // Summary (truncated)
+            if !analysis.summary.isEmpty {
+                Text(analysis.summary)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding(8)
+        .background(Color(.systemBackground))
+        .cornerRadius(6)
     }
     
     private func sentimentIcon(_ sentiment: AIAnalysisService.EntryAnalysis.Sentiment.SentimentType) -> some View {
@@ -389,20 +531,32 @@ public struct EntryDetailView: View {
         rootViewController.present(activityController, animated: true)
     }
     
+    private func loadStoredAnalyses() {
+        storedAnalyses = AIAnalysisService.shared.getStoredAnalyses(for: entry)
+        
+        // If we have stored analyses, show the latest one
+        if let latestAnalysis = storedAnalyses.first?.analysis {
+            analysisResult = latestAnalysis
+        }
+    }
+    
     private func analyzeEntry() {
         guard !isAnalyzing else { return }
         
         isAnalyzing = true
+        let entryId = entry.id
+        let entryContent = entry.content
         
         Task {
-            let entryId = entry.id
-            let entryContent = entry.content
             do {
-                let analysis = try await AIAnalysisService.shared.analyzeEntry(entryId: entryId, content: entryContent)
+                // This will now persist the analysis automatically, but we need to use entry ID and content
+                let analysis = try await AIAnalysisService.shared.analyzeEntry(entryId: entryId, content: entryContent, persist: true)
                 
                 await MainActor.run {
                     analysisResult = analysis
                     isAnalyzing = false
+                    // Reload stored analyses to include the new one
+                    loadStoredAnalyses()
                 }
             } catch {
                 await MainActor.run {

@@ -10,7 +10,7 @@ public final class DataService: @unchecked Sendable {
     public init() {
         do {
             // Configure SwiftData model container
-            let schema = Schema([Entry.self])
+            let schema = Schema([Entry.self, AIAnalysis.self])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false
@@ -65,6 +65,19 @@ public final class DataService: @unchecked Sendable {
         }
     }
     
+    func fetchEntry(by id: UUID) throws -> Entry? {
+        let predicate = #Predicate<Entry> { entry in
+            entry.id == id
+        }
+        
+        let descriptor = FetchDescriptor<Entry>(
+            predicate: predicate
+        )
+        
+        let results = try modelContext.fetch(descriptor)
+        return results.first
+    }
+    
     func fetchEntriesForDate(_ date: Date) -> [Entry] {
         let calendar = Calendar.current
         let startOfDay = calendar.startOfDay(for: date)
@@ -85,6 +98,124 @@ public final class DataService: @unchecked Sendable {
             print("Failed to fetch entries for date: \(error)")
             return []
         }
+    }
+    
+    // MARK: - Analysis Operations
+    
+    /// Save analysis results for an entry
+    func saveAnalysis(for entry: Entry, analysisResult: AIAnalysisService.EntryAnalysis) -> AIAnalysis {
+        let analysis = AIAnalysis(entryId: entry.id, analysis: analysisResult)
+        analysis.entry = entry
+        modelContext.insert(analysis)
+        saveContext()
+        return analysis
+    }
+    
+    /// Get all analyses for a specific entry
+    func getAnalyses(for entry: Entry) -> [AIAnalysis] {
+        let entryId = entry.id
+        let predicate = #Predicate<AIAnalysis> { analysis in
+            analysis.entryId == entryId
+        }
+        
+        let descriptor = FetchDescriptor<AIAnalysis>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.processingDate, order: .reverse)]
+        )
+        
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch analyses for entry \(entry.id): \(error)")
+            return []
+        }
+    }
+    
+    /// Get latest analysis for an entry
+    func getLatestAnalysis(for entry: Entry) -> AIAnalysis? {
+        return getAnalyses(for: entry).first
+    }
+    
+    /// Get analyses by sentiment type
+    func getAnalyses(bySentiment sentiment: String) -> [AIAnalysis] {
+        let predicate = #Predicate<AIAnalysis> { analysis in
+            analysis.overallSentiment == sentiment
+        }
+        
+        let descriptor = FetchDescriptor<AIAnalysis>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.processingDate, order: .reverse)]
+        )
+        
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch analyses by sentiment: \(error)")
+            return []
+        }
+    }
+    
+    /// Get analyses by model
+    func getAnalyses(byModel model: String) -> [AIAnalysis] {
+        let predicate = #Predicate<AIAnalysis> { analysis in
+            analysis.modelUsed == model
+        }
+        
+        let descriptor = FetchDescriptor<AIAnalysis>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.processingDate, order: .reverse)]
+        )
+        
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch analyses by model: \(error)")
+            return []
+        }
+    }
+    
+    /// Get all analyses (for pattern discovery and knowledge graph)
+    func getAllAnalyses() -> [AIAnalysis] {
+        let descriptor = FetchDescriptor<AIAnalysis>(
+            sortBy: [SortDescriptor(\.processingDate, order: .reverse)]
+        )
+        
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch all analyses: \(error)")
+            return []
+        }
+    }
+    
+    /// Delete an analysis
+    func deleteAnalysis(_ analysis: AIAnalysis) {
+        modelContext.delete(analysis)
+        saveContext()
+    }
+    
+    /// Delete all analyses for an entry (called automatically via cascade delete)
+    func deleteAnalyses(for entry: Entry) {
+        let analyses = getAnalyses(for: entry)
+        for analysis in analyses {
+            modelContext.delete(analysis)
+        }
+        saveContext()
+    }
+    
+    /// Get analysis statistics
+    func getAnalysisStatistics() -> (total: Int, byModel: [String: Int], bySentiment: [String: Int]) {
+        let allAnalyses = getAllAnalyses()
+        
+        var byModel: [String: Int] = [:]
+        var bySentiment: [String: Int] = [:]
+        
+        for analysis in allAnalyses {
+            byModel[analysis.modelUsed, default: 0] += 1
+            bySentiment[analysis.overallSentiment, default: 0] += 1
+        }
+        
+        return (total: allAnalyses.count, byModel: byModel, bySentiment: bySentiment)
     }
     
     // MARK: - Private Methods

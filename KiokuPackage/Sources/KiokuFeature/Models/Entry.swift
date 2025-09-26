@@ -2,12 +2,16 @@ import SwiftData
 import Foundation
 
 @Model
-public final class Entry {
+public final class Entry: @unchecked Sendable {
     public var id: UUID
     private var encryptedContent: Data?
     private var _plaintextContent: String? // Legacy unencrypted content
     public var createdAt: Date
     public var updatedAt: Date
+    
+    // MARK: - Relationships
+    @Relationship(deleteRule: .cascade, inverse: \AIAnalysis.entry)
+    public var analyses: [AIAnalysis] = []
     
     // Computed property for transparent encryption/decryption
     public var content: String {
@@ -76,6 +80,28 @@ public final class Entry {
             print("Failed to migrate entry \(id) to encrypted storage: \(error)")
             throw error
         }
+    }
+    
+    // MARK: - Analysis Convenience Methods
+    
+    /// Get the most recent analysis for this entry
+    public var latestAnalysis: AIAnalysis? {
+        return analyses.max(by: { $0.processingDate < $1.processingDate })
+    }
+    
+    /// Get analyses by a specific model
+    public func analyses(byModel model: String) -> [AIAnalysis] {
+        return analyses.filter { $0.modelUsed == model }
+    }
+    
+    /// Check if this entry has any AI analysis
+    public var hasAnalysis: Bool {
+        return !analyses.isEmpty
+    }
+    
+    /// Get the latest analysis summary for display
+    public var latestAnalysisSummary: String? {
+        return latestAnalysis?.displaySummary
     }
 }
 

@@ -29,7 +29,7 @@ public final class AIAnalysisService: @unchecked Sendable {
     
     // MARK: - Analysis Data Models
     
-    public struct EntryAnalysis: Sendable {
+    public struct EntryAnalysis: Sendable, Codable {
         public let entryId: UUID
         public let entities: [Entity]
         public let themes: [Theme] 
@@ -38,12 +38,12 @@ public final class AIAnalysisService: @unchecked Sendable {
         public let processingDate: Date
         public let modelUsed: String
         
-        public struct Entity: Sendable {
+        public struct Entity: Sendable, Codable {
             public let type: EntityType
             public let name: String
             public let confidence: Double // 0.0 - 1.0
             
-            public enum EntityType: String, CaseIterable, Sendable {
+            public enum EntityType: String, CaseIterable, Sendable, Codable {
                 case person = "person"
                 case place = "place"
                 case event = "event"
@@ -53,18 +53,18 @@ public final class AIAnalysisService: @unchecked Sendable {
             }
         }
         
-        public struct Theme: Sendable {
+        public struct Theme: Sendable, Codable {
             public let name: String
             public let confidence: Double // 0.0 - 1.0
             public let description: String
         }
         
-        public struct Sentiment: Sendable {
+        public struct Sentiment: Sendable, Codable {
             public let overall: SentimentType
             public let confidence: Double // 0.0 - 1.0
             public let emotions: [String] // ["joy", "gratitude", "anxiety", etc.]
             
-            public enum SentimentType: String, CaseIterable, Sendable {
+            public enum SentimentType: String, CaseIterable, Sendable, Codable {
                 case positive = "positive"
                 case negative = "negative"
                 case neutral = "neutral"
@@ -76,6 +76,7 @@ public final class AIAnalysisService: @unchecked Sendable {
     // MARK: - Properties
     
     private let openRouter = OpenRouterService.shared
+    private let dataService: DataService
     private let analysisTimeout: TimeInterval = 30.0
     
     // Analysis prompt templates
@@ -116,19 +117,28 @@ public final class AIAnalysisService: @unchecked Sendable {
     
     // MARK: - Singleton
     
-    public static let shared = AIAnalysisService()
+    public static let shared = AIAnalysisService(dataService: DataService())
     
-    private init() {}
+    public init(dataService: DataService) {
+        self.dataService = dataService
+    }
     
     // MARK: - Public Methods
     
     /// Analyzes a single journal entry and extracts insights
-    public func analyzeEntry(_ entry: Entry, model: String? = nil) async throws -> EntryAnalysis {
-        return try await analyzeEntry(entryId: entry.id, content: entry.content, model: model)
+    /// Automatically persists the analysis results to the database
+    public func analyzeEntry(_ entry: Entry, model: String? = nil, persist: Bool = true) async throws -> EntryAnalysis {
+        let analysis = try await analyzeEntry(entryId: entry.id, content: entry.content, model: model, persist: false)
+        
+        if persist {
+            let _ = dataService.saveAnalysis(for: entry, analysisResult: analysis)
+        }
+        
+        return analysis
     }
     
     /// Analyzes journal entry content directly
-    public func analyzeEntry(entryId: UUID, content: String, model: String? = nil) async throws -> EntryAnalysis {
+    public func analyzeEntry(entryId: UUID, content: String, model: String? = nil, persist: Bool = true) async throws -> EntryAnalysis {
         
         // Validate entry content
         guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
@@ -167,6 +177,14 @@ public final class AIAnalysisService: @unchecked Sendable {
             
             // Parse the response
             let analysis = try parseAnalysisResponse(response, entryId: entryId, modelUsed: selectedModel)
+            
+            // Persist if requested
+            if persist {
+                // Find the entry by ID and save the analysis
+                if let entry = try? dataService.fetchEntry(by: entryId) {
+                    let _ = dataService.saveAnalysis(for: entry, analysisResult: analysis)
+                }
+            }
             
             print("Analysis completed for entry \(entryId): \(analysis.entities.count) entities, \(analysis.themes.count) themes")
             
@@ -232,6 +250,38 @@ public final class AIAnalysisService: @unchecked Sendable {
         }
         
         return summaryParts.joined(separator: " • ")
+    }
+    
+    // MARK: - Stored Analysis Retrieval
+    
+    /// Get stored analyses for an entry
+    public func getStoredAnalyses(for entry: Entry) -> [AIAnalysis] {
+        return dataService.getAnalyses(for: entry)
+    }
+    
+    /// Get latest stored analysis for an entry
+    public func getLatestStoredAnalysis(for entry: Entry) -> AIAnalysis? {
+        return dataService.getLatestAnalysis(for: entry)
+    }
+    
+    /// Get all stored analyses for pattern discovery
+    public func getAllStoredAnalyses() -> [AIAnalysis] {
+        return dataService.getAllAnalyses()
+    }
+    
+    /// Get analysis statistics
+    public func getAnalysisStatistics() -> (total: Int, byModel: [String: Int], bySentiment: [String: Int]) {
+        return dataService.getAnalysisStatistics()
+    }
+    
+    /// Check if entry has existing analysis
+    public func hasStoredAnalysis(for entry: Entry) -> Bool {
+        return !getStoredAnalyses(for: entry).isEmpty
+    }
+    
+    /// Delete stored analysis
+    public func deleteStoredAnalysis(_ analysis: AIAnalysis) {
+        dataService.deleteAnalysis(analysis)
     }
     
     // MARK: - Private Methods
@@ -371,7 +421,7 @@ public final class AIAnalysisService: @unchecked Sendable {
 
 extension AIAnalysisService {
     public static let preview: AIAnalysisService = {
-        let service = AIAnalysisService()
+        let service = AIAnalysisService(dataService: DataService.preview)
         return service
     }()
     
