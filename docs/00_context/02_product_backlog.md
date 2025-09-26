@@ -88,9 +88,9 @@
 **US-007: Entry Editing Capabilities** *(Moved from US-005)*
 - **Story Points**: 2 | **Priority**: High | **Sprint**: 3
 - **Description**: Là người dùng, tôi muốn edit past entries để correct mistakes hoặc add thoughts
-- **Acceptance Criteria**: Full CRUD operations, version tracking, edit indicators
+- **Acceptance Criteria**: ✅ Full CRUD operations, version tracking, edit indicators
 - **Dependencies**: US-003
-- **Status**: Deferred to Sprint 3 - Renumbered due to US-006 scope change
+- **Status**: ✅ **Completed September 26, 2025** - Sprint 3
 
 ***
 
@@ -101,19 +101,21 @@
 
 #### User Stories:
 
-**US-007: OpenRouter API Integration**
-- **Story Points**: 5 | **Priority**: Critical | **Sprint**: 4
+**US-008: OpenRouter API Integration** *(Renumbered from US-007)*
+- **Story Points**: 3 | **Priority**: Critical | **Sprint**: 3
 - **Description**: Là developer, tôi muốn integrate với OpenRouter API để access multiple AI models
-- **Acceptance Criteria**: API client, authentication, error handling, basic model access
+- **Acceptance Criteria**: ✅ API client, authentication, error handling, basic model access
 - **Dependencies**: US-004 (secure key storage)
-- **Technical Notes**: HTTP client, retry logic, rate limiting
+- **Status**: ✅ **Completed September 26, 2025** - Sprint 3
+- **Technical Notes**: HTTP client, retry logic, rate limiting - Full implementation
 
-**US-008: Single Model Processing**  
-- **Story Points**: 3 | **Priority**: High | **Sprint**: 4
+**US-009: Single Model Processing** *(Renumbered from US-008)*
+- **Story Points**: 3 | **Priority**: High | **Sprint**: 3  
 - **Description**: Là người dùng, tôi muốn AI analyze một entry để extract basic themes và entities
-- **Acceptance Criteria**: Process single entry, extract entities, basic sentiment analysis
-- **Dependencies**: US-007
-- **Technical Notes**: Choose default model (GPT-4 hoặc Claude-3)
+- **Acceptance Criteria**: ✅ Process single entry, extract entities, basic sentiment analysis, UI integration
+- **Dependencies**: US-008 (OpenRouter API)
+- **Status**: ✅ **Completed September 26, 2025** - Sprint 3
+- **Technical Notes**: GPT-4o-mini default model, full AI analysis service implemented
 
 **US-009: Knowledge Graph Generation**
 - **Story Points**: 8 | **Priority**: High | **Sprint**: 5
@@ -307,15 +309,15 @@
 
 ## Sprint Assignment Overview
 
-### **Phase 1: Foundation (Sprints 1-3)**
-- **Sprint 1**: US-001, US-002, US-003, US-004 (Core journaling)
-- **Sprint 2**: US-005 (Entry editing) 
-- **Sprint 3**: US-006 (Basic search)
+### **Phase 1: Foundation (Sprints 1-3)** ✅ **COMPLETED**
+- **Sprint 1**: ✅ US-001, US-002, US-003, US-004 (Core journaling) 
+- **Sprint 2**: ✅ US-005 (Entry editing) 
+- **Sprint 3**: ✅ US-007, US-008, US-009 (Entry editing + AI integration foundation)
 
-### **Phase 2: AI Integration (Sprints 4-6)**
-- **Sprint 4**: US-007, US-008 (OpenRouter + basic processing)
-- **Sprint 5**: US-009 (Knowledge graph)  
-- **Sprint 6**: US-010 (Batch processing)
+### **Phase 2: Advanced AI Features (Sprints 4-6)**  
+- **Sprint 4**: US-010 (Knowledge graph generation), US-011 (Batch processing)
+- **Sprint 5**: US-012, US-013 (AI insights + contextual actions)  
+- **Sprint 6**: US-014, US-015 (Conversational interface)
 
 ### **Phase 3: Smart Features (Sprints 7-11)**
 - **Sprint 7**: US-011, US-012 (Review features)

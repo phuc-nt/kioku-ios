@@ -162,7 +162,7 @@ public final class DataService: @unchecked Sendable {
 
 // MARK: - Preview Support
 extension DataService {
-    nonisolated(unsafe) static let preview: DataService = {
+    static let preview: DataService = {
         let service = DataService()
         
         // Add sample data for previews

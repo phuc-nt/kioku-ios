@@ -8,6 +8,8 @@ public struct EntryDetailView: View {
     @State private var isEditing = false
     @State private var editedContent = ""
     @State private var showingDeleteAlert = false
+    @State private var analysisResult: AIAnalysisService.EntryAnalysis?
+    @State private var isAnalyzing = false
     
     public var body: some View {
         NavigationView {
@@ -20,6 +22,13 @@ public struct EntryDetailView: View {
                     
                     // Content
                     contentSection
+                    
+                    if !isEditing {
+                        Divider()
+                        
+                        // AI Analysis section
+                        aiAnalysisSection
+                    }
                     
                     Spacer()
                 }
@@ -59,6 +68,12 @@ public struct EntryDetailView: View {
                             Label("Share", systemImage: "square.and.arrow.up")
                         }
                         
+                        Button {
+                            analyzeEntry()
+                        } label: {
+                            Label("AI Analysis", systemImage: "brain.head.profile")
+                        }
+                        
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
@@ -73,6 +88,175 @@ public struct EntryDetailView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+    }
+    
+    private var aiAnalysisSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("AI Analysis")
+                    .font(.headline)
+                
+                Spacer()
+                
+                if isAnalyzing {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else if analysisResult == nil {
+                    Button("Analyze") {
+                        analyzeEntry()
+                    }
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
+                }
+            }
+            
+            if let analysis = analysisResult {
+                // Analysis results
+                VStack(alignment: .leading, spacing: 8) {
+                    // Sentiment
+                    HStack {
+                        sentimentIcon(analysis.sentiment.overall)
+                        Text(analysis.sentiment.overall.rawValue.capitalized)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        
+                        if !analysis.sentiment.emotions.isEmpty {
+                            Text("• \(analysis.sentiment.emotions.prefix(3).joined(separator: ", "))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    // Themes
+                    if !analysis.themes.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Themes:")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                            
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 4) {
+                                ForEach(analysis.themes.prefix(4), id: \.name) { theme in
+                                    HStack {
+                                        Text(theme.name)
+                                            .font(.caption2)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(.systemGray5))
+                                    .cornerRadius(8)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Key entities
+                    if !analysis.entities.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Key Elements:")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                            
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 4) {
+                                ForEach(analysis.entities.filter { $0.confidence > 0.6 }.prefix(6), id: \.name) { entity in
+                                    HStack {
+                                        entityIcon(entity.type)
+                                        Text(entity.name)
+                                            .font(.caption2)
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(6)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Summary
+                    if !analysis.summary.isEmpty {
+                        Text(analysis.summary)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .padding(.top, 4)
+                    }
+                    
+                    // Analysis metadata
+                    HStack {
+                        Text("Analyzed with \(analysis.modelUsed.components(separatedBy: "/").last ?? "AI")")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text(analysis.processingDate, style: .relative)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 4)
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                
+            } else if !isAnalyzing {
+                Text("Tap 'Analyze' to get AI insights about this entry")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+            }
+        }
+    }
+    
+    private func sentimentIcon(_ sentiment: AIAnalysisService.EntryAnalysis.Sentiment.SentimentType) -> some View {
+        Group {
+            switch sentiment {
+            case .positive:
+                Image(systemName: "face.smiling")
+                    .foregroundColor(.green)
+            case .negative:
+                Image(systemName: "face.dashed")
+                    .foregroundColor(.red)
+            case .neutral:
+                Image(systemName: "face.expressionless")
+                    .foregroundColor(.gray)
+            case .mixed:
+                Image(systemName: "face.smiling.inverse")
+                    .foregroundColor(.orange)
+            }
+        }
+        .font(.caption)
+    }
+    
+    private func entityIcon(_ entityType: AIAnalysisService.EntryAnalysis.Entity.EntityType) -> some View {
+        Group {
+            switch entityType {
+            case .person:
+                Image(systemName: "person.fill")
+                    .foregroundColor(.blue)
+            case .place:
+                Image(systemName: "location.fill")
+                    .foregroundColor(.green)
+            case .event:
+                Image(systemName: "calendar")
+                    .foregroundColor(.orange)
+            case .emotion:
+                Image(systemName: "heart.fill")
+                    .foregroundColor(.pink)
+            case .concept:
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+            case .activity:
+                Image(systemName: "figure.walk")
+                    .foregroundColor(.purple)
+            }
+        }
+        .font(.caption2)
     }
     
     private var dateSection: some View {
@@ -203,6 +387,31 @@ public struct EntryDetailView: View {
         }
         
         rootViewController.present(activityController, animated: true)
+    }
+    
+    private func analyzeEntry() {
+        guard !isAnalyzing else { return }
+        
+        isAnalyzing = true
+        
+        Task {
+            let entryId = entry.id
+            let entryContent = entry.content
+            do {
+                let analysis = try await AIAnalysisService.shared.analyzeEntry(entryId: entryId, content: entryContent)
+                
+                await MainActor.run {
+                    analysisResult = analysis
+                    isAnalyzing = false
+                }
+            } catch {
+                await MainActor.run {
+                    isAnalyzing = false
+                    print("Analysis failed: \(error)")
+                    // In a real app, we'd show an error alert here
+                }
+            }
+        }
     }
     
     public init(entry: Entry) {
