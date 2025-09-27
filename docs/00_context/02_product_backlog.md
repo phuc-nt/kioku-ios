@@ -447,8 +447,11 @@
 - **Sprint 6**: ✅ US-027, US-029, US-030, US-031 (Year view + Time travel features)  
 - **Sprint 7**: ✅ US-032, US-033 (Date picker + Temporal search) - **COMPLETED September 27, 2025**
 
-### **Phase 4: Future AI Integration (Sprints 8+)** *(Postponed)*
-- **Sprint 8+**: Conversational AI (US-014, US-015) - *Moved to future phase*
+### **Phase 4: Calendar Enhancement & Polish (Sprint 8)** 🔄 **SPRINT 8 IN PROGRESS**
+- **Sprint 8**: 🔄 US-020, US-006, CS-001, CS-002 (UI/UX polish + Search enhancement + Performance + Accessibility) - **STARTED September 28, 2025**
+
+### **Phase 5: Future AI Integration (Sprints 9+)** *(Postponed)*
+- **Sprint 9+**: Conversational AI (US-014, US-015) - *Moved to future phase*
 - **Sprint 9+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
 - **Sprint 10+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
 

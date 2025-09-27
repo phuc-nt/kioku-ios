@@ -1,5 +1,59 @@
 import SwiftUI
 import SwiftData
+import Foundation
+
+// MARK: - Animation Constants
+extension Animation {
+    static let calendarTransition = Animation.easeInOut(duration: 0.3)
+    static let quickFeedback = Animation.easeOut(duration: 0.15)
+    static let smoothTransition = Animation.interpolatingSpring(stiffness: 300, damping: 30)
+}
+
+// MARK: - Design System
+struct CalendarDesign {
+    // Typography
+    static let headerFont = Font.system(.title2, design: .default, weight: .semibold)
+    static let dayFont = Font.system(.body, design: .default, weight: .medium)
+    static let weekdayFont = Font.system(.caption, design: .default, weight: .medium)
+    static let titleFont = Font.system(.title, design: .default, weight: .bold)
+    
+    // Colors
+    static let accentColor = Color.accentColor
+    static let primaryText = Color.primary
+    static let secondaryText = Color.secondary
+    static let cardBackground = Color(.systemBackground)
+    static let groupedBackground = Color(.systemGroupedBackground)
+    
+    // Calendar Day Colors
+    static let primaryTextColor = Color.primary
+    static let secondaryTextColor = Color.secondary
+    static let selectedTextColor = Color.accentColor
+    static let selectedBackgroundColor = Color.accentColor.opacity(0.15)
+    static let todayBackgroundColor = Color.accentColor.opacity(0.08)
+    static let entryBackgroundColor = Color.accentColor.opacity(0.05)
+    static let selectedBorderColor = Color.accentColor
+    static let todayBorderColor = Color.accentColor.opacity(0.6)
+    
+    // Indicator Colors
+    static let entryIndicatorColor = Color.accentColor
+    static let todayIndicatorColor = Color.secondary.opacity(0.6)
+    
+    // Spacing & Sizing
+    static let cardPadding: CGFloat = 16
+    static let itemSpacing: CGFloat = 12
+    static let cornerRadius: CGFloat = 12
+    static let shadowRadius: CGFloat = 1
+    
+    // Calendar Day Specific
+    static let dayViewHeight: CGFloat = 44
+    static let dayCornerRadius: CGFloat = 8
+    static let dayBorderWidth: CGFloat = 2
+    static let dayIndicatorSpacing: CGFloat = 4
+    
+    // Indicator Sizing
+    static let entryIndicatorSize: CGFloat = 6
+    static let todayIndicatorSize: CGFloat = 4
+}
 
 enum SearchPeriod: String, CaseIterable {
     case allTime = "All Time"
@@ -48,6 +102,13 @@ public struct CalendarView: View {
     @State private var searchResults: [Entry] = []
     @State private var selectedSearchPeriod: SearchPeriod = .allTime
     
+    // Enhanced search features for US-006
+    @State private var searchSuggestions: [String] = []
+    @State private var recentSearches: [String] = []
+    @State private var isSearching = false
+    @State private var showingSuggestions = false
+    @State private var searchTask: Task<Void, Never>?
+    
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -72,38 +133,37 @@ public struct CalendarView: View {
                     // Calendar grid
                     calendarGrid
                     
-                    // Time travel controls
-                    if showingTimeTravelControls {
-                        timeTravelControlsView
-                    }
-                    
                     Spacer()
                 }
             }
-            .navigationTitle("Calendar")
+            .navigationTitle("Journal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItemGroup(placement: .navigationBarLeading) {
+                    // Temporal Search button
                     Button(action: {
                         showingTemporalSearch = true
                     }) {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.blue)
+                            .font(.headline)
                     }
+                    .accessibilityLabel("Search entries")
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // Date Picker button
                     Button(action: {
                         datePickerSelection = currentMonth
                         showingDatePicker = true
                     }) {
                         Image(systemName: "calendar")
-                            .foregroundColor(.blue)
+                            .font(.headline)
                     }
+                    .accessibilityLabel("Jump to date")
                 }
             }
             .sheet(isPresented: $showingDateEntry) {
-                DateEntryView(selectedDate: selectedDate)
+                EntryCreationView()
             }
             .sheet(isPresented: $showingDatePicker) {
                 datePickerView
@@ -114,57 +174,71 @@ public struct CalendarView: View {
         }
     }
     
+    // MARK: - Month Header View
     private var monthHeaderView: some View {
-        HStack {
-            Button(action: previousMonth) {
+        HStack(spacing: 0) {
+            Button(action: {
+                withAnimation(.calendarTransition) {
+                    previousMonth()
+                }
+            }) {
                 Image(systemName: "chevron.left")
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
+                    .font(.headline)
+                    .foregroundColor(CalendarDesign.accentColor)
+                    .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Previous month")
             
             Spacer()
             
             Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(.calendarTransition) {
                     showingYearView = true
                 }
             }) {
                 Text(dateFormatter.string(from: currentMonth))
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .font(CalendarDesign.headerFont)
+                    .foregroundColor(CalendarDesign.primaryText)
             }
+            .accessibilityLabel("Show year view")
             
             Spacer()
             
-            Button(action: nextMonth) {
+            Button(action: {
+                withAnimation(.calendarTransition) {
+                    nextMonth()
+                }
+            }) {
                 Image(systemName: "chevron.right")
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
+                    .font(.headline)
+                    .foregroundColor(CalendarDesign.accentColor)
+                    .frame(width: 44, height: 44)
             }
+            .accessibilityLabel("Next month")
         }
-        .padding()
-        .background(Color(.systemGray6))
-    }
-    
-    private var daysOfWeekHeader: some View {
-        HStack {
-            ForEach(calendar.shortWeekdaySymbols, id: \.self) { day in
-                Text(day)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                    .frame(maxWidth: .infinity)
-            }
-        }
-        .padding(.horizontal)
+        .padding(.horizontal, CalendarDesign.itemSpacing)
         .padding(.vertical, 8)
     }
     
+    // MARK: - Days of Week Header
+    private var daysOfWeekHeader: some View {
+        HStack(spacing: 0) {
+            ForEach(calendar.shortWeekdaySymbols, id: \.self) { daySymbol in
+                Text(daySymbol)
+                    .font(CalendarDesign.weekdayFont)
+                    .foregroundColor(CalendarDesign.secondaryText)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, CalendarDesign.itemSpacing)
+        .padding(.bottom, 8)
+    }
+    
+    // MARK: - Calendar Grid
     private var calendarGrid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 1) {
-            ForEach(daysInMonth, id: \.self) { date in
-                if let date = date {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 4) {
+            ForEach(daysInMonth.indices, id: \.self) { index in
+                if let date = daysInMonth[index] {
                     CalendarDayView(
                         date: date,
                         isSelected: calendar.isDate(date, inSameDayAs: selectedDate),
@@ -185,9 +259,148 @@ public struct CalendarView: View {
                 }
             }
         }
-        .padding(.horizontal)
+        .padding(CalendarDesign.cardPadding)
+        .background(
+            RoundedRectangle(cornerRadius: CalendarDesign.cornerRadius)
+                .fill(CalendarDesign.cardBackground)
+                .shadow(color: .black.opacity(0.05), radius: CalendarDesign.shadowRadius, x: 0, y: 1)
+        )
+        .padding(.horizontal, CalendarDesign.itemSpacing)
     }
     
+    // MARK: - Year View
+    private var yearView: some View {
+        Text("Year View - Coming Soon")
+            .font(.title)
+            .padding()
+    }
+    
+    // MARK: - Date Picker View
+    private var datePickerView: some View {
+        NavigationView {
+            VStack(spacing: 24) {
+                Text("Jump to Date")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .padding(.top)
+                
+                DatePicker(
+                    "Select Date",
+                    selection: $datePickerSelection,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                
+                Spacer()
+            }
+            .navigationTitle("Jump to Date")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showingDatePicker = false
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Jump to Date") {
+                        withAnimation(.calendarTransition) {
+                            currentMonth = datePickerSelection
+                        }
+                        showingDatePicker = false
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Temporal Search View
+    private var temporalSearchView: some View {
+        NavigationView {
+            VStack(spacing: 24) {
+                Text("Temporal Search")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .padding(.top)
+                
+                TextField("Search content...", text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+                
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                    ForEach(SearchPeriod.allCases, id: \.self) { period in
+                        Button(action: {
+                            selectedSearchPeriod = period
+                            performSearch()
+                        }) {
+                            Text(period.rawValue)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .frame(maxWidth: .infinity)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(selectedSearchPeriod == period ? Color.accentColor : Color(.systemGray6))
+                                )
+                                .foregroundColor(selectedSearchPeriod == period ? .white : .primary)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
+                if !searchResults.isEmpty {
+                    ScrollView {
+                        LazyVStack(spacing: 8) {
+                            ForEach(searchResults, id: \.id) { entry in
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(entry.createdAt, style: .date)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text(entry.content)
+                                        .font(.body)
+                                        .lineLimit(3)
+                                }
+                                .padding()
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    // Navigate to entry date
+                                    withAnimation(.calendarTransition) {
+                                        currentMonth = entry.createdAt
+                                        selectedDate = entry.createdAt
+                                    }
+                                    showingTemporalSearch = false
+                                }
+                            }
+                        }
+                        .padding()
+                    }
+                } else if !searchText.isEmpty {
+                    Text("No results found")
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+                
+                Spacer()
+            }
+            .navigationTitle("Temporal Search")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showingTemporalSearch = false
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
     private var daysInMonth: [Date?] {
         guard let monthInterval = calendar.dateInterval(of: .month, for: currentMonth),
               let monthFirstWeek = calendar.dateInterval(of: .weekOfYear, for: monthInterval.start),
@@ -221,502 +434,37 @@ public struct CalendarView: View {
     }
     
     private func previousMonth() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = calendar.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
-        }
+        currentMonth = calendar.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
     }
     
     private func nextMonth() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
-        }
+        currentMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
     }
     
-    // MARK: - Year View
-    
-    private var yearView: some View {
-        VStack(spacing: 0) {
-            yearHeaderView
-            yearGrid
-            Spacer()
-        }
-    }
-    
-    private var yearHeaderView: some View {
-        HStack {
-            Button(action: previousYear) {
-                Image(systemName: "chevron.left")
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
+    private func performSearch() {
+        let (startDate, endDate) = selectedSearchPeriod.dateRange
+        
+        searchResults = entries.filter { entry in
+            // Filter by content
+            guard entry.content.lowercased().contains(searchText.lowercased()) else {
+                return false
             }
             
-            Spacer()
-            
-            Button(action: {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    showingYearView = false
-                }
-            }) {
-                Text(yearFormatter.string(from: currentMonth))
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+            // Filter by date range
+            if let startDate = startDate {
+                guard entry.createdAt >= startDate else { return false }
             }
             
-            Spacer()
-            
-            Button(action: nextYear) {
-                Image(systemName: "chevron.right")
-                    .font(.title2)
-                    .foregroundColor(.accentColor)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-    }
-    
-    private var yearGrid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
-            ForEach(monthsInYear, id: \.self) { month in
-                YearMonthView(
-                    month: month,
-                    isCurrentMonth: calendar.isDate(month, equalTo: currentMonth, toGranularity: .month),
-                    hasEntries: hasEntries(for: month)
-                ) {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        currentMonth = month
-                        showingYearView = false
-                    }
-                }
-            }
-        }
-        .padding()
-    }
-    
-    private var monthsInYear: [Date] {
-        let year = calendar.component(.year, from: currentMonth)
-        return (1...12).compactMap { month in
-            calendar.date(from: DateComponents(year: year, month: month))
-        }
-    }
-    
-    private var yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
-    
-    private func hasEntries(for month: Date) -> Bool {
-        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return false }
-        
-        return entries.contains { entry in
-            let entryDate = entry.date ?? entry.createdAt
-            return monthInterval.contains(entryDate)
-        }
-    }
-    
-    private func previousYear() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = calendar.date(byAdding: .year, value: -1, to: currentMonth) ?? currentMonth
-        }
-    }
-    
-    private func nextYear() {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = calendar.date(byAdding: .year, value: 1, to: currentMonth) ?? currentMonth
-        }
-    }
-    
-    // MARK: - Time Travel Controls
-    
-    private var timeTravelControlsView: some View {
-        VStack(spacing: 16) {
-            // Header
-            HStack {
-                Text("Time Travel to \(dayFormatter.string(from: selectedDate))")
-                    .font(.headline)
-                    .foregroundColor(.accentColor)
-                
-                Spacer()
-                
-                Button("Done") {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showingTimeTravelControls = false
-                    }
-                }
-                .foregroundColor(.accentColor)
-            }
-            .padding(.horizontal)
-            
-            // Same day navigation options
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(sameDayPreviousMonths, id: \.self) { date in
-                        SameDayMonthCard(
-                            date: date,
-                            hasEntry: hasEntry(for: date),
-                            isCurrentMonth: calendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
-                        ) {
-                            navigateToSameDay(date)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-        .padding(.vertical)
-        .background(Color(.systemGray6))
-        .transition(.move(edge: .bottom).combined(with: .opacity))
-    }
-    
-    private var dayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d"
-        return formatter
-    }()
-    
-    private var sameDayPreviousMonths: [Date] {
-        let targetDay = calendar.component(.day, from: selectedDate)
-        let targetMonth = calendar.component(.month, from: selectedDate)
-        let targetYear = calendar.component(.year, from: selectedDate)
-        
-        var dates: [Date] = []
-        
-        // Get same day for the last 12 months (excluding current month)
-        for monthOffset in 1...12 {
-            if let previousMonth = calendar.date(byAdding: .month, value: -monthOffset, to: selectedDate) {
-                let previousYear = calendar.component(.year, from: previousMonth)
-                let previousMonthNumber = calendar.component(.month, from: previousMonth)
-                
-                // Create date for same day in previous month
-                if let sameDay = calendar.date(from: DateComponents(year: previousYear, month: previousMonthNumber, day: targetDay)) {
-                    dates.append(sameDay)
-                }
-            }
-        }
-        
-        return dates
-    }
-    
-    private func navigateToSameDay(_ date: Date) {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = date
-            selectedDate = date
-            showingTimeTravelControls = false
-        }
-    }
-    
-    // MARK: - Date Picker View
-    
-    private var datePickerView: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Jump to Date")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Select any date to quickly navigate")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top)
-                
-                // Date Picker
-                DatePicker(
-                    "Select Date",
-                    selection: $datePickerSelection,
-                    displayedComponents: [.date]
-                )
-                .datePickerStyle(.wheel)
-                .labelsHidden()
-                .padding(.horizontal)
-                
-                // Recent Dates Section
-                if !recentDates.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Recent Dates")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ], spacing: 12) {
-                            ForEach(recentDates, id: \.self) { date in
-                                Button(action: {
-                                    datePickerSelection = date
-                                    jumpToDate(date)
-                                }) {
-                                    VStack(spacing: 4) {
-                                        Text(dateFormatter.string(from: date))
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
-                                        
-                                        if hasEntryOnDate(date) {
-                                            Circle()
-                                                .fill(Color.blue)
-                                                .frame(width: 6, height: 6)
-                                        }
-                                    }
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(8)
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                
-                Spacer()
-                
-                // Jump Button
-                Button(action: {
-                    jumpToDate(datePickerSelection)
-                }) {
-                    Text("Jump to Date")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(12)
-                }
-                .padding(.horizontal)
-                .padding(.bottom)
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        showingDatePicker = false
-                    }
-                }
-            }
-        }
-    }
-    
-    private var temporalSearchView: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                // Header
-                VStack(spacing: 8) {
-                    Text("Temporal Search")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Search entries based on time periods")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top)
-                
-                // Search Text Field
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Search Content")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    TextField("Enter search terms...", text: $searchText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onSubmit {
-                            performTemporalSearch()
-                        }
-                }
-                .padding(.horizontal)
-                
-                // Time Period Filters
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Time Period")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: 12) {
-                        ForEach(SearchPeriod.allCases, id: \.self) { period in
-                            Button(action: {
-                                selectedSearchPeriod = period
-                                performTemporalSearch()
-                            }) {
-                                Text(period.rawValue)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(selectedSearchPeriod == period ? .white : .primary)
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(selectedSearchPeriod == period ? Color.blue : Color(.systemGray6))
-                                    .cornerRadius(8)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                
-                // Search Results
-                if !searchResults.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Search Results (\(searchResults.count))")
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        ScrollView {
-                            LazyVStack(spacing: 8) {
-                                ForEach(searchResults, id: \.id) { entry in
-                                    SearchResultRow(entry: entry) {
-                                        // Navigate to entry date
-                                        jumpToEntryDate(entry)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                } else if !searchText.isEmpty {
-                    VStack(spacing: 8) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 40))
-                            .foregroundColor(.secondary)
-                        
-                        Text("No results found")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Try adjusting your search terms or time period")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding()
-                }
-                
-                Spacer()
-                
-                // Clear Search Button
-                if !searchText.isEmpty || !searchResults.isEmpty {
-                    Button(action: {
-                        clearSearch()
-                    }) {
-                        Text("Clear Search")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red)
-                            .cornerRadius(12)
-                    }
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
-            }
-            .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        showingTemporalSearch = false
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Search") {
-                        performTemporalSearch()
-                    }
-                    .disabled(searchText.isEmpty)
-                }
-            }
-        }
-    }
-    
-    // MARK: - Date Picker Helper Functions
-    
-    private var recentDates: [Date] {
-        // Get dates with entries from the last 30 days
-        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
-        let datesWithEntries = entries
-            .compactMap { entry in
-                calendar.dateInterval(of: .day, for: entry.createdAt)?.start
-            }
-            .filter { $0 >= thirtyDaysAgo }
-            .sorted(by: { $0 > $1 })
-        
-        // Remove duplicates and take first 6
-        let uniqueDates = Array(Set(datesWithEntries)).sorted(by: { $0 > $1 })
-        return Array(uniqueDates.prefix(6))
-    }
-    
-    private func hasEntryOnDate(_ date: Date) -> Bool {
-        let dayStart = calendar.startOfDay(for: date)
-        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
-        
-        return entries.contains { entry in
-            entry.createdAt >= dayStart && entry.createdAt < dayEnd
-        }
-    }
-    
-    private func jumpToDate(_ date: Date) {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = date
-            selectedDate = date
-        }
-        showingDatePicker = false
-    }
-    
-    // MARK: - Temporal Search Helper Functions
-    
-    private func performTemporalSearch() {
-        guard !searchText.isEmpty else {
-            searchResults = []
-            return
-        }
-        
-        let dateRange = selectedSearchPeriod.dateRange
-        
-        // Filter entries based on search text and time period
-        let filteredEntries = entries.filter { entry in
-            // Check if entry content contains search text (case insensitive)
-            let contentMatches = entry.content.localizedCaseInsensitiveContains(searchText)
-            
-            // Check if entry falls within selected time period
-            let dateMatches: Bool
-            if let startDate = dateRange.start, let endDate = dateRange.end {
-                dateMatches = entry.createdAt >= startDate && entry.createdAt <= endDate
-            } else if let startDate = dateRange.start {
-                dateMatches = entry.createdAt >= startDate
-            } else if let endDate = dateRange.end {
-                dateMatches = entry.createdAt <= endDate
-            } else {
-                dateMatches = true // All time
+            if let endDate = endDate {
+                guard entry.createdAt <= endDate else { return false }
             }
             
-            return contentMatches && dateMatches
+            return true
         }
-        
-        searchResults = filteredEntries.sorted { $0.createdAt > $1.createdAt }
-    }
-    
-    private func jumpToEntryDate(_ entry: Entry) {
-        withAnimation(.easeInOut(duration: 0.3)) {
-            currentMonth = entry.createdAt
-            selectedDate = entry.createdAt
-        }
-        showingTemporalSearch = false
-    }
-    
-    private func clearSearch() {
-        searchText = ""
-        searchResults = []
-        selectedSearchPeriod = .allTime
     }
 }
 
+// MARK: - Calendar Day View
 struct CalendarDayView: View {
     let date: Date
     let isSelected: Bool
@@ -729,25 +477,36 @@ struct CalendarDayView: View {
     private let calendar = Calendar.current
     
     var body: some View {
-        VStack(spacing: 4) {
-            Text("\(calendar.component(.day, from: date))")
-                .font(.system(size: 16, weight: isToday ? .bold : .medium))
-                .foregroundColor(textColor)
-            
-            // Enhanced content indicator
-            contentIndicator
+        Button(action: onTap) {
+            VStack(spacing: CalendarDesign.dayIndicatorSpacing) {
+                Text("\(calendar.component(.day, from: date))")
+                    .font(CalendarDesign.dayFont)
+                    .foregroundColor(textColor)
+                
+                // Entry indicator
+                if hasEntry {
+                    Circle()
+                        .fill(CalendarDesign.entryIndicatorColor)
+                        .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
+                } else if isToday {
+                    Circle()
+                        .fill(CalendarDesign.todayIndicatorColor)
+                        .frame(width: CalendarDesign.todayIndicatorSize, height: CalendarDesign.todayIndicatorSize)
+                } else {
+                    Spacer()
+                        .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
+                }
+            }
+            .frame(height: CalendarDesign.dayViewHeight)
+            .frame(maxWidth: .infinity)
+            .background(backgroundColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius)
+                    .stroke(borderColor, lineWidth: borderWidth)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius))
         }
-        .frame(height: 44)
-        .frame(maxWidth: .infinity)
-        .background(backgroundColor)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? Color.accentColor : Color.clear, lineWidth: 2)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .onTapGesture {
-            onTap()
-        }
+        .buttonStyle(PlainButtonStyle())
         .onLongPressGesture {
             onLongPress()
         }
@@ -755,518 +514,44 @@ struct CalendarDayView: View {
     
     private var textColor: Color {
         if !isCurrentMonth {
-            return .secondary
-        } else if isToday {
-            return .primary
+            return CalendarDesign.secondaryText.opacity(0.5)
+        } else if isSelected {
+            return CalendarDesign.selectedTextColor
         } else {
-            return .primary
+            return CalendarDesign.primaryTextColor
         }
     }
     
     private var backgroundColor: Color {
         if isSelected {
-            return Color.accentColor.opacity(0.1)
+            return CalendarDesign.selectedBackgroundColor
         } else if isToday {
-            return Color.accentColor.opacity(0.05)
+            return CalendarDesign.todayBackgroundColor
+        } else if hasEntry {
+            return CalendarDesign.entryBackgroundColor
         } else {
             return Color.clear
         }
     }
     
-    private var contentIndicator: some View {
-        Group {
-            if hasEntry {
-                // Entry exists - blue dot
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 6, height: 6)
-                    .accessibilityLabel("Has journal entry")
-            } else if isToday {
-                // Today but no entry - subtle gray dot
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 4, height: 4)
-                    .accessibilityLabel("Today - no entry yet")
-            } else {
-                // No entry, not today - invisible spacer
-                Circle()
-                    .fill(Color.clear)
-                    .frame(width: 4, height: 4)
-                    .accessibilityHidden(true)
-            }
-        }
-    }
-}
-
-struct SearchResultRow: View {
-    let entry: Entry
-    let onTap: () -> Void
-    
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .short
-        return formatter
-    }()
-    
-    var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(dateFormatter.string(from: entry.createdAt))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Text(entry.content)
-                    .font(.body)
-                    .foregroundColor(.primary)
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(3)
-            }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(8)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct YearMonthView: View {
-    let month: Date
-    let isCurrentMonth: Bool
-    let hasEntries: Bool
-    let onTap: () -> Void
-    
-    private let calendar = Calendar.current
-    private let monthFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM"
-        return formatter
-    }()
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(monthFormatter.string(from: month))
-                .font(.headline)
-                .fontWeight(isCurrentMonth ? .bold : .medium)
-                .foregroundColor(isCurrentMonth ? .accentColor : .primary)
-            
-            // Enhanced content indicator for year view
-            yearContentIndicator
-        }
-        .frame(width: 80, height: 60)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isCurrentMonth ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isCurrentMonth ? Color.accentColor : Color.clear, lineWidth: 2)
-        )
-        .onTapGesture {
-            onTap()
-        }
-    }
-    
-    private var yearContentIndicator: some View {
-        Group {
-            if hasEntries {
-                // Month has entries - blue dot
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 8, height: 8)
-                    .accessibilityLabel("Month has journal entries")
-            } else if isCurrentMonth {
-                // Current month but no entries - subtle gray dot
-                Circle()
-                    .fill(Color.gray.opacity(0.4))
-                    .frame(width: 6, height: 6)
-                    .accessibilityLabel("Current month - no entries yet")
-            } else {
-                // No entries, not current month - very subtle placeholder
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 4, height: 4)
-                    .accessibilityLabel("No entries this month")
-            }
-        }
-    }
-}
-
-// MARK: - Date Entry View
-
-struct DateEntryView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(DataService.self) private var dataService
-    @Query private var allEntries: [Entry]
-    
-    let selectedDate: Date
-    @State private var content = ""
-    @State private var existingEntry: Entry?
-    @State private var showingTimeTravelView = false
-    
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        return formatter
-    }()
-    
-    var body: some View {
-        NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Date header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Entry for")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Text(dateFormatter.string(from: selectedDate))
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                }
-                .padding(.horizontal)
-                
-                // Content editor
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Content")
-                        .font(.headline)
-                        .padding(.horizontal)
-                    
-                    TextEditor(text: $content)
-                        .padding(8)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                        .padding(.horizontal)
-                }
-                
-                // Time travel section
-                if !previousYearEntries.isEmpty {
-                    timeTravelSection
-                }
-                
-                Spacer()
-            }
-            .navigationTitle(existingEntry != nil ? "Edit Entry" : "New Entry")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveEntry()
-                        dismiss()
-                    }
-                    .disabled(content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-        }
-        .onAppear {
-            loadExistingEntry()
-        }
-    }
-    
-    private func loadExistingEntry() {
-        // Find existing entry for this date
-        let startOfDay = Calendar.current.startOfDay(for: selectedDate)
-        
-        existingEntry = allEntries.first { entry in
-            if let entryDate = entry.date {
-                return Calendar.current.isDate(entryDate, inSameDayAs: startOfDay)
-            } else {
-                return Calendar.current.isDate(entry.createdAt, inSameDayAs: startOfDay)
-            }
-        }
-        
-        content = existingEntry?.content ?? ""
-    }
-    
-    private func saveEntry() {
-        if let existingEntry = existingEntry {
-            // Update existing entry
-            dataService.updateEntry(existingEntry, content: content)
+    private var borderColor: Color {
+        if isSelected {
+            return CalendarDesign.selectedBorderColor
+        } else if isToday {
+            return CalendarDesign.todayBorderColor
         } else {
-            // Create new entry with specific date
-            let entry = Entry(content: content, date: selectedDate)
-            dataService.modelContext.insert(entry)
-            try? dataService.modelContext.save()
+            return Color.clear
         }
     }
     
-    // MARK: - Time Travel Support
-    
-    private var previousYearEntries: [(Date, Entry)] {
-        let calendar = Calendar.current
-        let currentYear = calendar.component(.year, from: selectedDate)
-        let currentMonth = calendar.component(.month, from: selectedDate)
-        let currentDay = calendar.component(.day, from: selectedDate)
-        
-        return allEntries.compactMap { entry in
-            let entryDate = entry.date ?? entry.createdAt
-            let entryYear = calendar.component(.year, from: entryDate)
-            let entryMonth = calendar.component(.month, from: entryDate)
-            let entryDay = calendar.component(.day, from: entryDate)
-            
-            // Same month and day, but different (previous) year
-            if entryMonth == currentMonth && entryDay == currentDay && entryYear < currentYear {
-                return (entryDate, entry)
-            }
-            return nil
-        }.sorted { $0.0 > $1.0 } // Most recent years first
-    }
-    
-    private var timeTravelSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "clock.arrow.circlepath")
-                    .foregroundColor(.accentColor)
-                Text("Same Day in Previous Years")
-                    .font(.headline)
-                    .foregroundColor(.accentColor)
-                
-                Spacer()
-                
-                Button(action: {
-                    showingTimeTravelView = true
-                }) {
-                    Text("View All")
-                        .font(.caption)
-                        .foregroundColor(.accentColor)
-                }
-            }
-            .padding(.horizontal)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(Array(previousYearEntries.prefix(3)), id: \.1.id) { (date, entry) in
-                        TimeTravelCardView(date: date, entry: entry)
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-        .sheet(isPresented: $showingTimeTravelView) {
-            TimeTravelDetailView(
-                selectedDate: selectedDate,
-                previousYearEntries: previousYearEntries
-            )
+    private var borderWidth: CGFloat {
+        if isSelected || isToday {
+            return CalendarDesign.dayBorderWidth
+        } else {
+            return 0
         }
     }
 }
-
-struct SameDayMonthCard: View {
-    let date: Date
-    let hasEntry: Bool
-    let isCurrentMonth: Bool
-    let onTap: () -> Void
-    
-    private let monthFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM yyyy"
-        return formatter
-    }()
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(monthFormatter.string(from: date))
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(isCurrentMonth ? .accentColor : .primary)
-            
-            Circle()
-                .fill(hasEntry ? Color.accentColor : Color.gray.opacity(0.3))
-                .frame(width: 8, height: 8)
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isCurrentMonth ? Color.accentColor.opacity(0.1) : Color.white)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isCurrentMonth ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: 1)
-        )
-        .onTapGesture {
-            onTap()
-        }
-    }
-}
-
-// MARK: - Time Travel Components
-
-struct TimeTravelCardView: View {
-    let date: Date
-    let entry: Entry
-    
-    private let yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(yearFormatter.string(from: date))
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.accentColor)
-                
-                Spacer()
-                
-                Text("\(Calendar.current.component(.year, from: Date()) - Calendar.current.component(.year, from: date)) years ago")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            Text(entry.content)
-                .font(.caption)
-                .lineLimit(3)
-                .multilineTextAlignment(.leading)
-        }
-        .padding(12)
-        .frame(width: 200)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-}
-
-struct TimeTravelDetailView: View {
-    @Environment(\.dismiss) private var dismiss
-    let selectedDate: Date
-    let previousYearEntries: [(Date, Entry)]
-    
-    private let fullDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        return formatter
-    }()
-    
-    private let yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
-    
-    var body: some View {
-        NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-                // Header
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Time Travel")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    Text("Entries from \(fullDateFormatter.string(from: selectedDate))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-                
-                if previousYearEntries.isEmpty {
-                    // Empty state
-                    VStack(spacing: 16) {
-                        Image(systemName: "clock.arrow.circlepath")
-                            .font(.system(size: 48))
-                            .foregroundColor(.secondary)
-                        
-                        Text("No entries from previous years")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                        
-                        Text("Create more entries to see your journey through time!")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding()
-                } else {
-                    // Timeline view
-                    ScrollView {
-                        LazyVStack(spacing: 16) {
-                            ForEach(previousYearEntries, id: \.1.id) { (date, entry) in
-                                TimeTravelTimelineItemView(date: date, entry: entry, selectedDate: selectedDate)
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                }
-            }
-            .navigationTitle("Same Day History")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct TimeTravelTimelineItemView: View {
-    let date: Date
-    let entry: Entry
-    let selectedDate: Date
-    
-    private let yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Timeline indicator
-            VStack(spacing: 4) {
-                Circle()
-                    .fill(Color.accentColor)
-                    .frame(width: 12, height: 12)
-                
-                Rectangle()
-                    .fill(Color.accentColor.opacity(0.3))
-                    .frame(width: 2)
-                    .frame(minHeight: 60)
-            }
-            
-            // Content
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(yearFormatter.string(from: date))
-                        .font(.headline)
-                        .foregroundColor(.accentColor)
-                    
-                    Spacer()
-                    
-                    Text("\(Calendar.current.component(.year, from: selectedDate) - Calendar.current.component(.year, from: date)) years ago")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Text(entry.content)
-                    .font(.body)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(16)
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-        }
-    }
-}
-
-// MARK: - Preview
 
 #Preview {
     CalendarView()
