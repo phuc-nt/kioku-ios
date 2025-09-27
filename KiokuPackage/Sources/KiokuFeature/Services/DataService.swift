@@ -4,7 +4,7 @@ import Foundation
 @Observable
 public final class DataService: @unchecked Sendable {
     private let modelContainer: ModelContainer
-    private let modelContext: ModelContext
+    private let _modelContext: ModelContext
     private let encryptionService = EncryptionService.shared
     
     public init() {
@@ -21,7 +21,7 @@ public final class DataService: @unchecked Sendable {
                 configurations: [modelConfiguration]
             )
             
-            self.modelContext = ModelContext(modelContainer)
+            self._modelContext = ModelContext(modelContainer)
             
             // Validate encryption service
             try encryptionService.validateEncryption()
@@ -37,7 +37,7 @@ public final class DataService: @unchecked Sendable {
     
     func createEntry(content: String) -> Entry {
         let entry = Entry(content: content)
-        modelContext.insert(entry)
+        _modelContext.insert(entry)
         saveContext()
         return entry
     }
@@ -48,7 +48,7 @@ public final class DataService: @unchecked Sendable {
     }
     
     func deleteEntry(_ entry: Entry) {
-        modelContext.delete(entry)
+        _modelContext.delete(entry)
         saveContext()
     }
     
@@ -106,7 +106,7 @@ public final class DataService: @unchecked Sendable {
     func saveAnalysis(for entry: Entry, analysisResult: AIAnalysisService.EntryAnalysis) -> AIAnalysis {
         let analysis = AIAnalysis(entryId: entry.id, analysis: analysisResult)
         analysis.entry = entry
-        modelContext.insert(analysis)
+        _modelContext.insert(analysis)
         saveContext()
         return analysis
     }
@@ -190,7 +190,7 @@ public final class DataService: @unchecked Sendable {
     
     /// Delete an analysis
     func deleteAnalysis(_ analysis: AIAnalysis) {
-        modelContext.delete(analysis)
+        _modelContext.delete(analysis)
         saveContext()
     }
     
@@ -198,7 +198,7 @@ public final class DataService: @unchecked Sendable {
     func deleteAnalyses(for entry: Entry) {
         let analyses = getAnalyses(for: entry)
         for analysis in analyses {
-            modelContext.delete(analysis)
+            _modelContext.delete(analysis)
         }
         saveContext()
     }
@@ -232,6 +232,10 @@ public final class DataService: @unchecked Sendable {
     
     public var container: ModelContainer {
         modelContainer
+    }
+    
+    public var modelContext: ModelContext {
+        _modelContext
     }
     
     // MARK: - Migration

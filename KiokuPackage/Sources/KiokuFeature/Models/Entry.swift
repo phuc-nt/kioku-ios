@@ -9,6 +9,13 @@ public final class Entry: @unchecked Sendable {
     public var createdAt: Date
     public var updatedAt: Date
     
+    // MARK: - Calendar Architecture Fields
+    public var date: Date? // Normalized date (start of day) for calendar navigation
+    
+    // Migration tracking
+    public var migrationVersion: Int = 2 // Version 2 for calendar-based architecture
+    public var isMigrated: Bool = false
+    
     // MARK: - Relationships
     @Relationship(deleteRule: .cascade, inverse: \AIAnalysis.entry)
     public var analyses: [AIAnalysis] = []
@@ -50,15 +57,37 @@ public final class Entry: @unchecked Sendable {
         return encryptedContent != nil
     }
     
-    public init(content: String) {
+    public init(content: String, date: Date? = nil) {
         self.id = UUID()
         self.createdAt = Date()
         self.updatedAt = Date()
         self.encryptedContent = nil
         self._plaintextContent = nil
         
+        // Set date to normalized start of day (for calendar architecture)
+        self.date = Calendar.current.startOfDay(for: date ?? Date())
+        self.migrationVersion = 2
+        self.isMigrated = true
+        
         // Use computed property to handle encryption
         self.content = content
+    }
+    
+    // Legacy initializer for migration purposes
+    public init(legacyContent: String, legacyCreatedAt: Date, legacyId: UUID? = nil) {
+        self.id = legacyId ?? UUID()
+        self.createdAt = legacyCreatedAt
+        self.updatedAt = legacyCreatedAt
+        self.encryptedContent = nil
+        self._plaintextContent = nil
+        
+        // Extract date from legacy createdAt timestamp
+        self.date = nil // Will be set during migration
+        self.migrationVersion = 1 // Mark as legacy
+        self.isMigrated = false
+        
+        // Use computed property to handle encryption
+        self.content = legacyContent
     }
     
     public func updateContent(_ newContent: String) {
@@ -102,6 +131,38 @@ public final class Entry: @unchecked Sendable {
     /// Get the latest analysis summary for display
     public var latestAnalysisSummary: String? {
         return latestAnalysis?.displaySummary
+    }
+    
+    // MARK: - Calendar Architecture Methods
+    
+    /// Check if this entry is for a specific date
+    public func isForDate(_ checkDate: Date) -> Bool {
+        guard let date = date else { return false }
+        return Calendar.current.isDate(date, inSameDayAs: checkDate)
+    }
+    
+    /// Get formatted date string for display
+    public var displayDate: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date ?? createdAt)
+    }
+    
+    /// Get day component for calendar display
+    public var dayOfMonth: Int {
+        return Calendar.current.component(.day, from: date ?? createdAt)
+    }
+    
+    /// Mark entry as migrated to calendar architecture
+    public func markAsMigrated() {
+        self.isMigrated = true
+        self.migrationVersion = 2
+        self.updatedAt = Date()
+    }
+    
+    /// Check if entry needs migration
+    public var needsMigration: Bool {
+        return !isMigrated || migrationVersion < 2
     }
 }
 

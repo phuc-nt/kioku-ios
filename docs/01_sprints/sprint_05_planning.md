@@ -38,12 +38,12 @@ This sprint represents a **major architectural pivot** từ current list-based j
 - [x] Performance optimization cho large datasets
 
 **Technical Tasks:**
-- [ ] Update Entry SwiftData model với date primary key
-- [ ] Create migration script cho existing entries
-- [ ] Implement conflict resolution logic (multiple entries per day)
-- [ ] Add migration progress tracking và error handling
-- [ ] Create rollback mechanism for failed migrations
-- [ ] Update encryption layer cho new data structure
+- [x] Update Entry SwiftData model với date primary key
+- [x] Create migration script cho existing entries
+- [x] Implement conflict resolution logic (multiple entries per day)
+- [x] Add migration progress tracking và error handling
+- [x] Create rollback mechanism for failed migrations
+- [x] Update encryption layer cho new data structure
 
 **Dependencies:** None  
 **Risk Level:** High (Data integrity critical)
@@ -57,19 +57,19 @@ This sprint represents a **major architectural pivot** từ current list-based j
 **Description:** Là người dùng, tôi muốn xem calendar month view như Apple Calendar để navigate dates intuitively.
 
 **Acceptance Criteria:**
-- [ ] Month grid layout với proper date alignment
-- [ ] Current date highlighting và today indicator
-- [ ] Navigation arrows cho previous/next month
-- [ ] Content dots hiển thị dates có entries
-- [ ] Responsive design cho different screen sizes
+- [x] Month grid layout với proper date alignment
+- [x] Current date highlighting và today indicator
+- [x] Navigation arrows cho previous/next month
+- [x] Content dots hiển thị dates có entries
+- [x] Responsive design cho different screen sizes
 
 **Technical Tasks:**
-- [ ] Design CalendarView SwiftUI component
-- [ ] Implement month grid với LazyVGrid
-- [ ] Add date calculation logic và calendar utilities
-- [ ] Create content indicator system
-- [ ] Add navigation controls và state management
-- [ ] Implement accessibility support
+- [x] Design CalendarView SwiftUI component
+- [x] Implement month grid với LazyVGrid
+- [x] Add date calculation logic và calendar utilities
+- [x] Create content indicator system
+- [x] Add navigation controls và state management
+- [x] Implement accessibility support
 
 **Dependencies:** US-034 (Migration must be completed first)  
 **Risk Level:** Medium (Complex UI component)
@@ -83,19 +83,19 @@ This sprint represents a **major architectural pivot** từ current list-based j
 **Description:** Là người dùng, tôi muốn tap vào date để access entry cho ngày đó (create new or edit existing).
 
 **Acceptance Criteria:**
-- [ ] Tap gesture handling trên calendar dates
-- [ ] Navigation to entry editing view cho selected date
-- [ ] Entry creation for empty dates
-- [ ] Entry editing for dates với existing content
-- [ ] Save entry với specific date association
+- [x] Tap gesture handling trên calendar dates
+- [x] Navigation to entry editing view cho selected date
+- [x] Entry creation for empty dates
+- [x] Entry editing for dates với existing content
+- [x] Save entry với specific date association
 
 **Technical Tasks:**
-- [ ] Implement date selection handling
-- [ ] Create DateEntryView component
-- [ ] Add entry creation/editing logic
-- [ ] Update entry saving với date constraints
-- [ ] Add navigation flow management
-- [ ] Implement date-specific entry retrieval
+- [x] Implement date selection handling
+- [x] Create DateEntryView component
+- [x] Add entry creation/editing logic
+- [x] Update entry saving với date constraints
+- [x] Add navigation flow management
+- [x] Implement date-specific entry retrieval
 
 **Dependencies:** US-025 (Calendar view), US-034 (Data migration)  
 **Risk Level:** Low (Straightforward implementation)
@@ -109,19 +109,19 @@ This sprint represents a **major architectural pivot** từ current list-based j
 **Description:** Là người dùng, mỗi ngày chỉ có một entry duy nhất, edit content thay vì tạo multiple entries.
 
 **Acceptance Criteria:**
-- [ ] Database constraint: one entry per date maximum
-- [ ] Edit mode for existing entries instead of creating new
-- [ ] Clear UI indication when editing vs creating
-- [ ] Content append/edit functionality
-- [ ] No duplicate entry creation for same date
+- [x] Database constraint: one entry per date maximum
+- [x] Edit mode for existing entries instead of creating new
+- [x] Clear UI indication when editing vs creating
+- [x] Content append/edit functionality
+- [x] No duplicate entry creation for same date
 
 **Technical Tasks:**
-- [ ] Add unique date constraint trong SwiftData model
-- [ ] Update entry creation logic với date checking
-- [ ] Implement edit-only mode cho existing entries
-- [ ] Add UI state management cho create vs edit
-- [ ] Update service layer với date-based operations
-- [ ] Add validation và error handling
+- [x] Add unique date constraint trong SwiftData model
+- [x] Update entry creation logic với date checking
+- [x] Implement edit-only mode cho existing entries
+- [x] Add UI state management cho create vs edit
+- [x] Update service layer với date-based operations
+- [x] Add validation và error handling
 
 **Dependencies:** US-026 (Date selection), US-034 (Migration)  
 **Risk Level:** Low (Data model constraint)

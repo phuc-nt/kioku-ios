@@ -7,106 +7,21 @@ public struct ContentView: View {
     @State private var showingEntryCreation = false
     @State private var showingEntryList = false
     @State private var showingBatchProcessing = false
+    @State private var showingMigration = false
+    @State private var migrationNeeded = false
     
     public var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Welcome message
-                VStack(spacing: 8) {
-                    Text("Kioku")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Your AI-Powered Personal Journal")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 40)
-                
-                Spacer()
-                
-                // Quick entry button
-                VStack(spacing: 12) {
-                    Button {
-                        showingEntryCreation = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "plus.circle.fill")
-                            Text("New Entry")
-                        }
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(Color.accentColor)
-                        .cornerRadius(10)
-                    }
-                    
-                    Text("Tap to capture your thoughts")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal, 32)
-                
-                Spacer()
-                
-                // Entry count and browse button
-                VStack(spacing: 12) {
-                    EntryStatsView()
-                    
-                    // Browse entries button
-                    Button {
-                        showingEntryList = true
-                    } label: {
-                        HStack {
-                            Image(systemName: "list.bullet")
-                            Text("Browse Entries")
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.accentColor)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(Color.accentColor.opacity(0.1))
-                        .cornerRadius(8)
-                    }
-                    .padding(.horizontal, 32)
-                    
-                    // AI Tools section
-                    if entries.count > 1 {
-                        HStack(spacing: 12) {
-                            Button {
-                                showingBatchProcessing = true
-                            } label: {
-                                VStack(spacing: 4) {
-                                    Image(systemName: "brain.head.profile")
-                                        .font(.title3)
-                                    Text("AI Tools")
-                                        .font(.caption)
-                                }
-                                .foregroundColor(.purple)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 60)
-                            .background(Color.purple.opacity(0.1))
-                            .cornerRadius(8)
-                        }
-                        .padding(.horizontal, 32)
-                    }
-                }
-                
-                Spacer()
+            if migrationNeeded {
+                MigrationBannerView(onStartMigration: {
+                    showingMigration = true
+                })
+            } else {
+                mainContentView
             }
-            .navigationTitle("Journal")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingBatchProcessing = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                    }
-                }
-            }
+        }
+        .onAppear {
+            checkMigrationStatus()
         }
         .sheet(isPresented: $showingEntryCreation) {
             EntryCreationView()
@@ -117,9 +32,60 @@ public struct ContentView: View {
         .sheet(isPresented: $showingBatchProcessing) {
             BatchProcessingView()
         }
+        .fullScreenCover(isPresented: $showingMigration) {
+            MigrationFlowView()
+        }
+    }
+    
+    private var mainContentView: some View {
+        CalendarView()
+    }
+    
+    private func checkMigrationStatus() {
+        let entriesNeedingMigration = entries.filter { $0.needsMigration }
+        migrationNeeded = !entriesNeedingMigration.isEmpty
     }
     
     public init() {}
+}
+
+struct MigrationBannerView: View {
+    let onStartMigration: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 16) {
+                Image(systemName: "calendar.badge.exclamationmark")
+                    .font(.system(size: 60))
+                    .foregroundColor(.orange)
+                
+                Text("Migration Required")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                
+                Text("Your journal needs to be updated to the new calendar-based format for the best experience.")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            
+            VStack(spacing: 12) {
+                Button("Start Migration") {
+                    onStartMigration()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                
+                Text("This process is safe and reversible")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .navigationTitle("Journal")
+        .navigationBarTitleDisplayMode(.inline)
+    }
 }
 
 struct EntryStatsView: View {
