@@ -2,9 +2,9 @@
 ## AI-Powered Personal Journal iOS App
 
 **Created:** September 11, 2025  
-**Last Updated:** September 26, 2025  
-**Document Version:** 1.4  
-**Total Story Points:** 85 (estimated) - 59 completed (69%)
+**Last Updated:** September 27, 2025  
+**Document Version:** 2.0 - Calendar Architecture Transition  
+**Total Story Points:** 120 (estimated) - 59 completed (49%) + 35 new calendar features
 
 ***
 
@@ -18,12 +18,12 @@
 
 ## Backlog Overview
 
-### Project Status 🎯 **SPRINT 4 COMPLETED** 
-- **Total Epics**: 6 epics (4 completed ✅)
-- **Development Progress**: Sprint 1-4 completed (12 user stories delivered)
-- **Story Points Delivered**: 59 of 85 points (69% complete)
-- **Current Status**: Core AI features implemented, pending API integration
-- **Next Priority**: API integration testing and minor feature polish
+### Project Status 🔄 **ARCHITECTURE TRANSITION - SPRINT 5 PLANNED** 
+- **Total Epics**: 6 epics (4 completed ✅, 2 refactored for calendar)
+- **Development Progress**: Sprint 1-4 completed, Sprint 5 planned for calendar transition
+- **Story Points Delivered**: 59 of 120 points (49% complete)
+- **Current Status**: Major architecture change to calendar-based design
+- **Next Priority**: Sprint 5 - Calendar foundation and data migration
 
 ### Velocity Planning
 - **Assumed Team Velocity**: 8-12 story points per sprint
@@ -268,6 +268,104 @@
 
 ***
 
+## 📅 **NEW CALENDAR-BASED EPICS - SPRINT 5+**
+
+### 📅 **EPIC-7: Calendar Foundation & UI** *(NEW - CRITICAL)*
+**Business Value**: Core calendar experience foundation  
+**Total Story Points**: 15 | **Priority**: Critical | **Target Release**: Sprint 5-6  
+**Business Context**: ← BRD.md → Calendar-Based Journal Design
+
+#### User Stories:
+
+**US-025: Calendar Month View** *(NEW)*
+- **Story Points**: 5 | **Priority**: Critical | **Sprint**: 5
+- **Description**: Là người dùng, tôi muốn xem calendar month view như Apple Calendar để navigate dates intuitively
+- **Acceptance Criteria**: Month grid layout, current date highlight, navigation arrows, content dots
+- **Dependencies**: None
+- **Technical Notes**: SwiftUI Calendar implementation với DatePicker foundation
+
+**US-026: Date Selection & Entry Access** *(NEW)*
+- **Story Points**: 3 | **Priority**: Critical | **Sprint**: 5  
+- **Description**: Là người dùng, tôi muốn tap vào date để access entry cho ngày đó (create new or edit existing)
+- **Acceptance Criteria**: Date tap handling, entry creation/editing flow, save to specific date
+- **Dependencies**: US-025
+- **Technical Notes**: Date-to-Entry mapping trong SwiftData model
+
+**US-027: Year View Navigation** *(NEW)*
+- **Story Points**: 3 | **Priority**: High | **Sprint**: 6
+- **Description**: Là người dùng, tôi muốn year view để quickly jump to different months và get overview
+- **Acceptance Criteria**: Year grid với months, content indicators, smooth month transitions
+- **Dependencies**: US-025, US-026
+
+**US-028: One Entry Per Day Constraint** *(NEW)*
+- **Story Points**: 2 | **Priority**: Critical | **Sprint**: 5
+- **Description**: Là người dùng, mỗi ngày chỉ có một entry duy nhất, edit content thay vì tạo multiple entries
+- **Acceptance Criteria**: Single entry per date, edit mode for existing content, no duplicate entries
+- **Dependencies**: US-026
+
+**US-029: Content Indicators** *(NEW)*
+- **Story Points**: 2 | **Priority**: Medium | **Sprint**: 6
+- **Description**: Là người dùng, tôi muốn thấy dots trên calendar dates có content để quick overview
+- **Acceptance Criteria**: Visual dots, different states (empty/has content), performance với large datasets
+- **Dependencies**: US-025, US-028
+
+***
+
+### ⏰ **EPIC-8: Time Travel & Historical Navigation** *(NEW - HIGH)*
+**Business Value**: Enhanced nostalgic experience và temporal navigation  
+**Total Story Points**: 12 | **Priority**: High | **Target Release**: Sprint 6-7  
+**Business Context**: ← BRD.md → Time Travel Features
+
+#### User Stories:
+
+**US-030: Same Day Previous Years** *(NEW)*
+- **Story Points**: 4 | **Priority**: High | **Sprint**: 6
+- **Description**: Là người dùng, tôi muốn xem "same day" từ previous years để compare personal growth
+- **Acceptance Criteria**: "X years ago" navigation, side-by-side comparison, chronological timeline
+- **Dependencies**: US-025, US-026
+
+**US-031: Same Day Previous Months** *(NEW)*
+- **Story Points**: 3 | **Priority**: High | **Sprint**: 6
+- **Description**: Là người dùng, tôi muốn quick access đến same day previous months
+- **Acceptance Criteria**: Month navigation controls, "same day last month" shortcuts
+- **Dependencies**: US-030
+
+**US-032: Date Picker Quick Jump** *(NEW)*
+- **Story Points**: 3 | **Priority**: Medium | **Sprint**: 7
+- **Description**: Là người dùng, tôi muốn date picker để jump to any specific date quickly
+- **Acceptance Criteria**: iOS DatePicker integration, smooth navigation, recent dates suggestions
+- **Dependencies**: US-025
+
+**US-033: Temporal Search** *(NEW)*
+- **Story Points**: 2 | **Priority**: Low | **Sprint**: 7
+- **Description**: Là người dùng, tôi muốn search content trong specific date ranges
+- **Acceptance Criteria**: Date range picker, search filtering, results với date context
+- **Dependencies**: US-032
+
+***
+
+### 🔄 **EPIC-9: Data Migration & Architecture Transition** *(NEW - CRITICAL)*
+**Business Value**: Seamless transition sang calendar-based structure  
+**Total Story Points**: 8 | **Priority**: Critical | **Target Release**: Sprint 5  
+**Business Context**: Migration từ current list-based sang calendar structure
+
+#### User Stories:
+
+**US-034: Data Model Migration** *(NEW)*
+- **Story Points**: 5 | **Priority**: Critical | **Sprint**: 5
+- **Description**: Là developer, tôi muốn migrate existing entries sang date-based structure
+- **Acceptance Criteria**: Automatic migration, data integrity validation, rollback capability
+- **Dependencies**: None
+- **Technical Notes**: SwiftData migration, Entry model updates, date assignment logic
+
+**US-035: Legacy Data Handling** *(NEW)*
+- **Story Points**: 3 | **Priority**: High | **Sprint**: 5
+- **Description**: Là người dùng, multiple entries cùng ngày sẽ được merged hoặc user choice
+- **Acceptance Criteria**: Conflict resolution UI, merge options, data preservation
+- **Dependencies**: US-034
+
+***
+
 ## Future Releases (Not Prioritized)
 
 ### 🎤 **EPIC-7: Voice Integration**
@@ -328,25 +426,24 @@
 - **Sprint 2**: ✅ US-005 (Entry editing) 
 - **Sprint 3**: ✅ US-007, US-008, US-009 (Entry editing + AI integration foundation)
 
-### **Phase 2: Advanced AI Features (Sprints 4-6)**  
-- **Sprint 4**: US-010 (Knowledge graph generation), US-011 (Batch processing)
-- **Sprint 5**: US-012, US-013 (AI insights + contextual actions)  
-- **Sprint 6**: US-014, US-015 (Conversational interface)
+### **Phase 2: Advanced AI Features (Sprint 4)** ✅ **COMPLETED**
+- **Sprint 4**: ✅ US-010, US-011, US-012 (AI analysis persistence, knowledge graph, batch processing)
 
-### **Phase 3: Smart Features (Sprints 7-11)**
-- **Sprint 7**: US-011, US-012 (Review features)
-- **Sprint 8**: US-013, US-014 (Contextual actions + chat)
-- **Sprint 9**: US-015 (Context-aware conversations)
-- **Sprint 10**: US-016 (AI insights)
-- **Sprint 11**: US-017 (Conversation integration)
+### **Phase 3: Calendar Architecture Transition (Sprints 5-7)** 🔄 **NEW PRIORITY**
+- **Sprint 5**: US-034, US-035, US-025, US-026, US-028 (Data migration + Calendar foundation)
+- **Sprint 6**: US-027, US-029, US-030, US-031 (Year view + Time travel features)  
+- **Sprint 7**: US-032, US-033 (Date picker + Temporal search)
 
-### **Phase 4: Enhancement (Sprints 12-17)**  
-- **Sprint 12**: US-018, US-019 (Multi-model support)
-- **Sprint 13**: US-020 (UI polish)
-- **Sprint 14**: US-021 (Model analytics)
-- **Sprint 15**: US-022 (Google Drive backup)
-- **Sprint 16**: US-023 (Export/import)
-- **Sprint 17**: US-024 (Privacy controls)
+### **Phase 4: Future AI Integration (Sprints 8+)** *(Postponed)*
+- **Sprint 8+**: Conversational AI (US-014, US-015) - *Moved to future phase*
+- **Sprint 9+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
+- **Sprint 10+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
+
+### **Phase 5: Enhancement & Privacy (Sprints 11+)**  
+- **Sprint 11**: US-020 (Calendar UI polish)
+- **Sprint 12**: US-022 (Google Drive backup for calendar data)
+- **Sprint 13**: US-023 (Calendar data export/import)
+- **Sprint 14**: US-024 (Privacy controls for date-based data)
 
 ***
 

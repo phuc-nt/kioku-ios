@@ -1,8 +1,9 @@
 # Business Requirements Document (BRD)
 ## AI-Powered Personal Journal iOS App
 
-**Version:** 2.0  
-**Date:** September 11, 2025  
+**Version:** 3.0  
+**Date:** September 27, 2025  
+**Major Update:** Calendar-Based Journal Design  
 **Document Type:** Business Requirements Document  
 **Project Type:** Personal Development Project
 
@@ -13,10 +14,18 @@
 ### Ý Tưởng Gốc
 Ứng dụng được lấy cảm hứng từ **sổ nhật ký vật lý 10 năm trên 2 trang** - một concept độc đáo cho phép người dùng viết cùng một ngày qua nhiều năm trên cùng một spread, tạo ra **hiệu ứng "nhìn lại"** tự nhiên khi thấy những gì đã viết vào cùng ngày này những năm trước.
 
+### Digital Calendar Implementation
+Chuyển đổi concept vật lý thành **calendar-based digital experience** với:
+- **One Entry Per Day**: Mỗi ngày chỉ có một entry, phản ánh thực tế cuộc sống hàng ngày
+- **Calendar Navigation**: Apple Calendar-style interface cho intuitive date navigation
+- **Time Travel Feature**: Dễ dàng xem "same day" từ previous months/years
+- **Visual Content Indicators**: Dots hiển thị ngày có content để quick overview
+
 ### Triết Lý Thiết Kế
-- **Micro-journaling**: Khuyến khích viết ngắn gọn nhưng đều đặn, tập trung vào những suy nghĩ quan trọng nhất trong ngày
-- **Nostalgic Experience**: Tạo ra những khoảnh khắc cảm xúc khi đọc lại và so sánh hành trình phát triển cá nhân
-- **AI-Enhanced Memory**: Sử dụng công nghệ AI để không chỉ lưu trữ mà còn **tạo liên kết thông minh** giữa các sự kiện và cảm xúc
+- **Daily Focus**: Mỗi ngày một entry duy nhất, khuyến khích reflection sâu sắc thay vì multiple scattered thoughts
+- **Calendar-First Navigation**: Date-centric experience giống physical journal thật sự
+- **Nostalgic Time Travel**: Dễ dàng compare cùng một ngày qua các năm để thấy personal growth
+- **AI-Enhanced Memory**: Sử dụng AI để tạo connections giữa các entries theo dates và themes (future feature)
 
 ### Vấn Đề Được Giải Quyết
 Trong thời đại số, chúng ta thường có **những suy nghĩ thoáng qua** cần ghi lại nhưng không phải lúc nào cũng có sổ vật lý bên cạnh. App này tạo ra **cầu nối kỹ thuật số** cho phép capture nhanh những moments này, đồng thời sử dụng AI để biến chúng thành **knowledge graph cá nhân** - một bản đồ trí tuệ về cuộc sống và sự phát triển của bản thân.
@@ -49,16 +58,16 @@ Tạo ra **digital companion** giúp người dùng không chỉ ghi lại ký �
 ### 2.2 Project Objectives
 
 #### Core Objectives:
-1. **Create Digital Extension** của physical journaling experience với AI enhancement
-2. **Enable Quick Capture** của thoughts và feelings bất cứ lúc nào, bất cứ đâu
-3. **Build Personal Knowledge Graph** để tạo connections giữa events, emotions, và experiences  
-4. **Provide Conversational Interface** để explore personal insights thông qua AI dialogue
+1. **Create Calendar-Based Digital Journal** với Apple Calendar-style navigation và one-entry-per-day constraint
+2. **Enable Date-Focused Writing** với immediate access to any specific date và seamless editing experience
+3. **Implement Time Travel Features** để compare same days across months/years cho nostalgic reflection
+4. **Build Personal Knowledge Graph** để tạo connections giữa entries theo dates và themes (future phase)
 
 #### Technical Objectives:
-1. **Implement Multi-Model AI Integration** với OpenRouter API để flexibility trong AI approaches
-2. **Ensure Privacy-First Design** với local storage và optional cloud backup
-3. **Create Intuitive UX** flows từ writing → reviewing → conversing about personal memories
-4. **Build Scalable Architecture** cho future enhancements và community features
+1. **Implement Calendar Architecture** với efficient date-based data storage và navigation
+2. **Ensure Privacy-First Design** với local storage, encryption, và optional cloud backup
+3. **Create Intuitive Calendar UX** flows: calendar navigation → date selection → entry editing → time travel
+4. **Build Migration System** để chuyển existing entries sang calendar-based structure
 
 ***
 
@@ -66,29 +75,29 @@ Tạo ra **digital companion** giúp người dùng không chỉ ghi lại ký �
 
 ### 3.1 Epic-Level Features
 
-#### **EPIC-1: Core Journaling Experience**
-**Business Value**: Foundation cho tất cả AI-powered features  
-**Description**: Enable users to quickly create, save, và browse personal journal entries với security và reliability
+#### **EPIC-1: Calendar-Based Journal Foundation** *(PRIORITY: CRITICAL)*
+**Business Value**: Core experience foundation với natural date-centric workflow  
+**Description**: Apple Calendar-style interface với one entry per day, month/year views, và efficient date navigation
 
-#### **EPIC-2: AI Knowledge Processing**  
-**Business Value**: Transform raw thoughts thành actionable insights  
-**Description**: Integrate với OpenRouter API để automatically analyze entries và build personal knowledge graph
+#### **EPIC-2: Time Travel & Historical Navigation** *(PRIORITY: HIGH)*
+**Business Value**: Enhanced nostalgic experience và personal growth insights  
+**Description**: Quick access to same day previous months/years, date pickers, và temporal comparison features
 
-#### **EPIC-3: Intelligent Memory Review**
-**Business Value**: Enhanced self-reflection experience  
-**Description**: AI-powered review capabilities cho discovering patterns và connections trong personal history
+#### **EPIC-3: Data Migration & Architecture Transition** *(PRIORITY: CRITICAL)*
+**Business Value**: Seamless transition từ current implementation sang calendar structure  
+**Description**: Migrate existing entries, update data models, và maintain data integrity during transition
 
-#### **EPIC-4: Conversational AI Companion**
-**Business Value**: Personalized insights và guidance  
-**Description**: Chat interface để dialogue với AI về personal experiences và receive tailored suggestions  
+#### **EPIC-4: AI Knowledge Processing** *(PRIORITY: MEDIUM - Future Phase)*
+**Business Value**: Transform date-based entries thành actionable insights  
+**Description**: AI analysis với date-aware connections, temporal patterns, và knowledge graph generation
 
-#### **EPIC-5: Privacy & Data Control**
+#### **EPIC-5: Advanced Calendar Features** *(PRIORITY: LOW)*
+**Business Value**: Enhanced usability và power user features  
+**Description**: Search across dates, content indicators, bulk operations, và calendar customization
+
+#### **EPIC-6: Privacy & Data Control** *(PRIORITY: HIGH)*
 **Business Value**: User trust và data sovereignty  
-**Description**: Complete control over personal data với local storage, encryption, và optional backup options
-
-#### **EPIC-6: Voice Integration** *(Future Release)*
-**Business Value**: Accessibility và convenience  
-**Description**: Voice-to-text entry creation và voice conversations với AI
+**Description**: Maintain encryption, local storage, và backup systems trong calendar architecture
 
 ### 3.2 Technical Constraints & Assumptions
 
