@@ -1,6 +1,37 @@
 import SwiftUI
 import SwiftData
 
+enum SearchPeriod: String, CaseIterable {
+    case allTime = "All Time"
+    case thisMonth = "This Month"
+    case lastThreeMonths = "Last 3 Months"
+    case thisYear = "This Year"
+    case lastYear = "Last Year"
+    
+    var dateRange: (start: Date?, end: Date?) {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        switch self {
+        case .allTime:
+            return (nil, nil)
+        case .thisMonth:
+            let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start
+            return (startOfMonth, now)
+        case .lastThreeMonths:
+            let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: now)
+            return (threeMonthsAgo, now)
+        case .thisYear:
+            let startOfYear = calendar.dateInterval(of: .year, for: now)?.start
+            return (startOfYear, now)
+        case .lastYear:
+            let startOfLastYear = calendar.date(byAdding: .year, value: -1, to: calendar.dateInterval(of: .year, for: now)?.start ?? now)
+            let endOfLastYear = calendar.date(byAdding: .day, value: -1, to: calendar.dateInterval(of: .year, for: now)?.start ?? now)
+            return (startOfLastYear, endOfLastYear)
+        }
+    }
+}
+
 public struct CalendarView: View {
     @Environment(DataService.self) private var dataService
     @Query(sort: \Entry.createdAt, order: .reverse) private var entries: [Entry]
@@ -10,6 +41,12 @@ public struct CalendarView: View {
     @State private var showingDateEntry = false
     @State private var showingYearView = false
     @State private var showingTimeTravelControls = false
+    @State private var showingDatePicker = false
+    @State private var datePickerSelection = Date()
+    @State private var showingTemporalSearch = false
+    @State private var searchText = ""
+    @State private var searchResults: [Entry] = []
+    @State private var selectedSearchPeriod: SearchPeriod = .allTime
     
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
@@ -45,8 +82,34 @@ public struct CalendarView: View {
             }
             .navigationTitle("Calendar")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        showingTemporalSearch = true
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.blue)
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        datePickerSelection = currentMonth
+                        showingDatePicker = true
+                    }) {
+                        Image(systemName: "calendar")
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
             .sheet(isPresented: $showingDateEntry) {
                 DateEntryView(selectedDate: selectedDate)
+            }
+            .sheet(isPresented: $showingDatePicker) {
+                datePickerView
+            }
+            .sheet(isPresented: $showingTemporalSearch) {
+                temporalSearchView
             }
         }
     }
@@ -342,6 +405,316 @@ public struct CalendarView: View {
             showingTimeTravelControls = false
         }
     }
+    
+    // MARK: - Date Picker View
+    
+    private var datePickerView: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                // Header
+                VStack(spacing: 8) {
+                    Text("Jump to Date")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    Text("Select any date to quickly navigate")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top)
+                
+                // Date Picker
+                DatePicker(
+                    "Select Date",
+                    selection: $datePickerSelection,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .padding(.horizontal)
+                
+                // Recent Dates Section
+                if !recentDates.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Recent Dates")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: 12) {
+                            ForEach(recentDates, id: \.self) { date in
+                                Button(action: {
+                                    datePickerSelection = date
+                                    jumpToDate(date)
+                                }) {
+                                    VStack(spacing: 4) {
+                                        Text(dateFormatter.string(from: date))
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        
+                                        if hasEntryOnDate(date) {
+                                            Circle()
+                                                .fill(Color.blue)
+                                                .frame(width: 6, height: 6)
+                                        }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                
+                Spacer()
+                
+                // Jump Button
+                Button(action: {
+                    jumpToDate(datePickerSelection)
+                }) {
+                    Text("Jump to Date")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showingDatePicker = false
+                    }
+                }
+            }
+        }
+    }
+    
+    private var temporalSearchView: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                // Header
+                VStack(spacing: 8) {
+                    Text("Temporal Search")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                    
+                    Text("Search entries based on time periods")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.top)
+                
+                // Search Text Field
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Search Content")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    TextField("Enter search terms...", text: $searchText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onSubmit {
+                            performTemporalSearch()
+                        }
+                }
+                .padding(.horizontal)
+                
+                // Time Period Filters
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Time Period")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 12) {
+                        ForEach(SearchPeriod.allCases, id: \.self) { period in
+                            Button(action: {
+                                selectedSearchPeriod = period
+                                performTemporalSearch()
+                            }) {
+                                Text(period.rawValue)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(selectedSearchPeriod == period ? .white : .primary)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(selectedSearchPeriod == period ? Color.blue : Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                
+                // Search Results
+                if !searchResults.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Search Results (\(searchResults.count))")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                        
+                        ScrollView {
+                            LazyVStack(spacing: 8) {
+                                ForEach(searchResults, id: \.id) { entry in
+                                    SearchResultRow(entry: entry) {
+                                        // Navigate to entry date
+                                        jumpToEntryDate(entry)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                } else if !searchText.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary)
+                        
+                        Text("No results found")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Try adjusting your search terms or time period")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                }
+                
+                Spacer()
+                
+                // Clear Search Button
+                if !searchText.isEmpty || !searchResults.isEmpty {
+                    Button(action: {
+                        clearSearch()
+                    }) {
+                        Text("Clear Search")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
+                }
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showingTemporalSearch = false
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Search") {
+                        performTemporalSearch()
+                    }
+                    .disabled(searchText.isEmpty)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Date Picker Helper Functions
+    
+    private var recentDates: [Date] {
+        // Get dates with entries from the last 30 days
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        let datesWithEntries = entries
+            .compactMap { entry in
+                calendar.dateInterval(of: .day, for: entry.createdAt)?.start
+            }
+            .filter { $0 >= thirtyDaysAgo }
+            .sorted(by: { $0 > $1 })
+        
+        // Remove duplicates and take first 6
+        let uniqueDates = Array(Set(datesWithEntries)).sorted(by: { $0 > $1 })
+        return Array(uniqueDates.prefix(6))
+    }
+    
+    private func hasEntryOnDate(_ date: Date) -> Bool {
+        let dayStart = calendar.startOfDay(for: date)
+        let dayEnd = calendar.date(byAdding: .day, value: 1, to: dayStart) ?? dayStart
+        
+        return entries.contains { entry in
+            entry.createdAt >= dayStart && entry.createdAt < dayEnd
+        }
+    }
+    
+    private func jumpToDate(_ date: Date) {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = date
+            selectedDate = date
+        }
+        showingDatePicker = false
+    }
+    
+    // MARK: - Temporal Search Helper Functions
+    
+    private func performTemporalSearch() {
+        guard !searchText.isEmpty else {
+            searchResults = []
+            return
+        }
+        
+        let dateRange = selectedSearchPeriod.dateRange
+        
+        // Filter entries based on search text and time period
+        let filteredEntries = entries.filter { entry in
+            // Check if entry content contains search text (case insensitive)
+            let contentMatches = entry.content.localizedCaseInsensitiveContains(searchText)
+            
+            // Check if entry falls within selected time period
+            let dateMatches: Bool
+            if let startDate = dateRange.start, let endDate = dateRange.end {
+                dateMatches = entry.createdAt >= startDate && entry.createdAt <= endDate
+            } else if let startDate = dateRange.start {
+                dateMatches = entry.createdAt >= startDate
+            } else if let endDate = dateRange.end {
+                dateMatches = entry.createdAt <= endDate
+            } else {
+                dateMatches = true // All time
+            }
+            
+            return contentMatches && dateMatches
+        }
+        
+        searchResults = filteredEntries.sorted { $0.createdAt > $1.createdAt }
+    }
+    
+    private func jumpToEntryDate(_ entry: Entry) {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = entry.createdAt
+            selectedDate = entry.createdAt
+        }
+        showingTemporalSearch = false
+    }
+    
+    private func clearSearch() {
+        searchText = ""
+        searchResults = []
+        selectedSearchPeriod = .allTime
+    }
 }
 
 struct CalendarDayView: View {
@@ -422,6 +795,46 @@ struct CalendarDayView: View {
                     .accessibilityHidden(true)
             }
         }
+    }
+}
+
+struct SearchResultRow: View {
+    let entry: Entry
+    let onTap: () -> Void
+    
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(dateFormatter.string(from: entry.createdAt))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text(entry.content)
+                    .font(.body)
+                    .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(3)
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(8)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

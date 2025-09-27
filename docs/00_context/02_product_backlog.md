@@ -338,17 +338,19 @@
 - **Dependencies**: US-030
 - **Status**: ✅ **Completed September 27, 2025** - Long press time travel controls implemented
 
-**US-032: Date Picker Quick Jump** *(NEW)*
+**US-032: Date Picker Quick Jump** ✅ **COMPLETED**
 - **Story Points**: 3 | **Priority**: Medium | **Sprint**: 7
 - **Description**: Là người dùng, tôi muốn date picker để jump to any specific date quickly
-- **Acceptance Criteria**: iOS DatePicker integration, smooth navigation, recent dates suggestions
+- **Acceptance Criteria**: ✅ iOS DatePicker integration, smooth navigation, recent dates suggestions
 - **Dependencies**: US-025
+- **Status**: ✅ **Completed September 27, 2025** - iOS native DatePicker integrated với calendar
 
-**US-033: Temporal Search** *(NEW)*
+**US-033: Temporal Search** ✅ **COMPLETED**
 - **Story Points**: 2 | **Priority**: Low | **Sprint**: 7
 - **Description**: Là người dùng, tôi muốn search content trong specific date ranges
-- **Acceptance Criteria**: Date range picker, search filtering, results với date context
+- **Acceptance Criteria**: ✅ Date range filters, search results với calendar integration, clear UX
 - **Dependencies**: US-032
+- **Status**: ✅ **Completed September 27, 2025** - Advanced temporal search với 5 time period filters
 
 ***
 
@@ -440,10 +442,10 @@
 ### **Phase 2: Advanced AI Features (Sprint 4)** ✅ **COMPLETED**
 - **Sprint 4**: ✅ US-010, US-011, US-012 (AI analysis persistence, knowledge graph, batch processing)
 
-### **Phase 3: Calendar Architecture Transition (Sprints 5-7)** ✅ **SPRINT 6 COMPLETE**
+### **Phase 3: Calendar Architecture Transition (Sprints 5-7)** ✅ **SPRINT 7 COMPLETE**
 - **Sprint 5**: ✅ US-034, US-035, US-025, US-026, US-028 (Data migration + Calendar foundation)
 - **Sprint 6**: ✅ US-027, US-029, US-030, US-031 (Year view + Time travel features)  
-- **Sprint 7**: US-032, US-033 (Date picker + Temporal search)
+- **Sprint 7**: ✅ US-032, US-033 (Date picker + Temporal search) - **COMPLETED September 27, 2025**
 
 ### **Phase 4: Future AI Integration (Sprints 8+)** *(Postponed)*
 - **Sprint 8+**: Conversational AI (US-014, US-015) - *Moved to future phase*
