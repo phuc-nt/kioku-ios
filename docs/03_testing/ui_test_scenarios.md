@@ -2,10 +2,10 @@
 ## Kioku Personal Journal iOS App
 
 **Created:** September 25, 2025  
-**Updated:** September 26, 2025  
-**Sprint:** Sprint 4 - Advanced AI Features  
+**Updated:** September 27, 2025  
+**Sprint:** Sprint 5 - Calendar Architecture Transition  
 **User Story:** US-006: UI Testing Foundation với XcodeBuildMCP  
-**Test Coverage:** US-001 through US-012 (Complete Sprint 1-4 Coverage)  
+**Test Coverage:** US-001 through US-035 (Complete Sprint 1-5 Coverage)  
 
 ---
 
@@ -706,9 +706,417 @@ func runSprint4ComprehensiveTests() {
 
 ---
 
-**Test Implementation Status:** 🔄 **UPDATED FOR SPRINT 4**  
-**Sprint 1-3 test scenarios verified and maintained**  
-**Sprint 4 test scenarios added and documented**  
-**Complete coverage for US-001 through US-012**  
-**XcodeBuildMCP automation expanded for AI features**  
-**Ready for comprehensive Sprint 4 testing execution**
+---
+
+## Test Scenario 11: Calendar Month View (US-025) - Sprint 5
+
+### Test Case 11.1: Calendar Display and Navigation
+**Objective:** Verify Apple Calendar-style month view functionality
+**Dependencies:** Sprint 5 calendar architecture implementation
+
+**Test Steps:**
+1. Launch app and verify calendar view is primary interface
+2. Verify current month displays (September 2025)
+3. Check month/year header formatting
+4. Test previous month navigation (left arrow)
+5. Test next month navigation (right arrow)
+6. Verify days of week header displays correctly
+7. Check date grid layout and alignment
+
+**Expected Results:**
+- ✅ Calendar view loads as main interface (not list view)
+- ✅ Current month and year displayed correctly
+- ✅ Month navigation arrows functional
+- ✅ 7-column grid layout properly aligned
+- ✅ Days of week header shows Sun-Sat
+- ✅ Today's date highlighted with blue border
+- ✅ Smooth transition animations between months
+
+**XcodeBuildMCP Commands:**
+```
+1. build_run_sim(workspacePath: "Kioku.xcworkspace", scheme: "Kioku", simulatorName: "iPhone 16")
+2. screenshot() - Capture initial calendar view
+3. describe_ui() - Get navigation arrow coordinates
+4. tap(x: chevron_left_x, y: chevron_left_y) - Navigate to previous month
+5. screenshot() - Verify month changed to August 2025
+6. tap(x: chevron_right_x, y: chevron_right_y) - Return to September
+7. tap(x: chevron_right_x, y: chevron_right_y) - Navigate to October
+8. screenshot() - Verify month changed to October 2025
+```
+
+### Test Case 11.2: Content Indicators
+**Objective:** Test content dots display on dates with entries
+
+**Test Steps:**
+1. Start with calendar view
+2. Verify dates with existing entries show blue dots
+3. Create new entry for empty date
+4. Return to calendar and verify new dot appears
+5. Edit existing entry and verify dot persists
+6. Check visual consistency of content indicators
+
+**Expected Results:**
+- ✅ Blue dots visible on dates with journal entries
+- ✅ Dots appear immediately after creating new entries
+- ✅ Dots persist across app sessions
+- ✅ No dots on dates without entries
+- ✅ Consistent dot size and positioning
+
+### Test Case 11.3: Calendar Responsiveness
+**Objective:** Test calendar performance and UI responsiveness
+
+**Test Steps:**
+1. Test rapid month navigation (multiple quick taps)
+2. Verify calendar renders correctly on different screen orientations
+3. Test with large datasets (50+ entries across months)
+4. Check memory usage during navigation
+5. Test calendar scrolling performance
+
+**Expected Results:**
+- ✅ No lag during rapid navigation
+- ✅ Calendar adapts to screen orientation changes
+- ✅ Performance maintained with large datasets
+- ✅ Memory usage remains stable
+- ✅ Smooth user interactions
+
+---
+
+## Test Scenario 12: Date Selection & Entry Access (US-026) - Sprint 5
+
+### Test Case 12.1: New Entry Creation
+**Objective:** Test creating new entries for empty dates
+
+**Test Steps:**
+1. Navigate to calendar view
+2. Tap on empty date (no content dot)
+3. Verify DateEntryView opens with "New Entry" title
+4. Check date formatting in entry header
+5. Type test content in text editor
+6. Tap Save button
+7. Verify return to calendar with new content dot
+
+**Expected Results:**
+- ✅ Tap gesture opens DateEntryView
+- ✅ Title shows "New Entry" for empty dates
+- ✅ Date displayed in full format (e.g., "Saturday, 27 September 2025")
+- ✅ Text editor focused and ready for input
+- ✅ Save button enabled when content exists
+- ✅ Entry saves and calendar updates with content dot
+
+**XcodeBuildMCP Commands:**
+```
+1. describe_ui() - Get calendar date coordinates
+2. tap(x: empty_date_x, y: empty_date_y) - Tap empty date
+3. screenshot() - Capture DateEntryView
+4. tap(x: text_editor_x, y: text_editor_y) - Focus text editor
+5. type_text("New calendar entry test content")
+6. screenshot() - Verify content entered
+7. tap(x: save_button_x, y: save_button_y) - Save entry
+8. screenshot() - Verify return to calendar with content dot
+```
+
+### Test Case 12.2: Existing Entry Editing
+**Objective:** Test editing existing entries from calendar
+
+**Test Steps:**
+1. From calendar view, tap on date with content dot
+2. Verify DateEntryView opens with "Edit Entry" title
+3. Check existing content loads in text editor
+4. Modify content and save
+5. Verify changes persist
+6. Test cancel functionality (no changes saved)
+
+**Expected Results:**
+- ✅ Tap on content dot opens edit mode
+- ✅ Title shows "Edit Entry" for existing entries
+- ✅ Existing content displayed in text editor
+- ✅ Content modifications save correctly
+- ✅ Cancel button discards unsaved changes
+- ✅ Save button behavior consistent
+
+### Test Case 12.3: Date-Specific Entry Association
+**Objective:** Verify entries are correctly associated with specific dates
+
+**Test Steps:**
+1. Create entries for multiple different dates
+2. Navigate between months
+3. Verify each entry appears only on its assigned date
+4. Test date boundaries (end of month, year changes)
+5. Check entry persistence across app restarts
+
+**Expected Results:**
+- ✅ Each entry associated with correct date
+- ✅ No entries appear on wrong dates
+- ✅ Date associations persist across sessions
+- ✅ Month/year boundaries handled correctly
+- ✅ Data integrity maintained
+
+---
+
+## Test Scenario 13: One Entry Per Day Constraint (US-028) - Sprint 5
+
+### Test Case 13.1: Entry Creation Constraint
+**Objective:** Verify one entry per day constraint enforcement
+
+**Test Steps:**
+1. Create entry for specific date
+2. Attempt to create another entry for same date
+3. Verify edit mode opens instead of new entry
+4. Check database constraint prevents duplicates
+5. Test constraint across app sessions
+
+**Expected Results:**
+- ✅ Second tap on same date opens edit mode
+- ✅ No duplicate entries created for same date
+- ✅ Database enforces unique date constraint
+- ✅ Constraint works across app restarts
+- ✅ User experience clearly indicates edit vs create
+
+**XcodeBuildMCP Commands:**
+```
+1. tap(x: target_date_x, y: target_date_y) - Create first entry
+2. type_text("First entry for this date")
+3. tap(x: save_button_x, y: save_button_y) - Save
+4. tap(x: target_date_x, y: target_date_y) - Tap same date again
+5. screenshot() - Verify "Edit Entry" title appears
+6. screenshot() - Verify existing content loads
+```
+
+### Test Case 13.2: Edit Mode Functionality
+**Objective:** Test edit mode behavior for existing entries
+
+**Test Steps:**
+1. Open existing entry in edit mode
+2. Verify all content is editable
+3. Test content append functionality
+4. Test content replacement
+5. Verify save updates existing entry (no new entry created)
+
+**Expected Results:**
+- ✅ Edit mode allows full content modification
+- ✅ Can append to existing content
+- ✅ Can replace existing content entirely
+- ✅ Save updates existing entry
+- ✅ No duplicate entries created during editing
+
+### Test Case 13.3: UI State Management
+**Objective:** Test UI state indicators for create vs edit modes
+
+**Test Steps:**
+1. Compare UI between new entry and edit entry views
+2. Verify title differences ("New Entry" vs "Edit Entry")
+3. Check button behaviors in both modes
+4. Test navigation consistency
+5. Verify visual cues for users
+
+**Expected Results:**
+- ✅ Clear visual distinction between modes
+- ✅ Appropriate titles displayed
+- ✅ Consistent button behaviors
+- ✅ Intuitive user experience
+- ✅ No confusion between create/edit modes
+
+---
+
+## Test Scenario 14: Legacy Data Handling & Migration (US-034, US-035) - Sprint 5
+
+### Test Case 14.1: Migration Detection
+**Objective:** Test migration system detection and trigger
+
+**Test Steps:**
+1. Start with legacy entries (pre-calendar architecture)
+2. Launch app and verify migration banner appears
+3. Check migration detection logic
+4. Test "Start Migration" button functionality
+5. Verify MigrationFlowView launches correctly
+
+**Expected Results:**
+- ✅ Migration banner displayed when legacy data exists
+- ✅ Clear migration messaging shown to user
+- ✅ "Start Migration" button launches migration flow
+- ✅ Migration detection accurate
+- ✅ No migration prompt when data already migrated
+
+**XcodeBuildMCP Commands:**
+```
+1. [Setup legacy test data]
+2. build_run_sim() - Launch app
+3. screenshot() - Capture migration banner
+4. describe_ui() - Get migration button coordinates
+5. tap(x: start_migration_x, y: start_migration_y) - Start migration
+6. screenshot() - Capture migration flow view
+```
+
+### Test Case 14.2: Migration Analysis Phase
+**Objective:** Test migration analysis and conflict detection
+
+**Test Steps:**
+1. Start migration with test data containing conflicts
+2. Verify analysis phase displays progress
+3. Check conflict detection accuracy
+4. Verify estimated time calculation
+5. Test analysis results display
+
+**Expected Results:**
+- ✅ Analysis phase shows clear progress
+- ✅ Conflicts detected accurately
+- ✅ Analysis results displayed with proper counts
+- ✅ Time estimation reasonable
+- ✅ User can proceed to resolution
+
+### Test Case 14.3: Conflict Resolution UI
+**Objective:** Test conflict resolution interface and functionality
+
+**Test Steps:**
+1. Proceed to conflict resolution phase
+2. Verify conflict list displays correctly
+3. Test merge strategy selection
+4. Use preview functionality for merge options
+5. Complete conflict resolution process
+
+**Expected Results:**
+- ✅ Conflicts listed with clear date information
+- ✅ Multiple merge strategies available
+- ✅ Preview functionality works correctly
+- ✅ User choices saved and applied
+- ✅ Resolution process completes successfully
+
+### Test Case 14.4: Migration Completion
+**Objective:** Test migration completion and data validation
+
+**Test Steps:**
+1. Complete full migration process
+2. Verify success message displayed
+3. Check all entries migrated correctly
+4. Verify calendar view shows migrated entries
+5. Test post-migration data integrity
+
+**Expected Results:**
+- ✅ Migration completes successfully
+- ✅ Success message with statistics shown
+- ✅ All entries accessible in calendar view
+- ✅ No data loss during migration
+- ✅ Calendar architecture fully functional
+
+---
+
+## Test Scenario 15: Sprint 5 Integration Tests
+
+### Test Case 15.1: Complete Calendar Workflow
+**Objective:** Test end-to-end calendar-based journal workflow
+
+**Test Steps:**
+1. Launch app with calendar architecture
+2. Navigate between months
+3. Create entries for multiple dates
+4. Edit existing entries
+5. Verify one-entry-per-day constraint
+6. Test calendar navigation with content
+7. Verify all data persists correctly
+
+**Expected Results:**
+- ✅ Smooth workflow from calendar navigation to entry management
+- ✅ All calendar features work together seamlessly
+- ✅ Data consistency maintained throughout
+- ✅ Performance remains good with calendar operations
+- ✅ User experience intuitive and efficient
+
+**XcodeBuildMCP Commands:**
+```
+1. build_run_sim() - Launch app
+2. screenshot() - Capture initial calendar state
+3. [Navigate to previous/next months]
+4. [Create entries for various dates]
+5. [Test edit functionality]
+6. [Verify constraint enforcement]
+7. screenshot() - Capture final state
+```
+
+### Test Case 15.2: Calendar Performance Testing
+**Objective:** Test calendar performance with large datasets
+
+**Test Steps:**
+1. Create entries spanning multiple months/years
+2. Test calendar navigation performance
+3. Verify content dot rendering speed
+4. Check memory usage during navigation
+5. Test rapid month switching
+
+**Expected Results:**
+- ✅ Calendar renders quickly regardless of data size
+- ✅ Content dots appear promptly
+- ✅ Month navigation remains smooth
+- ✅ Memory usage stays reasonable
+- ✅ No performance degradation over time
+
+### Test Case 15.3: Architecture Transition Validation
+**Objective:** Verify successful transition from list-based to calendar-based architecture
+
+**Test Steps:**
+1. Verify calendar view is primary interface
+2. Confirm list-based UI components removed
+3. Test that all functionality accessible via calendar
+4. Verify data model changes working correctly
+5. Check encryption still functioning transparently
+
+**Expected Results:**
+- ✅ Calendar interface is primary view
+- ✅ Old list-based UI no longer accessible
+- ✅ All features available through calendar navigation
+- ✅ Data model migration successful
+- ✅ Encryption functionality preserved
+
+---
+
+## Sprint 5 Automation Implementation
+
+### Extended XcodeBuildMCP Test Script Structure
+```swift
+// Complete Sprint 5 Test Automation
+func runSprint5ComprehensiveTests() {
+    // Setup
+    let simulator = "iPhone 16"
+    build_run_sim(workspacePath: "Kioku.xcworkspace", scheme: "Kioku", simulatorName: simulator)
+    
+    // Sprint 1-4 Regression Tests
+    testBasicFunctionality()
+    testEntryManagement()
+    testEncryption()
+    testAIFeatures()
+    
+    // Sprint 5 Calendar Architecture Tests
+    testCalendarMonthView()
+    testDateSelectionAndEntryAccess()
+    testOneEntryPerDayConstraint()
+    testLegacyDataHandling()
+    testMigrationFlow()
+    
+    // Integration Tests
+    testCompleteCalendarWorkflow()
+    testCalendarPerformance()
+    testArchitectureTransition()
+    
+    // Cleanup and Reporting
+    generateSprint5Report()
+    cleanupTestData()
+}
+```
+
+### Performance Benchmarks - Sprint 5
+- **Calendar Rendering:** <1 second for any month view
+- **Date Selection:** <500ms from tap to entry view
+- **Entry Creation/Editing:** <2 seconds save operation
+- **Month Navigation:** <300ms transition animation
+- **Migration Process:** <30 seconds for 100+ entries
+- **Content Dots:** <200ms render time for 31-day month
+
+---
+
+**Test Implementation Status:** 🔄 **UPDATED FOR SPRINT 5**  
+**Sprint 1-4 test scenarios verified and maintained**  
+**Sprint 5 test scenarios added and documented**  
+**Complete coverage for US-001 through US-035**  
+**XcodeBuildMCP automation expanded for calendar architecture**  
+**Calendar-based testing workflows implemented**  
+**Migration testing scenarios comprehensive**  
+**Ready for Sprint 5 complete testing execution**
