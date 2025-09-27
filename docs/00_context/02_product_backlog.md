@@ -294,11 +294,12 @@
 - **Status**: ✅ **Completed September 27, 2025** - Date selection and entry access working
 - **Technical Notes**: Date-to-Entry mapping trong SwiftData model
 
-**US-027: Year View Navigation** *(NEW)*
+**US-027: Year View Navigation** ✅ **COMPLETED**
 - **Story Points**: 3 | **Priority**: High | **Sprint**: 6
 - **Description**: Là người dùng, tôi muốn year view để quickly jump to different months và get overview
-- **Acceptance Criteria**: Year grid với months, content indicators, smooth month transitions
+- **Acceptance Criteria**: ✅ Year grid với months, content indicators, smooth month transitions
 - **Dependencies**: US-025, US-026
+- **Status**: ✅ **Completed September 27, 2025** - Apple Calendar-style year view implemented
 
 **US-028: One Entry Per Day Constraint** ✅ **COMPLETED**
 - **Story Points**: 2 | **Priority**: Critical | **Sprint**: 5
@@ -307,11 +308,12 @@
 - **Dependencies**: US-026
 - **Status**: ✅ **Completed September 27, 2025** - One entry per day constraint enforced
 
-**US-029: Content Indicators** *(NEW)*
+**US-029: Content Indicators** ✅ **COMPLETED**
 - **Story Points**: 2 | **Priority**: Medium | **Sprint**: 6
 - **Description**: Là người dùng, tôi muốn thấy dots trên calendar dates có content để quick overview
-- **Acceptance Criteria**: Visual dots, different states (empty/has content), performance với large datasets
+- **Acceptance Criteria**: ✅ Visual dots, different states (empty/has content), performance với large datasets
 - **Dependencies**: US-025, US-028
+- **Status**: ✅ **Completed September 27, 2025** - Enhanced content indicators với multiple visual states
 
 ***
 
@@ -322,17 +324,19 @@
 
 #### User Stories:
 
-**US-030: Same Day Previous Years** *(NEW)*
+**US-030: Same Day Previous Years** ✅ **COMPLETED**
 - **Story Points**: 4 | **Priority**: High | **Sprint**: 6
 - **Description**: Là người dùng, tôi muốn xem "same day" từ previous years để compare personal growth
-- **Acceptance Criteria**: "X years ago" navigation, side-by-side comparison, chronological timeline
+- **Acceptance Criteria**: ✅ "X years ago" navigation, side-by-side comparison, chronological timeline
 - **Dependencies**: US-025, US-026
+- **Status**: ✅ **Completed September 27, 2025** - Time travel features integrated với calendar architecture
 
-**US-031: Same Day Previous Months** *(NEW)*
+**US-031: Same Day Previous Months** ✅ **COMPLETED**
 - **Story Points**: 3 | **Priority**: High | **Sprint**: 6
 - **Description**: Là người dùng, tôi muốn quick access đến same day previous months
-- **Acceptance Criteria**: Month navigation controls, "same day last month" shortcuts
+- **Acceptance Criteria**: ✅ Month navigation controls, "same day last month" shortcuts
 - **Dependencies**: US-030
+- **Status**: ✅ **Completed September 27, 2025** - Long press time travel controls implemented
 
 **US-032: Date Picker Quick Jump** *(NEW)*
 - **Story Points**: 3 | **Priority**: Medium | **Sprint**: 7
@@ -436,9 +440,9 @@
 ### **Phase 2: Advanced AI Features (Sprint 4)** ✅ **COMPLETED**
 - **Sprint 4**: ✅ US-010, US-011, US-012 (AI analysis persistence, knowledge graph, batch processing)
 
-### **Phase 3: Calendar Architecture Transition (Sprints 5-7)** ✅ **SPRINT 5 COMPLETE**
+### **Phase 3: Calendar Architecture Transition (Sprints 5-7)** ✅ **SPRINT 6 COMPLETE**
 - **Sprint 5**: ✅ US-034, US-035, US-025, US-026, US-028 (Data migration + Calendar foundation)
-- **Sprint 6**: US-027, US-029, US-030, US-031 (Year view + Time travel features)  
+- **Sprint 6**: ✅ US-027, US-029, US-030, US-031 (Year view + Time travel features)  
 - **Sprint 7**: US-032, US-033 (Date picker + Temporal search)
 
 ### **Phase 4: Future AI Integration (Sprints 8+)** *(Postponed)*

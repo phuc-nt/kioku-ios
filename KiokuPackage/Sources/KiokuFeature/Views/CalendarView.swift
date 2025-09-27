@@ -8,6 +8,8 @@ public struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var currentMonth = Date()
     @State private var showingDateEntry = false
+    @State private var showingYearView = false
+    @State private var showingTimeTravelControls = false
     
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
@@ -21,16 +23,25 @@ public struct CalendarView: View {
     public var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Month header with navigation
-                monthHeaderView
-                
-                // Days of week header
-                daysOfWeekHeader
-                
-                // Calendar grid
-                calendarGrid
-                
-                Spacer()
+                if showingYearView {
+                    yearView
+                } else {
+                    // Month header with navigation
+                    monthHeaderView
+                    
+                    // Days of week header
+                    daysOfWeekHeader
+                    
+                    // Calendar grid
+                    calendarGrid
+                    
+                    // Time travel controls
+                    if showingTimeTravelControls {
+                        timeTravelControlsView
+                    }
+                    
+                    Spacer()
+                }
             }
             .navigationTitle("Calendar")
             .navigationBarTitleDisplayMode(.inline)
@@ -50,9 +61,16 @@ public struct CalendarView: View {
             
             Spacer()
             
-            Text(dateFormatter.string(from: currentMonth))
-                .font(.title2)
-                .fontWeight(.semibold)
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showingYearView = true
+                }
+            }) {
+                Text(dateFormatter.string(from: currentMonth))
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
             
             Spacer()
             
@@ -93,6 +111,9 @@ public struct CalendarView: View {
                     ) {
                         selectedDate = date
                         showingDateEntry = true
+                    } onLongPress: {
+                        selectedDate = date
+                        showingTimeTravelControls = true
                     }
                 } else {
                     Rectangle()
@@ -147,6 +168,180 @@ public struct CalendarView: View {
             currentMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
         }
     }
+    
+    // MARK: - Year View
+    
+    private var yearView: some View {
+        VStack(spacing: 0) {
+            yearHeaderView
+            yearGrid
+            Spacer()
+        }
+    }
+    
+    private var yearHeaderView: some View {
+        HStack {
+            Button(action: previousYear) {
+                Image(systemName: "chevron.left")
+                    .font(.title2)
+                    .foregroundColor(.accentColor)
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showingYearView = false
+                }
+            }) {
+                Text(yearFormatter.string(from: currentMonth))
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            
+            Spacer()
+            
+            Button(action: nextYear) {
+                Image(systemName: "chevron.right")
+                    .font(.title2)
+                    .foregroundColor(.accentColor)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+    }
+    
+    private var yearGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 16) {
+            ForEach(monthsInYear, id: \.self) { month in
+                YearMonthView(
+                    month: month,
+                    isCurrentMonth: calendar.isDate(month, equalTo: currentMonth, toGranularity: .month),
+                    hasEntries: hasEntries(for: month)
+                ) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        currentMonth = month
+                        showingYearView = false
+                    }
+                }
+            }
+        }
+        .padding()
+    }
+    
+    private var monthsInYear: [Date] {
+        let year = calendar.component(.year, from: currentMonth)
+        return (1...12).compactMap { month in
+            calendar.date(from: DateComponents(year: year, month: month))
+        }
+    }
+    
+    private var yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+    
+    private func hasEntries(for month: Date) -> Bool {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return false }
+        
+        return entries.contains { entry in
+            let entryDate = entry.date ?? entry.createdAt
+            return monthInterval.contains(entryDate)
+        }
+    }
+    
+    private func previousYear() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = calendar.date(byAdding: .year, value: -1, to: currentMonth) ?? currentMonth
+        }
+    }
+    
+    private func nextYear() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = calendar.date(byAdding: .year, value: 1, to: currentMonth) ?? currentMonth
+        }
+    }
+    
+    // MARK: - Time Travel Controls
+    
+    private var timeTravelControlsView: some View {
+        VStack(spacing: 16) {
+            // Header
+            HStack {
+                Text("Time Travel to \(dayFormatter.string(from: selectedDate))")
+                    .font(.headline)
+                    .foregroundColor(.accentColor)
+                
+                Spacer()
+                
+                Button("Done") {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showingTimeTravelControls = false
+                    }
+                }
+                .foregroundColor(.accentColor)
+            }
+            .padding(.horizontal)
+            
+            // Same day navigation options
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(sameDayPreviousMonths, id: \.self) { date in
+                        SameDayMonthCard(
+                            date: date,
+                            hasEntry: hasEntry(for: date),
+                            isCurrentMonth: calendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
+                        ) {
+                            navigateToSameDay(date)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .padding(.vertical)
+        .background(Color(.systemGray6))
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+    
+    private var dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d"
+        return formatter
+    }()
+    
+    private var sameDayPreviousMonths: [Date] {
+        let targetDay = calendar.component(.day, from: selectedDate)
+        let targetMonth = calendar.component(.month, from: selectedDate)
+        let targetYear = calendar.component(.year, from: selectedDate)
+        
+        var dates: [Date] = []
+        
+        // Get same day for the last 12 months (excluding current month)
+        for monthOffset in 1...12 {
+            if let previousMonth = calendar.date(byAdding: .month, value: -monthOffset, to: selectedDate) {
+                let previousYear = calendar.component(.year, from: previousMonth)
+                let previousMonthNumber = calendar.component(.month, from: previousMonth)
+                
+                // Create date for same day in previous month
+                if let sameDay = calendar.date(from: DateComponents(year: previousYear, month: previousMonthNumber, day: targetDay)) {
+                    dates.append(sameDay)
+                }
+            }
+        }
+        
+        return dates
+    }
+    
+    private func navigateToSameDay(_ date: Date) {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = date
+            selectedDate = date
+            showingTimeTravelControls = false
+        }
+    }
 }
 
 struct CalendarDayView: View {
@@ -156,6 +351,7 @@ struct CalendarDayView: View {
     let isCurrentMonth: Bool
     let hasEntry: Bool
     let onTap: () -> Void
+    let onLongPress: () -> Void
     
     private let calendar = Calendar.current
     
@@ -165,10 +361,8 @@ struct CalendarDayView: View {
                 .font(.system(size: 16, weight: isToday ? .bold : .medium))
                 .foregroundColor(textColor)
             
-            // Content indicator dot
-            Circle()
-                .fill(hasEntry ? Color.accentColor : Color.clear)
-                .frame(width: 6, height: 6)
+            // Enhanced content indicator
+            contentIndicator
         }
         .frame(height: 44)
         .frame(maxWidth: .infinity)
@@ -180,6 +374,9 @@ struct CalendarDayView: View {
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .onTapGesture {
             onTap()
+        }
+        .onLongPressGesture {
+            onLongPress()
         }
     }
     
@@ -202,6 +399,92 @@ struct CalendarDayView: View {
             return Color.clear
         }
     }
+    
+    private var contentIndicator: some View {
+        Group {
+            if hasEntry {
+                // Entry exists - blue dot
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 6, height: 6)
+                    .accessibilityLabel("Has journal entry")
+            } else if isToday {
+                // Today but no entry - subtle gray dot
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 4, height: 4)
+                    .accessibilityLabel("Today - no entry yet")
+            } else {
+                // No entry, not today - invisible spacer
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 4, height: 4)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+}
+
+struct YearMonthView: View {
+    let month: Date
+    let isCurrentMonth: Bool
+    let hasEntries: Bool
+    let onTap: () -> Void
+    
+    private let calendar = Calendar.current
+    private let monthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        return formatter
+    }()
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(monthFormatter.string(from: month))
+                .font(.headline)
+                .fontWeight(isCurrentMonth ? .bold : .medium)
+                .foregroundColor(isCurrentMonth ? .accentColor : .primary)
+            
+            // Enhanced content indicator for year view
+            yearContentIndicator
+        }
+        .frame(width: 80, height: 60)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isCurrentMonth ? Color.accentColor.opacity(0.1) : Color(.systemGray6))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isCurrentMonth ? Color.accentColor : Color.clear, lineWidth: 2)
+        )
+        .onTapGesture {
+            onTap()
+        }
+    }
+    
+    private var yearContentIndicator: some View {
+        Group {
+            if hasEntries {
+                // Month has entries - blue dot
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 8, height: 8)
+                    .accessibilityLabel("Month has journal entries")
+            } else if isCurrentMonth {
+                // Current month but no entries - subtle gray dot
+                Circle()
+                    .fill(Color.gray.opacity(0.4))
+                    .frame(width: 6, height: 6)
+                    .accessibilityLabel("Current month - no entries yet")
+            } else {
+                // No entries, not current month - very subtle placeholder
+                Circle()
+                    .fill(Color.gray.opacity(0.2))
+                    .frame(width: 4, height: 4)
+                    .accessibilityLabel("No entries this month")
+            }
+        }
+    }
 }
 
 // MARK: - Date Entry View
@@ -214,6 +497,7 @@ struct DateEntryView: View {
     let selectedDate: Date
     @State private var content = ""
     @State private var existingEntry: Entry?
+    @State private var showingTimeTravelView = false
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -247,6 +531,11 @@ struct DateEntryView: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(8)
                         .padding(.horizontal)
+                }
+                
+                // Time travel section
+                if !previousYearEntries.isEmpty {
+                    timeTravelSection
                 }
                 
                 Spacer()
@@ -298,6 +587,268 @@ struct DateEntryView: View {
             let entry = Entry(content: content, date: selectedDate)
             dataService.modelContext.insert(entry)
             try? dataService.modelContext.save()
+        }
+    }
+    
+    // MARK: - Time Travel Support
+    
+    private var previousYearEntries: [(Date, Entry)] {
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: selectedDate)
+        let currentMonth = calendar.component(.month, from: selectedDate)
+        let currentDay = calendar.component(.day, from: selectedDate)
+        
+        return allEntries.compactMap { entry in
+            let entryDate = entry.date ?? entry.createdAt
+            let entryYear = calendar.component(.year, from: entryDate)
+            let entryMonth = calendar.component(.month, from: entryDate)
+            let entryDay = calendar.component(.day, from: entryDate)
+            
+            // Same month and day, but different (previous) year
+            if entryMonth == currentMonth && entryDay == currentDay && entryYear < currentYear {
+                return (entryDate, entry)
+            }
+            return nil
+        }.sorted { $0.0 > $1.0 } // Most recent years first
+    }
+    
+    private var timeTravelSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "clock.arrow.circlepath")
+                    .foregroundColor(.accentColor)
+                Text("Same Day in Previous Years")
+                    .font(.headline)
+                    .foregroundColor(.accentColor)
+                
+                Spacer()
+                
+                Button(action: {
+                    showingTimeTravelView = true
+                }) {
+                    Text("View All")
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
+                }
+            }
+            .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(Array(previousYearEntries.prefix(3)), id: \.1.id) { (date, entry) in
+                        TimeTravelCardView(date: date, entry: entry)
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .sheet(isPresented: $showingTimeTravelView) {
+            TimeTravelDetailView(
+                selectedDate: selectedDate,
+                previousYearEntries: previousYearEntries
+            )
+        }
+    }
+}
+
+struct SameDayMonthCard: View {
+    let date: Date
+    let hasEntry: Bool
+    let isCurrentMonth: Bool
+    let onTap: () -> Void
+    
+    private let monthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM yyyy"
+        return formatter
+    }()
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(monthFormatter.string(from: date))
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(isCurrentMonth ? .accentColor : .primary)
+            
+            Circle()
+                .fill(hasEntry ? Color.accentColor : Color.gray.opacity(0.3))
+                .frame(width: 8, height: 8)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(isCurrentMonth ? Color.accentColor.opacity(0.1) : Color.white)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isCurrentMonth ? Color.accentColor : Color.gray.opacity(0.3), lineWidth: 1)
+        )
+        .onTapGesture {
+            onTap()
+        }
+    }
+}
+
+// MARK: - Time Travel Components
+
+struct TimeTravelCardView: View {
+    let date: Date
+    let entry: Entry
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(yearFormatter.string(from: date))
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.accentColor)
+                
+                Spacer()
+                
+                Text("\(Calendar.current.component(.year, from: Date()) - Calendar.current.component(.year, from: date)) years ago")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text(entry.content)
+                .font(.caption)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+        }
+        .padding(12)
+        .frame(width: 200)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
+
+struct TimeTravelDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+    let selectedDate: Date
+    let previousYearEntries: [(Date, Entry)]
+    
+    private let fullDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        return formatter
+    }()
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+    
+    var body: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Time Travel")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Text("Entries from \(fullDateFormatter.string(from: selectedDate))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                
+                if previousYearEntries.isEmpty {
+                    // Empty state
+                    VStack(spacing: 16) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .font(.system(size: 48))
+                            .foregroundColor(.secondary)
+                        
+                        Text("No entries from previous years")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Create more entries to see your journey through time!")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
+                } else {
+                    // Timeline view
+                    ScrollView {
+                        LazyVStack(spacing: 16) {
+                            ForEach(previousYearEntries, id: \.1.id) { (date, entry) in
+                                TimeTravelTimelineItemView(date: date, entry: entry, selectedDate: selectedDate)
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+            }
+            .navigationTitle("Same Day History")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct TimeTravelTimelineItemView: View {
+    let date: Date
+    let entry: Entry
+    let selectedDate: Date
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 16) {
+            // Timeline indicator
+            VStack(spacing: 4) {
+                Circle()
+                    .fill(Color.accentColor)
+                    .frame(width: 12, height: 12)
+                
+                Rectangle()
+                    .fill(Color.accentColor.opacity(0.3))
+                    .frame(width: 2)
+                    .frame(minHeight: 60)
+            }
+            
+            // Content
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text(yearFormatter.string(from: date))
+                        .font(.headline)
+                        .foregroundColor(.accentColor)
+                    
+                    Spacer()
+                    
+                    Text("\(Calendar.current.component(.year, from: selectedDate) - Calendar.current.component(.year, from: date)) years ago")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text(entry.content)
+                    .font(.body)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(16)
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
     }
 }

@@ -1112,11 +1112,387 @@ func runSprint5ComprehensiveTests() {
 
 ---
 
-**Test Implementation Status:** 🔄 **UPDATED FOR SPRINT 5**  
-**Sprint 1-4 test scenarios verified and maintained**  
-**Sprint 5 test scenarios added and documented**  
-**Complete coverage for US-001 through US-035**  
-**XcodeBuildMCP automation expanded for calendar architecture**  
-**Calendar-based testing workflows implemented**  
-**Migration testing scenarios comprehensive**  
-**Ready for Sprint 5 complete testing execution**
+---
+
+## Test Scenario 16: Year View Navigation (US-027) - Sprint 6
+
+### Test Case 16.1: Year View Display and Navigation
+**Objective:** Verify year view functionality and month selection
+
+**Test Steps:**
+1. From calendar month view, tap on month/year header
+2. Verify year view displays with 12-month grid
+3. Test year navigation arrows (previous/next year)
+4. Test month selection by tapping on month tiles
+5. Verify smooth transitions between views
+
+**Expected Results:**
+- ✅ Year view displays 12 months in 3x4 grid layout
+- ✅ Current month highlighted with blue border
+- ✅ Year navigation arrows functional (2024 ← 2025 → 2026)
+- ✅ Month taps navigate to detailed month view
+- ✅ Smooth animations between year and month views
+- ✅ Content indicators show months with entries
+
+**XcodeBuildMCP Commands:**
+```
+1. build_run_sim() - Launch app
+2. screenshot() - Capture initial month view
+3. describe_ui() - Get month header coordinates
+4. tap(x: month_header_x, y: month_header_y) - Open year view
+5. screenshot() - Capture year view
+6. tap(x: prev_year_x, y: prev_year_y) - Test year navigation
+7. screenshot() - Verify year changed
+8. tap(x: month_tile_x, y: month_tile_y) - Select month
+9. screenshot() - Verify return to month view
+```
+
+### Test Case 16.2: Year View Content Indicators
+**Objective:** Test content indicators in year view
+
+**Test Steps:**
+1. Navigate to year view
+2. Verify content indicators on months with entries
+3. Compare indicator states (has entries vs no entries)
+4. Test current month highlighting
+5. Verify indicator accessibility
+
+**Expected Results:**
+- ✅ Blue dots on months with journal entries
+- ✅ Gray dots on months without entries
+- ✅ Current month highlighted with border and special styling
+- ✅ Consistent indicator sizing and positioning
+- ✅ Accessibility labels for indicators
+
+### Test Case 16.3: Year View Performance
+**Objective:** Test year view performance and responsiveness
+
+**Test Steps:**
+1. Navigate rapidly between multiple years
+2. Test with large datasets spanning multiple years
+3. Verify memory usage during year navigation
+4. Test year view rendering speed
+5. Check smooth animations
+
+**Expected Results:**
+- ✅ Fast year navigation (<300ms per transition)
+- ✅ Smooth animations at 60fps
+- ✅ No lag with large datasets
+- ✅ Memory usage remains stable
+- ✅ Quick year view rendering (<500ms)
+
+---
+
+## Test Scenario 17: Enhanced Content Indicators (US-029) - Sprint 6
+
+### Test Case 17.1: Content Indicator States
+**Objective:** Test different content indicator states and visibility
+
+**Test Steps:**
+1. Navigate to calendar month view
+2. Observe dates with entries (blue dots)
+3. Check today's date without entry (subtle gray dot)
+4. Verify empty dates (no indicator)
+5. Test indicator consistency across views
+
+**Expected Results:**
+- ✅ Blue dots (6px) for dates with journal entries
+- ✅ Gray dots (4px) for today without entry
+- ✅ No indicators for empty dates
+- ✅ Consistent styling across month and year views
+- ✅ Accessibility support for all indicator states
+
+**XcodeBuildMCP Commands:**
+```
+1. screenshot() - Capture calendar with various indicator states
+2. tap(x: empty_date_x, y: empty_date_y) - Create entry
+3. screenshot() - Verify new indicator appears
+4. navigate to year view
+5. screenshot() - Verify indicators in year view
+```
+
+### Test Case 17.2: Indicator Accessibility
+**Objective:** Test accessibility features for content indicators
+
+**Test Steps:**
+1. Enable VoiceOver/accessibility features
+2. Navigate through calendar dates
+3. Verify accessibility labels for indicators
+4. Test with different indicator states
+5. Check accessibility in year view
+
+**Expected Results:**
+- ✅ "Has journal entry" label for entries
+- ✅ "Today - no entry yet" for today
+- ✅ "No entries this month" for year view
+- ✅ Clear distinction between states
+- ✅ Proper accessibility navigation
+
+### Test Case 17.3: Indicator Performance
+**Objective:** Test content indicator rendering performance
+
+**Test Steps:**
+1. Navigate to months with many entries
+2. Test rapid month switching
+3. Verify indicator rendering speed
+4. Check year view indicator performance
+5. Test with large datasets
+
+**Expected Results:**
+- ✅ Indicators render in <100ms
+- ✅ No lag during rapid navigation
+- ✅ Smooth performance with 100+ entries
+- ✅ Consistent rendering across views
+- ✅ No visual glitches or delays
+
+---
+
+## Test Scenario 18: Same Day Previous Years (US-030) - Sprint 6
+
+### Test Case 18.1: Time Travel Interface Display
+**Objective:** Test time travel section appearance in entry views
+
+**Test Steps:**
+1. Open entry for date with previous year entries
+2. Verify time travel section appears
+3. Check horizontal scroll of previous year cards
+4. Test "View All" button functionality
+5. Verify empty state when no previous entries
+
+**Expected Results:**
+- ✅ Time travel section displays when previous year entries exist
+- ✅ Horizontal scroll shows up to 3 cards initially
+- ✅ Cards show year, "X years ago", and content preview
+- ✅ "View All" opens detailed timeline view
+- ✅ Section hidden when no previous year entries
+
+**XcodeBuildMCP Commands:**
+```
+1. [Create test entries for previous years]
+2. tap(x: date_with_history_x, y: date_with_history_y) - Open entry
+3. screenshot() - Capture time travel section
+4. swipe(direction: horizontal) - Test horizontal scroll
+5. tap(x: view_all_x, y: view_all_y) - Open detailed view
+6. screenshot() - Capture timeline view
+```
+
+### Test Case 18.2: Timeline Detail View
+**Objective:** Test detailed timeline view functionality
+
+**Test Steps:**
+1. Open detailed time travel view
+2. Verify timeline layout with chronological order
+3. Test scrolling through multiple years
+4. Check timeline indicators and content display
+5. Test "Done" button to close view
+
+**Expected Results:**
+- ✅ Timeline shows entries in chronological order (newest first)
+- ✅ Timeline indicators (circles and lines) display correctly
+- ✅ Entry content displayed in full
+- ✅ Year and "X years ago" labels accurate
+- ✅ Smooth scrolling through long timelines
+- ✅ "Done" button closes view properly
+
+### Test Case 18.3: Time Travel Data Accuracy
+**Objective:** Test accuracy of same-day matching algorithm
+
+**Test Steps:**
+1. Create entries for September 27 across multiple years
+2. Open September 27, 2025 entry
+3. Verify only September 27 entries from previous years appear
+4. Test with leap year dates (February 29)
+5. Check edge cases (month/year boundaries)
+
+**Expected Results:**
+- ✅ Only same month/day entries displayed
+- ✅ Accurate year calculations ("X years ago")
+- ✅ Proper handling of leap years
+- ✅ Correct chronological sorting
+- ✅ No false matches from different dates
+
+---
+
+## Test Scenario 19: Same Day Previous Months (US-031) - Sprint 6
+
+### Test Case 19.1: Time Travel Controls Activation
+**Objective:** Test long press activation of time travel controls
+
+**Test Steps:**
+1. Long press on a calendar date
+2. Verify time travel controls appear at bottom
+3. Check "Time Travel to [Date]" header
+4. Test horizontal scroll of previous month cards
+5. Test "Done" button to close controls
+
+**Expected Results:**
+- ✅ Long press (1 second) triggers time travel controls
+- ✅ Controls slide up from bottom with animation
+- ✅ Header shows correct date (e.g., "Time Travel to September 27")
+- ✅ Horizontal scroll shows 12 previous months
+- ✅ "Done" button closes controls with animation
+
+**XcodeBuildMCP Commands:**
+```
+1. long_press(x: date_x, y: date_y, duration: 1000) - Trigger controls
+2. screenshot() - Capture time travel controls
+3. swipe(direction: horizontal) - Test month card scroll
+4. tap(x: done_x, y: done_y) - Close controls
+5. screenshot() - Verify controls closed
+```
+
+### Test Case 19.2: Previous Month Navigation
+**Objective:** Test navigation to same day in previous months
+
+**Test Steps:**
+1. Activate time travel controls for date
+2. Tap on previous month card (e.g., August 2025)
+3. Verify navigation to same date in August
+4. Check calendar updates correctly
+5. Test with various month combinations
+
+**Expected Results:**
+- ✅ Tap on month card navigates to same day
+- ✅ Calendar updates to show correct month/year
+- ✅ Selected date maintained (27th → 27th)
+- ✅ Smooth navigation animation
+- ✅ Time travel controls close automatically
+- ✅ Content indicators update for new month
+
+### Test Case 19.3: Month Card Content Indicators
+**Objective:** Test content indicators on month cards
+
+**Test Steps:**
+1. Activate time travel for date with varied history
+2. Verify month cards show content indicators
+3. Check different indicator states
+4. Test current month highlighting
+5. Verify indicator accuracy
+
+**Expected Results:**
+- ✅ Blue dots for months with entries on same date
+- ✅ Gray dots for months without entries
+- ✅ Current month card highlighted differently
+- ✅ Accurate content detection for each month
+- ✅ Consistent visual styling across cards
+
+---
+
+## Test Scenario 20: Sprint 6 Integration Tests
+
+### Test Case 20.1: Complete Time Travel Workflow
+**Objective:** Test end-to-end time travel functionality
+
+**Test Steps:**
+1. Navigate through year view to find target month
+2. Use calendar to select specific date
+3. Long press to activate time travel controls
+4. Navigate to previous month for same date
+5. Open entry view to see previous year entries
+6. Test full workflow integration
+
+**Expected Results:**
+- ✅ Seamless workflow across all time travel features
+- ✅ Year view → Month view → Time travel → Previous years integration
+- ✅ Data consistency maintained throughout navigation
+- ✅ Performance remains smooth across all operations
+- ✅ User experience intuitive and efficient
+
+**XcodeBuildMCP Commands:**
+```
+1. build_run_sim() - Fresh start
+2. [Navigate through complete workflow]
+3. [Test each time travel feature]
+4. [Verify data consistency]
+5. screenshot() - Document final state
+```
+
+### Test Case 20.2: Advanced Calendar Performance
+**Objective:** Test performance with advanced features enabled
+
+**Test Steps:**
+1. Test year view with multiple years of data
+2. Verify time travel with large datasets
+3. Check content indicators with 100+ entries
+4. Test rapid navigation between features
+5. Monitor memory and CPU usage
+
+**Expected Results:**
+- ✅ Year view renders quickly with large datasets
+- ✅ Time travel features responsive with many entries
+- ✅ Content indicators perform well at scale
+- ✅ Smooth transitions between all views
+- ✅ Memory usage remains stable
+- ✅ No performance degradation over time
+
+### Test Case 20.3: Time Travel Feature Integration
+**Objective:** Test integration between previous years and previous months
+
+**Test Steps:**
+1. Use long press time travel to navigate to previous month
+2. Open entry view to see previous year time travel
+3. Test switching between different time travel modes
+4. Verify data accuracy across all temporal views
+5. Check feature compatibility
+
+**Expected Results:**
+- ✅ Previous month and previous year features work together
+- ✅ No conflicts between different time travel modes
+- ✅ Data remains accurate across all temporal views
+- ✅ Consistent UI patterns across features
+- ✅ Intuitive user experience for all time travel features
+
+---
+
+## Sprint 6 Automation Implementation
+
+### Extended XcodeBuildMCP Test Script Structure
+```swift
+// Complete Sprint 6 Test Automation
+func runSprint6ComprehensiveTests() {
+    // Setup
+    let simulator = "iPhone 16"
+    build_run_sim(workspacePath: "Kioku.xcworkspace", scheme: "Kioku", simulatorName: simulator)
+    
+    // Sprint 1-5 Regression Tests
+    testBasicFunctionality()
+    testEntryManagement()
+    testEncryption()
+    testAIFeatures()
+    testCalendarFoundation()
+    
+    // Sprint 6 Advanced Calendar Features
+    testYearViewNavigation()
+    testEnhancedContentIndicators()
+    testSameDayPreviousYears()
+    testSameDayPreviousMonths()
+    
+    // Time Travel Integration Tests
+    testCompleteTimeTravelWorkflow()
+    testAdvancedCalendarPerformance()
+    testTimeTravelFeatureIntegration()
+    
+    // Cleanup and Reporting
+    generateSprint6Report()
+    cleanupTestData()
+}
+```
+
+### Performance Benchmarks - Sprint 6
+- **Year View Rendering:** <500ms for any year display
+- **Time Travel Controls:** <200ms activation on long press
+- **Previous Month Navigation:** <300ms same-day navigation
+- **Content Indicators:** <100ms render time for enhanced states
+- **Timeline View:** <1 second for 10+ year timeline
+- **Memory Usage:** <250MB peak during advanced features
+
+---
+
+**Test Implementation Status:** 🔄 **UPDATED FOR SPRINT 6**  
+**Sprint 1-5 test scenarios verified and maintained**  
+**Sprint 6 test scenarios added and documented**  
+**Complete coverage for US-027, US-029, US-030, US-031**  
+**XcodeBuildMCP automation expanded for time travel features**  
+**Year view and time travel testing workflows implemented**  
+**Advanced calendar feature testing comprehensive**  
+**Ready for Sprint 6 complete testing execution**
