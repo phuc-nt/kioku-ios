@@ -3,8 +3,8 @@
 
 **Created:** September 11, 2025  
 **Last Updated:** September 27, 2025  
-**Document Version:** 2.1 - Sprint 5 Calendar Foundation Complete  
-**Total Story Points:** 120 (estimated) - 94 completed (78%) calendar foundation delivered
+**Document Version:** 2.2 - Sprint 9 Enhanced Time Travel Planned  
+**Total Story Points:** 129 (estimated) - 94 completed (73%) + Sprint 9 planning (9 points)
 
 ***
 
@@ -352,9 +352,36 @@
 - **Dependencies**: US-032
 - **Status**: ✅ **Completed September 27, 2025** - Advanced temporal search với 5 time period filters
 
+**US-036: Historical Notes Discovery via Long Press** 🆕 **PLANNED**
+- **Story Points**: 5 | **Priority**: High | **Sprint**: 9
+- **Description**: Là người dùng, tôi muốn long press vào ngày bất kì để xem list notes của cùng ngày trong 12 tháng quá khứ
+- **Acceptance Criteria**: Long press gesture, bottom sheet với historical notes list, 12 months scope (excluding current month), date formatting với year, "Found X entries" counter, max 12 results, sorted newest first, Close button
+- **Dependencies**: US-030, US-031 (existing time travel foundation)
+- **Status**: 🆕 **Planned for Sprint 9** - Enhanced time travel với historical content discovery
+
+**US-037: Multi-Temporal Note Detail View** 🆕 **PLANNED**
+- **Story Points**: 4 | **Priority**: High | **Sprint**: 9
+- **Description**: Là người dùng, trong note detail screen tôi muốn auto xem list notes của cùng ngày từ 12 tháng quá khứ ở phần dưới
+- **Acceptance Criteria**: Auto-display historical notes section below main note, same logic as US-036, tap to navigate to historical note, optimal navigation pattern (push/replace), seamless integration với existing note detail UI
+- **Dependencies**: US-036 (historical notes discovery logic)
+- **Status**: 🆕 **Planned for Sprint 9** - Multi-temporal journaling experience
+
 ***
 
-### 🔄 **EPIC-9: Data Migration & Architecture Transition** ✅ **COMPLETED**
+### 📝 **EPIC-9: Enhanced Time Travel & Historical Insights** 🆕 **PLANNED**
+**Business Value**: Deep historical content discovery và multi-temporal journaling experience  
+**Total Story Points**: 9 | **Priority**: High | **Target Release**: Sprint 9  
+**Business Context**: ← BRD.md → Enhanced Time Travel Experience
+**🎯 STATUS**: 🆕 **PLANNED** - Sprint 9 enhanced time travel features
+
+#### User Stories:
+
+**US-036: Historical Notes Discovery via Long Press** (Details above)
+**US-037: Multi-Temporal Note Detail View** (Details above)
+
+***
+
+### 🔄 **EPIC-10: Data Migration & Architecture Transition** ✅ **COMPLETED**
 **Business Value**: Seamless transition sang calendar-based structure  
 **Total Story Points**: 8 | **Priority**: Critical | **Target Release**: Sprint 5  
 **Business Context**: Migration từ current list-based sang calendar structure
@@ -450,10 +477,13 @@
 ### **Phase 4: Calendar Enhancement & Polish (Sprint 8)** 🔄 **SPRINT 8 IN PROGRESS**
 - **Sprint 8**: 🔄 US-020, US-006, CS-001, CS-002 (UI/UX polish + Search enhancement + Performance + Accessibility) - **STARTED September 28, 2025**
 
-### **Phase 5: Future AI Integration (Sprints 9+)** *(Postponed)*
-- **Sprint 9+**: Conversational AI (US-014, US-015) - *Moved to future phase*
-- **Sprint 9+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
-- **Sprint 10+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
+### **Phase 5: Enhanced Time Travel & Historical Insights (Sprint 9)** 🆕 **PLANNED**
+- **Sprint 9**: US-036, US-037 (Historical notes discovery + Multi-temporal note viewing) - **PLANNED September 28, 2025**
+
+### **Phase 6: Future AI Integration (Sprints 10+)** *(Postponed)*
+- **Sprint 10+**: Conversational AI (US-014, US-015) - *Moved to future phase*
+- **Sprint 10+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
+- **Sprint 11+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
 
 ### **Phase 5: Enhancement & Privacy (Sprints 11+)**  
 - **Sprint 11**: US-020 (Calendar UI polish)

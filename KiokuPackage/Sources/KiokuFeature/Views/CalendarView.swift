@@ -178,6 +178,25 @@ public struct CalendarView: View {
             .sheet(isPresented: $showingTemporalSearch) {
                 temporalSearchView
             }
+            .overlay(alignment: .bottom) {
+                if showingTimeTravelControls {
+                    TimeTravelView(
+                        selectedDate: selectedDate,
+                        onDateSelected: { date in
+                            withAnimation(.calendarTransition) {
+                                currentMonth = date
+                                selectedDate = date
+                            }
+                        },
+                        onDismiss: {
+                            withAnimation(.smoothTransition) {
+                                showingTimeTravelControls = false
+                            }
+                        }
+                    )
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
         }
     }
     
@@ -500,39 +519,46 @@ struct CalendarDayView: View {
     private let calendar = Calendar.current
     
     var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: CalendarDesign.dayIndicatorSpacing) {
-                Text("\(calendar.component(.day, from: date))")
-                    .font(CalendarDesign.dayFont)
-                    .foregroundColor(textColor)
-                
-                // Entry indicator
-                if hasEntry {
-                    Circle()
-                        .fill(CalendarDesign.entryIndicatorColor)
-                        .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
-                } else if isToday {
-                    Circle()
-                        .fill(CalendarDesign.todayIndicatorColor)
-                        .frame(width: CalendarDesign.todayIndicatorSize, height: CalendarDesign.todayIndicatorSize)
-                } else {
-                    Spacer()
-                        .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
-                }
+        VStack(spacing: CalendarDesign.dayIndicatorSpacing) {
+            Text("\(calendar.component(.day, from: date))")
+                .font(CalendarDesign.dayFont)
+                .foregroundColor(textColor)
+            
+            // Entry indicator
+            if hasEntry {
+                Circle()
+                    .fill(CalendarDesign.entryIndicatorColor)
+                    .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
+            } else if isToday {
+                Circle()
+                    .fill(CalendarDesign.todayIndicatorColor)
+                    .frame(width: CalendarDesign.todayIndicatorSize, height: CalendarDesign.todayIndicatorSize)
+            } else {
+                Spacer()
+                    .frame(width: CalendarDesign.entryIndicatorSize, height: CalendarDesign.entryIndicatorSize)
             }
-            .frame(height: CalendarDesign.dayViewHeight)
-            .frame(maxWidth: .infinity)
-            .background(backgroundColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius)
-                    .stroke(borderColor, lineWidth: borderWidth)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius))
         }
-        .buttonStyle(PlainButtonStyle())
-        .onLongPressGesture {
-            onLongPress()
-        }
+        .frame(height: CalendarDesign.dayViewHeight)
+        .frame(maxWidth: .infinity)
+        .background(backgroundColor)
+        .overlay(
+            RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius)
+                .stroke(borderColor, lineWidth: borderWidth)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: CalendarDesign.dayCornerRadius))
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            TapGesture()
+                .onEnded { _ in
+                    onTap()
+                }
+        )
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5)
+                .onEnded { _ in
+                    onLongPress()
+                }
+        )
     }
     
     private var textColor: Color {
