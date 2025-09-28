@@ -315,9 +315,52 @@ public struct CalendarView: View {
     
     // MARK: - Year View
     private var yearView: some View {
-        Text("Year View - Coming Soon")
-            .font(.title)
-            .padding()
+        VStack(spacing: 20) {
+            // Header with back button
+            HStack {
+                Button(action: {
+                    withAnimation(.calendarTransition) {
+                        showingYearView = false
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.left")
+                            .font(.headline)
+                        Text("Back to Calendar")
+                    }
+                    .foregroundColor(.accentColor)
+                }
+                
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 10)
+            
+            Spacer()
+            
+            // Coming soon content
+            VStack(spacing: 16) {
+                Image(systemName: "calendar.badge.clock")
+                    .font(.system(size: 60))
+                    .foregroundColor(.secondary)
+                
+                Text("Year View")
+                    .font(.title)
+                    .fontWeight(.semibold)
+                
+                Text("Coming Soon")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+                
+                Text("This feature will allow you to browse entries across different years and visualize your journaling patterns over time.")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+            
+            Spacer()
+        }
     }
     
     // MARK: - Date Picker View
