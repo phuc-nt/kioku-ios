@@ -3,11 +3,26 @@ import SwiftData
 
 public struct ContentView: View {
     @Environment(DataService.self) private var dataService
+    @State private var selectedDate = Date()
+    @State private var selectedTab = 0
     
     public var body: some View {
-        NavigationView {
-            CalendarView()
+        TabView(selection: $selectedTab) {
+            CalendarTabView(selectedDate: $selectedDate)
+                .tabItem {
+                    Image(systemName: "calendar")
+                    Text("Calendar")
+                }
+                .tag(0)
+            
+            ChatTabView(selectedDate: selectedDate)
+                .tabItem {
+                    Image(systemName: "message")
+                    Text("Chat")
+                }
+                .tag(1)
         }
+        .accentColor(.primary)
     }
     
     public init() {}

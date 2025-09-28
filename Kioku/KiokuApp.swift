@@ -10,6 +10,7 @@ struct KiokuApp: App {
         WindowGroup {
             ContentView()
                 .environment(dataService)
+                .environment(OpenRouterService.shared)
                 .modelContainer(dataService.container)
         }
     }

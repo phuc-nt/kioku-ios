@@ -14,6 +14,7 @@ public struct EntryDetailView: View {
     @State private var showingAnalysisHistory = false
     @State private var selectedHistoricalEntry: Entry?
     @State private var showingHistoricalDetail = false
+    @State private var showingAIChat = false
     
     @Query(sort: \Entry.createdAt, order: .reverse) private var allEntries: [Entry]
     
@@ -83,6 +84,12 @@ public struct EntryDetailView: View {
                             Label("AI Analysis", systemImage: "brain.head.profile")
                         }
                         
+                        Button {
+                            openChatWithAI()
+                        } label: {
+                            Label("Chat with AI", systemImage: "message")
+                        }
+                        
                         
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -101,6 +108,25 @@ public struct EntryDetailView: View {
         .sheet(isPresented: $showingHistoricalDetail) {
             if let selectedHistoricalEntry = selectedHistoricalEntry {
                 EntryDetailView(entry: selectedHistoricalEntry)
+            }
+        }
+        .sheet(isPresented: $showingAIChat) {
+            NavigationView {
+                if let entryDate = entry.date {
+                    AIChatView(chatContextService: createChatContextService(for: entryDate))
+                        .navigationTitle("Chat with AI")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") {
+                                    showingAIChat = false
+                                }
+                            }
+                        }
+                } else {
+                    Text("Unable to load chat context")
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .task {
@@ -585,6 +611,16 @@ public struct EntryDetailView: View {
                 }
             }
         }
+    }
+    
+    private func openChatWithAI() {
+        showingAIChat = true
+    }
+    
+    private func createChatContextService(for date: Date) -> ChatContextService {
+        let dateContextService = DateContextService(dataService: dataService)
+        dateContextService.updateSelectedDate(date)
+        return ChatContextService(dateContextService: dateContextService)
     }
     
     // MARK: - Historical Notes Logic

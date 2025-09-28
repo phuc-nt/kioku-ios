@@ -3,8 +3,8 @@
 
 **Created:** September 11, 2025  
 **Last Updated:** September 28, 2025  
-**Document Version:** 2.3 - Sprint 9 Enhanced Time Travel Completed  
-**Total Story Points:** 129 (estimated) - 103 completed (80%) + Sprint 9 delivered (9 points)
+**Document Version:** 2.4 - Sprint 10 AI Chat Foundation Planned  
+**Total Story Points:** 142 (estimated) - 103 completed (73%) + Sprint 10 planning (13 points)
 
 ***
 
@@ -381,7 +381,64 @@
 
 ***
 
-### 🔄 **EPIC-10: Data Migration & Architecture Transition** ✅ **COMPLETED**
+## Epic-10: AI Chat Integration (Sprint 10) - 🚧 PLANNED
+**Story Points**: 13  
+**Status**: Planned for Sprint 10
+
+### US-038: AI Chat Access from Note Detail
+**As a** user viewing a note detail  
+**I want** to access AI chat with full context of my current note and historical notes  
+**So that** I can get personalized insights and assistance based on my journal patterns  
+
+**Acceptance Criteria**:
+- "Chat with AI" button/action in note detail screen
+- Chat opens with full context: current note + historical notes from same day
+- Context includes note content, dates, and emotional patterns
+- Smooth transition from note detail to chat interface
+- Return navigation to original note detail
+
+**Priority**: High  
+**Complexity**: High  
+**Dependencies**: Note detail view, AI chat infrastructure  
+**Status**: 📋 Planned
+
+### US-039: Tab-Based Navigation Architecture
+**As a** user  
+**I want** a tab-based navigation between Calendar and Chat modes  
+**So that** I can easily switch between journaling and AI assistance  
+
+**Acceptance Criteria**:
+- Two primary tabs: Calendar (default) and Chat
+- Calendar tab contains existing calendar and note functionality
+- Chat tab provides AI interaction with current date context
+- State preservation when switching between tabs
+- Consistent navigation patterns and UI design
+
+**Priority**: High  
+**Complexity**: Medium  
+**Dependencies**: Main app navigation, calendar view, chat view  
+**Status**: 📋 Planned
+
+### US-040: Context-Aware AI Chat Mode
+**As a** user in Chat tab  
+**I want** AI to automatically understand my current date context and available notes  
+**So that** I can get relevant assistance without manually explaining my situation  
+
+**Acceptance Criteria**:
+- Chat mode automatically loads context based on current selected date
+- AI has access to current day notes and historical patterns
+- Context includes recent journal entries and emotional trends
+- Proactive AI suggestions based on journal patterns
+- Privacy-conscious context handling
+
+**Priority**: Medium  
+**Complexity**: High  
+**Dependencies**: AI service integration, context management, data privacy  
+**Status**: 📋 Planned
+
+***
+
+### 🔄 **EPIC-11: Data Migration & Architecture Transition** ✅ **COMPLETED**
 **Business Value**: Seamless transition sang calendar-based structure  
 **Total Story Points**: 8 | **Priority**: Critical | **Target Release**: Sprint 5  
 **Business Context**: Migration từ current list-based sang calendar structure
@@ -480,10 +537,13 @@
 ### **Phase 5: Enhanced Time Travel & Historical Insights (Sprint 9)** ✅ **COMPLETED**
 - **Sprint 9**: US-036, US-037 (Historical notes discovery + Multi-temporal note viewing) - ✅ **COMPLETED September 28, 2025**
 
-### **Phase 6: Future AI Integration (Sprints 10+)** *(Postponed)*
-- **Sprint 10+**: Conversational AI (US-014, US-015) - *Moved to future phase*
-- **Sprint 10+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
-- **Sprint 11+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
+### **Phase 6: AI Chat Integration (Sprint 10)** 🚧 **PLANNED**
+- **Sprint 10**: US-038, US-039, US-040 (AI chat access + Tab navigation + Context-aware chat) - 📋 **PLANNED September 28, 2025**
+
+### **Phase 7: Future AI Integration (Sprints 11+)** *(Deferred)*
+- **Sprint 11+**: Conversational AI enhancement (US-014, US-015) - *Extended for chat features*
+- **Sprint 11+**: Advanced AI features (US-016, US-017) - *Adapted for calendar structure*
+- **Sprint 12+**: Multi-model support (US-018, US-019) - *Calendar-aware AI analysis*
 
 ### **Phase 5: Enhancement & Privacy (Sprints 11+)**  
 - **Sprint 11**: US-020 (Calendar UI polish)

@@ -90,7 +90,7 @@ public struct CalendarView: View {
     @Environment(DataService.self) private var dataService
     @Query(sort: \Entry.createdAt, order: .reverse) private var entries: [Entry]
     
-    @State private var selectedDate = Date()
+    @Binding private var selectedDate: Date
     @State private var currentMonth = Date()
     @State private var showingDateEntry = false
     @State private var showingEntryDetail = false
@@ -121,7 +121,9 @@ public struct CalendarView: View {
         return formatter
     }()
     
-    public init() {}
+    public init(selectedDate: Binding<Date> = .constant(Date())) {
+        self._selectedDate = selectedDate
+    }
     
     public var body: some View {
         NavigationView {
@@ -669,6 +671,6 @@ extension Calendar {
 }
 
 #Preview {
-    CalendarView()
+    CalendarView(selectedDate: .constant(Date()))
         .environment(DataService.preview)
 }
