@@ -35,8 +35,8 @@ public final class DataService: @unchecked Sendable {
     
     // MARK: - Entry Operations
     
-    func createEntry(content: String) -> Entry {
-        let entry = Entry(content: content)
+    func createEntry(content: String, date: Date = Date()) -> Entry {
+        let entry = Entry(content: content, date: date)
         _modelContext.insert(entry)
         saveContext()
         return entry

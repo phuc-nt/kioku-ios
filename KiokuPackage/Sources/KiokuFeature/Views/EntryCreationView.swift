@@ -13,6 +13,7 @@ public struct EntryCreationView: View {
     @State private var autoSaveTimer: Timer?
     
     private let autoSaveDelay: TimeInterval = 2.0
+    private let selectedDate: Date
     
     public var body: some View {
         NavigationView {
@@ -118,8 +119,8 @@ public struct EntryCreationView: View {
                 // Update existing entry
                 dataService.updateEntry(existingEntry, content: content)
             } else {
-                // Create new entry
-                currentEntry = dataService.createEntry(content: content)
+                // Create new entry with selected date
+                currentEntry = dataService.createEntry(content: content, date: selectedDate)
             }
             
             lastSavedContent = content
@@ -148,7 +149,9 @@ public struct EntryCreationView: View {
         dismiss()
     }
     
-    public init() {}
+    public init(selectedDate: Date = Date()) {
+        self.selectedDate = selectedDate
+    }
 }
 
 // MARK: - Previews

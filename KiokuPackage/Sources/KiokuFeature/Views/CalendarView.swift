@@ -93,6 +93,8 @@ public struct CalendarView: View {
     @State private var selectedDate = Date()
     @State private var currentMonth = Date()
     @State private var showingDateEntry = false
+    @State private var showingEntryDetail = false
+    @State private var selectedEntry: Entry?
     @State private var showingYearView = false
     @State private var showingTimeTravelControls = false
     @State private var showingDatePicker = false
@@ -163,7 +165,12 @@ public struct CalendarView: View {
                 }
             }
             .sheet(isPresented: $showingDateEntry) {
-                EntryCreationView()
+                EntryCreationView(selectedDate: selectedDate)
+            }
+            .sheet(isPresented: $showingEntryDetail) {
+                if let selectedEntry = selectedEntry {
+                    EntryDetailView(entry: selectedEntry)
+                }
             }
             .sheet(isPresented: $showingDatePicker) {
                 datePickerView
@@ -247,7 +254,12 @@ public struct CalendarView: View {
                         hasEntry: hasEntry(for: date)
                     ) {
                         selectedDate = date
-                        showingDateEntry = true
+                        if let existingEntry = getEntry(for: date) {
+                            selectedEntry = existingEntry
+                            showingEntryDetail = true
+                        } else {
+                            showingDateEntry = true
+                        }
                     } onLongPress: {
                         selectedDate = date
                         showingTimeTravelControls = true
@@ -425,6 +437,17 @@ public struct CalendarView: View {
     private func hasEntry(for date: Date) -> Bool {
         let startOfDay = calendar.startOfDay(for: date)
         return entries.contains { entry in
+            if let entryDate = entry.date {
+                return calendar.isDate(entryDate, inSameDayAs: startOfDay)
+            } else {
+                return calendar.isDate(entry.createdAt, inSameDayAs: startOfDay)
+            }
+        }
+    }
+    
+    private func getEntry(for date: Date) -> Entry? {
+        let startOfDay = calendar.startOfDay(for: date)
+        return entries.first { entry in
             if let entryDate = entry.date {
                 return calendar.isDate(entryDate, inSameDayAs: startOfDay)
             } else {
