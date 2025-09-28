@@ -111,6 +111,9 @@ public struct CalendarView: View {
     @State private var showingSuggestions = false
     @State private var searchTask: Task<Void, Never>?
     
+    // Debug features
+    @State private var showingTestDataInsertion = false
+    
     private let calendar = Calendar.current
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -153,6 +156,15 @@ public struct CalendarView: View {
                 }
                 
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    // Debug: Test Data Insertion button
+                    Button(action: {
+                        showingTestDataInsertion = true
+                    }) {
+                        Image(systemName: "testtube.2")
+                            .font(.headline)
+                    }
+                    .accessibilityLabel("Insert test data")
+                    
                     // Date Picker button
                     Button(action: {
                         datePickerSelection = currentMonth
@@ -177,6 +189,9 @@ public struct CalendarView: View {
             }
             .sheet(isPresented: $showingTemporalSearch) {
                 temporalSearchView
+            }
+            .sheet(isPresented: $showingTestDataInsertion) {
+                TestDataInsertionView()
             }
             .overlay(alignment: .bottom) {
                 if showingTimeTravelControls {
@@ -598,6 +613,15 @@ struct CalendarDayView: View {
         } else {
             return 0
         }
+    }
+}
+
+// MARK: - Calendar Extension
+
+extension Calendar {
+    func startOfMonth(for date: Date) -> Date {
+        let components = dateComponents([.year, .month], from: date)
+        return self.date(from: components) ?? date
     }
 }
 
