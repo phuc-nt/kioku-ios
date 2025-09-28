@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct EntryCreationView: View {
+public struct EntryCreationView: View {
     @Environment(DataService.self) private var dataService
     @Environment(\.dismiss) private var dismiss
     @State private var content: String = ""
@@ -14,7 +14,7 @@ struct EntryCreationView: View {
     
     private let autoSaveDelay: TimeInterval = 2.0
     
-    var body: some View {
+    public var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 // Content Editor
@@ -147,6 +147,8 @@ struct EntryCreationView: View {
         cancelAutoSaveTimer()
         dismiss()
     }
+    
+    public init() {}
 }
 
 // MARK: - Previews
