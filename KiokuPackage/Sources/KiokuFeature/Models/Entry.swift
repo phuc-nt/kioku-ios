@@ -12,9 +12,8 @@ public final class Entry: @unchecked Sendable {
     // MARK: - Calendar Architecture Fields
     public var date: Date? // Normalized date (start of day) for calendar navigation
     
-    // Migration tracking
-    public var migrationVersion: Int = 2 // Version 2 for calendar-based architecture
-    public var isMigrated: Bool = false
+    // Version tracking for future use
+    public var dataVersion: Int = 2 // Current calendar-based architecture
     
     // MARK: - Relationships
     @Relationship(deleteRule: .cascade, inverse: \AIAnalysis.entry)
@@ -66,29 +65,12 @@ public final class Entry: @unchecked Sendable {
         
         // Set date to normalized start of day (for calendar architecture)
         self.date = Calendar.current.startOfDay(for: date ?? Date())
-        self.migrationVersion = 2
-        self.isMigrated = true
+        self.dataVersion = 2
         
         // Use computed property to handle encryption
         self.content = content
     }
     
-    // Legacy initializer for migration purposes
-    public init(legacyContent: String, legacyCreatedAt: Date, legacyId: UUID? = nil) {
-        self.id = legacyId ?? UUID()
-        self.createdAt = legacyCreatedAt
-        self.updatedAt = legacyCreatedAt
-        self.encryptedContent = nil
-        self._plaintextContent = nil
-        
-        // Extract date from legacy createdAt timestamp
-        self.date = nil // Will be set during migration
-        self.migrationVersion = 1 // Mark as legacy
-        self.isMigrated = false
-        
-        // Use computed property to handle encryption
-        self.content = legacyContent
-    }
     
     public func updateContent(_ newContent: String) {
         content = newContent
@@ -153,17 +135,6 @@ public final class Entry: @unchecked Sendable {
         return Calendar.current.component(.day, from: date ?? createdAt)
     }
     
-    /// Mark entry as migrated to calendar architecture
-    public func markAsMigrated() {
-        self.isMigrated = true
-        self.migrationVersion = 2
-        self.updatedAt = Date()
-    }
-    
-    /// Check if entry needs migration
-    public var needsMigration: Bool {
-        return !isMigrated || migrationVersion < 2
-    }
 }
 
 // MARK: - Preview Support

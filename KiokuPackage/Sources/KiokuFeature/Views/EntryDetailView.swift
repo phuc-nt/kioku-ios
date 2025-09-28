@@ -12,7 +12,6 @@ public struct EntryDetailView: View {
     @State private var isAnalyzing = false
     @State private var storedAnalyses: [AIAnalysis] = []
     @State private var showingAnalysisHistory = false
-    @State private var showingKnowledgeGraph = false
     
     public var body: some View {
         NavigationView {
@@ -77,11 +76,6 @@ public struct EntryDetailView: View {
                             Label("AI Analysis", systemImage: "brain.head.profile")
                         }
                         
-                        Button {
-                            showingKnowledgeGraph = true
-                        } label: {
-                            Label("Knowledge Graph", systemImage: "link.circle")
-                        }
                         
                     } label: {
                         Image(systemName: "ellipsis.circle")
@@ -99,9 +93,6 @@ public struct EntryDetailView: View {
         }
         .task {
             loadStoredAnalyses()
-        }
-        .sheet(isPresented: $showingKnowledgeGraph) {
-            KnowledgeGraphView(entry: entry)
         }
     }
     
@@ -227,28 +218,15 @@ public struct EntryDetailView: View {
                 .cornerRadius(12)
                 
                 // Quick actions for analyzed entries
-                if !storedAnalyses.isEmpty {
+                if !storedAnalyses.isEmpty && storedAnalyses.count > 1 {
                     HStack {
-                        Button {
-                            showingKnowledgeGraph = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "link.circle")
-                                Text("View Connections")
-                            }
-                            .font(.caption)
-                            .foregroundColor(.accentColor)
-                        }
-                        
                         Spacer()
                         
-                        if storedAnalyses.count > 1 {
-                            Button("Analysis History") {
-                                showingAnalysisHistory.toggle()
-                            }
-                            .font(.caption)
-                            .foregroundColor(.accentColor)
+                        Button("Analysis History") {
+                            showingAnalysisHistory.toggle()
                         }
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
                     }
                     .padding(.top, 8)
                 }
