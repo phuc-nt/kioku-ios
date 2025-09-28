@@ -180,13 +180,12 @@ public struct CalendarView: View {
             }
             .overlay(alignment: .bottom) {
                 if showingTimeTravelControls {
-                    TimeTravelView(
+                    HistoricalNotesView(
                         selectedDate: selectedDate,
-                        onDateSelected: { date in
-                            withAnimation(.calendarTransition) {
-                                currentMonth = date
-                                selectedDate = date
-                            }
+                        onNoteSelected: { entry in
+                            // Navigate to selected historical note
+                            selectedEntry = entry
+                            showingEntryDetail = true
                         },
                         onDismiss: {
                             withAnimation(.smoothTransition) {

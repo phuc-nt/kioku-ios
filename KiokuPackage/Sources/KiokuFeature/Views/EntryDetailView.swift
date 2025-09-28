@@ -12,6 +12,10 @@ public struct EntryDetailView: View {
     @State private var isAnalyzing = false
     @State private var storedAnalyses: [AIAnalysis] = []
     @State private var showingAnalysisHistory = false
+    @State private var selectedHistoricalEntry: Entry?
+    @State private var showingHistoricalDetail = false
+    
+    @Query(sort: \Entry.createdAt, order: .reverse) private var allEntries: [Entry]
     
     public var body: some View {
         NavigationView {
@@ -30,6 +34,9 @@ public struct EntryDetailView: View {
                         
                         // AI Analysis section
                         aiAnalysisSection
+                        
+                        // Historical Notes section
+                        historicalNotesSection
                     }
                     
                     Spacer()
@@ -90,6 +97,11 @@ public struct EntryDetailView: View {
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This action cannot be undone.")
+        }
+        .sheet(isPresented: $showingHistoricalDetail) {
+            if let selectedHistoricalEntry = selectedHistoricalEntry {
+                EntryDetailView(entry: selectedHistoricalEntry)
+            }
         }
         .task {
             loadStoredAnalyses()
@@ -250,6 +262,35 @@ public struct EntryDetailView: View {
                     .padding()
                     .background(Color(.systemGray6))
                     .cornerRadius(8)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var historicalNotesSection: some View {
+        if !historicalNotes.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                Divider()
+                
+                Text("Same day in previous months")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                
+                Text("Found \(historicalNotes.count) \(historicalNotes.count == 1 ? "entry" : "entries")")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                LazyVStack(spacing: 8) {
+                    ForEach(historicalNotes, id: \.id) { historicalEntry in
+                        CompactHistoricalNoteCard(
+                            entry: historicalEntry,
+                            onTap: {
+                                selectedHistoricalEntry = historicalEntry
+                                showingHistoricalDetail = true
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -546,10 +587,127 @@ public struct EntryDetailView: View {
         }
     }
     
+    // MARK: - Historical Notes Logic
+    
+    private var historicalNotes: [Entry] {
+        guard let entryDate = entry.date else { return [] }
+        
+        let calendar = Calendar.current
+        let selectedDay = calendar.component(.day, from: entryDate)
+        let currentMonth = calendar.startOfMonth(for: entryDate)
+        
+        var historicalEntries: [Entry] = []
+        
+        // Look back 12 months (excluding current month)
+        for monthsBack in 1...12 {
+            if let targetMonth = calendar.date(byAdding: .month, value: -monthsBack, to: currentMonth) {
+                let targetDate = getTargetDate(for: targetMonth, day: selectedDay, calendar: calendar)
+                
+                if let matchingEntry = allEntries.first(where: { historicalEntry in
+                    if let historicalEntryDate = historicalEntry.date {
+                        return calendar.isDate(historicalEntryDate, inSameDayAs: targetDate)
+                    } else {
+                        return calendar.isDate(historicalEntry.createdAt, inSameDayAs: targetDate)
+                    }
+                }) {
+                    historicalEntries.append(matchingEntry)
+                }
+            }
+        }
+        
+        // Sort by date, newest first (most recent past month first)
+        return historicalEntries.sorted { entry1, entry2 in
+            let date1 = entry1.date ?? entry1.createdAt
+            let date2 = entry2.date ?? entry2.createdAt
+            return date1 > date2
+        }
+    }
+    
+    private func getTargetDate(for month: Date, day: Int, calendar: Calendar) -> Date {
+        let targetYear = calendar.component(.year, from: month)
+        let targetMonth = calendar.component(.month, from: month)
+        
+        var components = DateComponents()
+        components.year = targetYear
+        components.month = targetMonth
+        components.day = day
+        
+        // Handle edge case where target day doesn't exist in target month (e.g., Feb 30)
+        if let targetDate = calendar.date(from: components) {
+            return targetDate
+        } else {
+            // Fallback to last day of target month
+            components.day = nil
+            let firstOfMonth = calendar.date(from: components) ?? month
+            return calendar.date(byAdding: DateComponents(month: 1, day: -1), to: firstOfMonth) ?? month
+        }
+    }
+    
     public init(entry: Entry) {
         self.entry = entry
     }
 }
+
+// MARK: - Compact Historical Note Card Component
+
+struct CompactHistoricalNoteCard: View {
+    let entry: Entry
+    let onTap: () -> Void
+    
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM yyyy"
+        return formatter
+    }()
+    
+    private var previewContent: String {
+        let content = entry.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        if content.count > 80 {
+            return String(content.prefix(80)) + "..."
+        }
+        return content
+    }
+    
+    private var displayDate: String {
+        return dateFormatter.string(from: entry.date ?? entry.createdAt)
+    }
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(displayDate)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.accentColor)
+                
+                Text(previewContent)
+                    .font(.caption)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color(.systemGray6))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(.systemGray5), lineWidth: 0.5)
+                )
+        )
+        .onTapGesture {
+            onTap()
+        }
+    }
+}
+
 
 // MARK: - Previews
 
