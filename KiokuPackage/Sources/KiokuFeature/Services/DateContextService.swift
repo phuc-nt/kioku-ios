@@ -20,25 +20,21 @@ class DateContextService {
     /// Get current note for the selected date
     func getCurrentNote() -> Entry? {
         let startOfDay = calendar.startOfDay(for: selectedDate)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
         
-        // Try to find by date field first
-        let datePredicate = #Predicate<Entry> { entry in
-            entry.date != nil && entry.date! >= startOfDay && entry.date! < endOfDay
+        // Get all entries and filter using same logic as CalendarView
+        let allEntriesDescriptor = FetchDescriptor<Entry>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
+        guard let allEntries = try? dataService.modelContext.fetch(allEntriesDescriptor) else {
+            return nil
         }
         
-        let dateDescriptor = FetchDescriptor<Entry>(predicate: datePredicate)
-        if let entry = try? dataService.modelContext.fetch(dateDescriptor).first {
-            return entry
+        // Use same logic as CalendarView.hasEntry()
+        return allEntries.first { entry in
+            if let entryDate = entry.date {
+                return calendar.isDate(entryDate, inSameDayAs: startOfDay)
+            } else {
+                return calendar.isDate(entry.createdAt, inSameDayAs: startOfDay)
+            }
         }
-        
-        // Fallback to createdAt field if date field is nil
-        let createdAtPredicate = #Predicate<Entry> { entry in
-            entry.createdAt >= startOfDay && entry.createdAt < endOfDay
-        }
-        
-        let createdAtDescriptor = FetchDescriptor<Entry>(predicate: createdAtPredicate)
-        return try? dataService.modelContext.fetch(createdAtDescriptor).first
     }
     
     /// Get historical notes from same day in previous months (excluding current month)

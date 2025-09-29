@@ -5,10 +5,10 @@ struct ChatTabView: View {
     @State private var dateContextService: DateContextService?
     @State private var chatContextService: ChatContextService?
     
-    let selectedDate: Date
+    @Binding var selectedDate: Date
     
-    init(selectedDate: Date) {
-        self.selectedDate = selectedDate
+    init(selectedDate: Binding<Date>) {
+        self._selectedDate = selectedDate
     }
     
     var body: some View {
@@ -47,7 +47,7 @@ struct ChatTabView: View {
 }
 
 #Preview {
-    ChatTabView(selectedDate: Date())
+    ChatTabView(selectedDate: .constant(Date()))
         .environment(DataService.preview)
         .environment(OpenRouterService.shared)
 }
