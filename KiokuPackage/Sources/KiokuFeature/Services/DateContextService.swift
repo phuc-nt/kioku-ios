@@ -44,7 +44,6 @@ class DateContextService {
         let selectedDay = calendar.component(.day, from: normalizedDate)
         let currentMonth = calendar.startOfMonth(for: normalizedDate)
         
-        
         var historicalEntries: [Entry] = []
         
         // Look back 12 months (excluding current month)
@@ -95,27 +94,21 @@ class DateContextService {
     
     private func getEntriesForDate(_ date: Date) -> [Entry] {
         let startOfDay = calendar.startOfDay(for: date)
-        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
         
-        // Try to find by date field first
-        let datePredicate = #Predicate<Entry> { entry in
-            entry.date != nil && entry.date! >= startOfDay && entry.date! < endOfDay
+        // Get all entries and filter using same logic as getCurrentNote()
+        let allEntriesDescriptor = FetchDescriptor<Entry>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
+        guard let allEntries = try? dataService.modelContext.fetch(allEntriesDescriptor) else {
+            return []
         }
         
-        let dateDescriptor = FetchDescriptor<Entry>(predicate: datePredicate)
-        var entries = (try? dataService.modelContext.fetch(dateDescriptor)) ?? []
-        
-        // If no entries found with date field, try createdAt field
-        if entries.isEmpty {
-            let createdAtPredicate = #Predicate<Entry> { entry in
-                entry.createdAt >= startOfDay && entry.createdAt < endOfDay
+        // Use same logic as getCurrentNote() for consistency
+        return allEntries.filter { entry in
+            if let entryDate = entry.date {
+                return calendar.isDate(entryDate, inSameDayAs: startOfDay)
+            } else {
+                return calendar.isDate(entry.createdAt, inSameDayAs: startOfDay)
             }
-            
-            let createdAtDescriptor = FetchDescriptor<Entry>(predicate: createdAtPredicate)
-            entries = (try? dataService.modelContext.fetch(createdAtDescriptor)) ?? []
         }
-        
-        return entries
     }
 }
 

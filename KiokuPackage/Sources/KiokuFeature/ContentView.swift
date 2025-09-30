@@ -3,8 +3,8 @@ import SwiftData
 
 public struct ContentView: View {
     @Environment(DataService.self) private var dataService
-    @State private var selectedDate = Calendar.current.date(from: DateComponents(year: 2025, month: 9, day: 11)) ?? Date()
-    @State private var selectedTab = 1
+    @State private var selectedDate = Date()
+    @State private var selectedTab = 0
     
     public var body: some View {
         TabView(selection: $selectedTab) {
