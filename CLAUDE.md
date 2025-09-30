@@ -1,10 +1,10 @@
 ### Startup Workflow (Each Session)
 
-1. Check the project setup.
-2. **Read `docs/00_context/01_business_requirement.md`** - To understand the project vision and core objectives.
-3. **Check `docs/00_context/02_product_backlog.md`** - To understand current sprint scope and story priorities.
-4. **Reference current sprint** - `docs/01_sprints/sprint_xx_planning.md` for active tasks and progress.
-5. **Review architecture decisions** - `docs/02_adrs/` folder for technical context as needed.
+1. **Check current status**: `docs/00_context/02_product_backlog.md` - Sprint completion status and next priorities
+2. **Understand architecture**: `docs/00_context/03_architecture_design.md` - Technical overview and current implementation
+3. **Latest sprint**: `docs/01_sprints/sprint_10_planning.md` - Most recent completed work (AI Chat Integration)
+
+**Current Status**: Sprint 10 completed (AI Chat Integration). Ready for Sprint 11+ advanced AI features.
 
 ### Task Management Process
 
@@ -43,49 +43,39 @@ XcodeBuildMCP Testing Workflow:
 
 ### Role of Document Groups
 
-**`00_context/` - Strategic Foundation (READ-ONLY, DO NOT EDIT WITHOUT EXPLICIT APPROVAL)**:
-- `01_business_requirement.md`: Business vision, value proposition, high-level requirements.
-- `02_product_backlog.md`: Complete feature inventory, user stories, epic breakdown, sprint assignments.
+**`00_context/` - Essential Context (READ-ONLY)**:
+- `02_product_backlog.md`: Current project status, next priorities, user stories
+- `03_architecture_design.md`: Technical architecture, data models, services structure
 
-**`01_sprints/` - Sprint Execution (UPDATED DAILY)**:
-- `sprint_*_planning.md`: Detailed Sprint tasks, acceptance criteria, technical breakdown.
+**`01_sprints/` - Sprint History**:
+- `sprint_10_planning.md`: Latest completed sprint (AI Chat Integration)
+- Create new sprint files for future work
 
-**`02_adrs/` - Architecture Decisions (CREATED AS NEEDED)**:
-- `adr_*.md`: Technical decisions for iOS architecture, data models, concurrency, UI libraries, encryption, and key management.
-- Create new ADRs when making significant technical decisions during implementation.
+**`02_adrs/` - Technical Decisions**:
+- Reference existing ADRs for technical context
+- Create new ADRs for significant technical decisions
 
-**`03_testing/` - UI Testing Documentation (UPDATED PER FEATURE)**:
-- `ui_test_scenarios.md`: Comprehensive UI test scenarios với XcodeBuildMCP automation.
-- Test case documentation với step-by-step XcodeBuildMCP commands.
-- Performance benchmarks và regression test suites.
+**`03_testing/` - Testing Documentation**:
+- Update test scenarios for each completed feature
+- XcodeBuildMCP automation workflows
 
-### Documentation Rules
+### Documentation Update Rules
 
-Update Rules:
-  - `sprint_*.md`: Update daily for task progress, completion status, blockers.
-  - `00_context/*.md`: Never update without explicit approval (business requirements, product backlog).
-  - `02_adrs/*.md`: Create new ADRs for major technical decisions during development.
-  - `03_testing/*.md`: Update test scenarios và automation workflows for each completed feature.
+**For New Features/Sprints**:
+1. Create new `sprint_11_planning.md` (or next number) for new work
+2. Update `02_product_backlog.md` status only when sprint completes
+3. Create ADRs for major technical decisions
+4. Update test scenarios in `03_testing/` for completed features
 
-Maintenance Principles:
-  - AVOID DUPLICATION: Reference other documents using cross-links.
-  - KEEP CONCISE: Sprint docs focus on current tasks, context docs provide background.
-  - SINGLE SOURCE OF TRUTH: Business logic in BRD, technical decisions in ADRs, tasks in sprint docs.
-  - CROSS-REFERENCE: Link sprint tasks back to product backlog user stories.
-  - STATUS FIRST: Always show current sprint progress and blockers clearly.
+**Key Principles**:
+- Reference existing docs instead of duplicating content
+- Technical architecture decisions go in ADRs, not sprint docs
+- Sprint docs focus on current tasks and acceptance criteria
+- Keep context docs (`00_context/`) as reference material only
 
-Writing Style:
-  - Concise and actionable for sprint documentation.
-  - Use status indicators: Not Started, In Progress, Completed, Blocked.
-  - Include time estimates and actual time spent for each task.
-  - Link to related ADRs and user stories instead of duplicating content.
-  - Technical decisions get their own ADR documents.
-
-Document Flow: 
-  - Strategic: `01_business_requirement.md` → `02_product_backlog.md`
-  - Tactical: `product_backlog.md` → `sprint_*.md` → task implementation
-  - Technical: `sprint_*.md` → `02_adrs/adr_*.md` → code implementation
-  - Testing: `sprint_*.md` → `03_testing/*.md` → XcodeBuildMCP automation validation
-  
-Never put detailed technical architecture in sprint documents - create ADRs instead.
-Never put sprint task details in business requirement or product backlog documents.
+**Current Architecture Foundation**:
+- SwiftUI + SwiftData with @Observable pattern
+- Tab-based navigation (Calendar ↔ Chat)
+- OpenRouter AI integration with context awareness
+- Local-first data with encryption
+- XcodeBuildMCP for UI automation testing
