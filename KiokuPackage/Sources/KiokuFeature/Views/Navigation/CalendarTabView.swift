@@ -4,7 +4,7 @@ struct CalendarTabView: View {
     @Binding var selectedDate: Date
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             CalendarView(selectedDate: $selectedDate)
         }
     }

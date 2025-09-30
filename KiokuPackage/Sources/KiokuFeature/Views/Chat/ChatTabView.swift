@@ -12,7 +12,7 @@ struct ChatTabView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if let chatContextService = chatContextService {
                     AIChatView(chatContextService: chatContextService)

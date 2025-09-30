@@ -22,7 +22,6 @@ public struct ContentView: View {
                 }
                 .tag(1)
         }
-        .accentColor(.primary)
     }
     
     public init() {}
