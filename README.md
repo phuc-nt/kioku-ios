@@ -1,6 +1,23 @@
-# Kioku - iOS App
+# Kioku - AI-Powered Personal Journal
 
-A modern iOS application using a **workspace + SPM package** architecture for clean separation between app shell and feature code.
+A modern iOS journaling app with AI chat integration, built using SwiftUI and SwiftData. Kioku helps users reflect on their thoughts through intelligent conversations with AI that understands their journal history.
+
+## Features
+
+- **📅 Calendar-based Journaling**: Write and organize entries by date
+- **🤖 AI Chat Integration**: Context-aware AI conversations about your journal patterns  
+- **📖 Historical Context**: AI accesses current and historical entries for deeper insights
+- **🔒 Privacy-First**: All data stored locally with encryption support
+- **🎨 Clean Design**: Native SwiftUI interface with tab-based navigation
+
+## Current Status (Sprint 10 Complete)
+
+✅ **Core journaling functionality**  
+✅ **Tab-based navigation** (Calendar ↔ Chat)  
+✅ **AI chat with OpenRouter API integration**  
+✅ **Context-aware AI** (current + historical notes)  
+✅ **Context transparency** (users see what AI accesses)  
+✅ **Historical notes discovery** (same day across months)
 
 ## AI Assistant Rules Files
 
@@ -27,21 +44,32 @@ These rules files are **starting points** - feel free to:
 
 **Note for AI assistants**: You MUST read the relevant rules files before making changes to ensure consistency with project standards.
 
-## Project Architecture
+## Quick Start
+
+1. **Open Workspace**: `Kioku.xcworkspace` in Xcode
+2. **Build & Run**: Select iPhone simulator and run
+3. **Start Journaling**: Create entries in Calendar tab
+4. **Chat with AI**: Switch to Chat tab for insights
+
+## Architecture Overview
+
+**Tech Stack**: SwiftUI + SwiftData + OpenRouter AI  
+**Navigation**: Tab-based (Calendar ↔ Chat)  
+**Data**: Local SQLite with encryption support  
+**AI Context**: Date-aware with historical pattern recognition  
 
 ```
 Kioku/
 ├── Kioku.xcworkspace/              # Open this file in Xcode
-├── Kioku.xcodeproj/                # App shell project
-├── Kioku/                          # App target (minimal)
-│   ├── Assets.xcassets/                # App-level assets (icons, colors)
-│   ├── KiokuApp.swift              # App entry point
-│   └── Kioku.xctestplan            # Test configuration
-├── KiokuPackage/                   # 🚀 Primary development area
-│   ├── Package.swift                   # Package configuration
-│   ├── Sources/KiokuFeature/       # Your feature code
-│   └── Tests/KiokuFeatureTests/    # Unit tests
-└── KiokuUITests/                   # UI automation tests
+├── KiokuPackage/Sources/KiokuFeature/  # 🚀 Main feature code
+│   ├── Models/                     # Entry, AIAnalysis, ChatMessage
+│   ├── Services/                   # DateContext, ChatContext, OpenRouter
+│   └── Views/                      # Calendar, Chat, Navigation
+├── docs/00_context/                # 📋 Design documents
+│   ├── 01_business_requirement.md
+│   ├── 02_product_backlog.md
+│   └── 03_architecture_design.md   # Technical details
+└── docs/01_sprints/                # Sprint planning & progress
 ```
 
 ## Key Architecture Points
@@ -56,10 +84,18 @@ Kioku/
 - No need to manually add files to project targets
 - Reduces project file conflicts in teams
 
-## Development Notes
+## Development
 
-### Code Organization
-Most development happens in `KiokuPackage/Sources/KiokuFeature/` - organize your code as you prefer.
+### For New Developers
+1. **Read Architecture**: `docs/00_context/03_architecture_design.md` for technical overview
+2. **Check Current Sprint**: `docs/01_sprints/` for current development status  
+3. **Main Development**: `KiokuPackage/Sources/KiokuFeature/` for feature code
+
+### Next Features (Planned)
+- **🧠 Knowledge Graph**: Entity extraction and relationship mapping
+- **📊 Advanced Analytics**: Pattern recognition across journal entries
+- **🔍 Semantic Search**: Find entries by meaning, not just keywords
+- **📱 Enhanced AI Models**: Multi-model support and voice integration
 
 ### Public API Requirements
 Types exposed to the app target need `public` access:
