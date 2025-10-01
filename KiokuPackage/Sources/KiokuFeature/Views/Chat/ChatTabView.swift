@@ -15,7 +15,10 @@ struct ChatTabView: View {
         NavigationStack {
             Group {
                 if let chatContextService = chatContextService {
-                    AIChatView(chatContextService: chatContextService)
+                    StreamingChatView(
+                        dataService: dataService,
+                        chatContextService: chatContextService
+                    )
                 } else {
                     ProgressView("Loading chat...")
                 }
