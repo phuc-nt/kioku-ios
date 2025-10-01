@@ -250,37 +250,47 @@
 
 ## Test Execution Log
 
-**Execution Date**: September 28, 2025  
-**Test Environment**: iPhone 16 Simulator (iOS 18.5)  
-**Execution Method**: XcodeBuildMCP Automation + Manual Verification  
+**Latest Execution Date**: October 1, 2025
+**Previous Execution**: September 28, 2025
+**Test Environment**: iPhone 16 Simulator (iOS 18.5)
+**Execution Method**: XcodeBuildMCP Automation + Manual Verification
 
 ### Test Results Summary
 
 | Test Case | Status | Notes |
 |-----------|--------|-------|
-| TC-S10-001 (Tab Navigation) | ✅ PASS | Tab switching works correctly |
-| TC-S10-002 (AI Chat Interface) | ✅ PASS | Context loading and UI functional |
+| TC-S10-001 (Tab Navigation) | ✅ PASS | Tab switching verified working correctly |
+| TC-S10-002 (AI Chat Interface) | ✅ PASS | All UI elements functional, context expansion works |
 | TC-S10-003 (Chat from Note Detail) | ⚠️ PARTIAL | Implementation complete, requires note creation |
 | TC-S10-004 (Context-Aware Responses) | ⚠️ LIMITED | API returns error (config needed) |
-| TC-S10-005 (Error Handling) | ✅ PASS | Error messages display correctly |
+| TC-S10-005 (Error Handling) | ✅ PASS | Error handling verified with actual API call |
 
 ### Detailed Test Execution
 
-#### TC-S10-001: Tab-Based Navigation ✅ PASS
-- **App Launch**: Successfully opens to Chat tab (implementation shows Chat as default)
-- **Tab Bar Presence**: Tab bar visible with Calendar and Chat tabs
-- **Tab Switching**: Manual verification shows tabs respond to taps
-- **Visual State**: Tab selection state properly indicated
+#### TC-S10-001: Tab-Based Navigation ✅ PASS (Oct 1, 2025)
+- **App Launch**: Successfully opens to Calendar tab (default behavior confirmed)
+- **Tab Bar Presence**: Tab bar visible at bottom with Calendar and Chat tabs
+- **Tab Switching to Chat**: Tap at (294, 810) successfully switches to Chat view
+- **Tab Switching to Calendar**: Tap at (92, 810) successfully switches back to Calendar
+- **Visual State**: Tab selection state properly indicated with blue highlight
+- **State Preservation**: Date selection (Oct 1, 2025) preserved across tab switches
+- **Performance**: Tab transitions smooth (~200ms)
 
-#### TC-S10-002: AI Chat Interface ✅ PASS  
-- **Chat Interface Loading**: Loads successfully in ~1 second
-- **Context Display**: Shows "Context for 11 Sep 2025" with expandable section
-- **Context Content**: Displays "Today's Note: No note for today yet"
-- **Context Expansion**: Button works, expands to show full context
-- **Message Input**: Text field accepts input correctly
-- **Send Functionality**: Send button activates and processes messages
-- **Message Display**: User messages appear in dark bubbles with timestamps
-- **AI Response**: System responds with error message (graceful handling)
+#### TC-S10-002: AI Chat Interface ✅ PASS (Oct 1, 2025)
+- **Chat Interface Loading**: Loads successfully in <1 second
+- **Title Display**: "AI Chat" header visible and correctly styled
+- **Context Display**: Shows "Context for 1 Oct 2025" with expandable button
+- **Context Expansion**: Tap at (196, 131) successfully expands context section
+- **Context Content**: Displays "📅 Today's Note: No note for today yet" when expanded
+- **Initial AI Message**: Welcome message displayed correctly with timestamp
+- **Message Input Field**: Text field accepts keyboard input, placeholder shows "Ask me anything..."
+- **Text Input Test**: Successfully typed "Hello, can you help me with my journal?"
+- **Send Button Behavior**: Button disabled when empty, enabled (blue) when text present
+- **Send Functionality**: Tap at (364, 737) successfully sends message
+- **Message Display**: User message appears in blue bubble (right-aligned) with timestamp 19:01
+- **AI Response**: Error response "Sorry, I couldn't process your message..." displayed correctly
+- **Input Field Reset**: Field clears after send, ready for next message
+- **Conversation Threading**: Messages display in correct order with proper layout
 
 #### TC-S10-003: Chat from Note Detail ⚠️ PARTIAL
 - **Status**: Implementation complete but requires note data for full testing
@@ -293,11 +303,15 @@
 - **Error Handling**: ✅ Working - Graceful error message display
 - **Note**: Requires OpenRouter API key configuration for full functionality
 
-#### TC-S10-005: Error Handling ✅ PASS
-- **API Error Response**: Shows user-friendly error message
-- **Message Threading**: Chat maintains conversation flow despite errors
-- **UI Stability**: Interface remains responsive after error
+#### TC-S10-005: Error Handling ✅ PASS (Oct 1, 2025)
+- **API Error Response**: Shows user-friendly error: "Sorry, I couldn't process your message right now. Please try again."
+- **Error Message Style**: Gray bubble (left-aligned) with AI icon, consistent with normal AI responses
+- **Message Threading**: Chat maintains conversation flow despite API errors
+- **UI Stability**: Interface remains fully responsive and functional after error
 - **Input Field**: Clears after message send and ready for next input
+- **Send Button**: Correctly returns to disabled state after send
+- **No Crashes**: App stable throughout error scenario
+- **Log Output**: Clean logs, no critical errors (only expected DataService init messages)
 
 ### Performance Validation
 
@@ -312,15 +326,21 @@
 
 1. **API Configuration Required**
    - **Issue**: OpenRouter API returns processing error
-   - **Impact**: Limited AI response functionality  
+   - **Impact**: Limited AI response functionality
    - **Resolution**: Requires OpenRouter API key configuration
    - **Priority**: Medium (expected for development environment)
+   - **Status**: Known limitation, not blocking
 
-2. **Tab Default Selection**
+2. **Tab Default Selection** ✅ RESOLVED
    - **Issue**: Chat tab selected by default instead of Calendar
-   - **Impact**: Minor UX deviation from specification
-   - **Resolution**: Update ContentView tab selection logic
+   - **Status**: FIXED - Calendar tab now correctly shows as default on app launch
+   - **Verified**: October 1, 2025 test execution
+
+3. **Duplicate Navigation Bar** (NEW - Oct 1, 2025)
+   - **Issue**: Two "Journal" navigation headers appear when switching tabs
+   - **Impact**: Minor visual glitch
    - **Priority**: Low
+   - **Status**: Needs investigation
 
 ### Pass/Fail Status: ✅ OVERALL PASS
 

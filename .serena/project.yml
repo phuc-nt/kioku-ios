@@ -1,0 +1,51 @@
+# Kioku iOS Project Configuration for Serena MCP
+
+# language of the project - Swift uses sourcekit-lsp
+language: swift
+
+# whether to use the project's gitignore file to ignore files
+ignore_all_files_in_gitignore: true
+
+# list of additional paths to ignore
+# Swift/iOS specific ignores
+ignored_paths:
+  - "*.xcworkspace/xcuserdata"
+  - "*.xcodeproj/xcuserdata"
+  - "*.xcodeproj/project.xcworkspace"
+  - "DerivedData"
+  - ".build"
+  - ".swiftpm"
+  - "Pods"
+  - "Carthage"
+
+# whether the project is in read-only mode
+read_only: false
+
+# list of tool names to exclude
+excluded_tools: []
+
+# initial prompt for the project
+initial_prompt: |
+  This is Kioku, an AI-powered personal journaling iOS app.
+
+  Tech Stack:
+  - SwiftUI + SwiftData (iOS 18+)
+  - OpenRouter AI integration
+  - Tab-based navigation (Calendar ↔ Chat)
+  - Local-first architecture with encryption
+
+  Key Documents:
+  - Architecture: docs/00_context/03_architecture_design.md
+  - Product Backlog: docs/00_context/02_product_backlog.md
+  - Latest Sprint: docs/01_sprints/sprint_10_planning.md
+
+  Code Organization:
+  - Main app: Kioku/
+  - Feature package: KiokuPackage/Sources/KiokuFeature/
+  - Models: KiokuPackage/Sources/KiokuFeature/Models/
+  - Views: KiokuPackage/Sources/KiokuFeature/Views/
+  - Services: KiokuPackage/Sources/KiokuFeature/Services/
+
+  Current Status: Sprint 10 completed (AI Chat Integration)
+
+project_name: "kioku_ios"
