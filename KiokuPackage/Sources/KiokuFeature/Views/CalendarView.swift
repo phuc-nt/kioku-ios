@@ -126,25 +126,24 @@ public struct CalendarView: View {
     }
     
     public var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                if showingYearView {
-                    yearView
-                } else {
-                    // Month header with navigation
-                    monthHeaderView
-                    
-                    // Days of week header
-                    daysOfWeekHeader
-                    
-                    // Calendar grid
-                    calendarGrid
-                    
-                    Spacer()
-                }
+        VStack(spacing: 0) {
+            if showingYearView {
+                yearView
+            } else {
+                // Month header with navigation
+                monthHeaderView
+
+                // Days of week header
+                daysOfWeekHeader
+
+                // Calendar grid
+                calendarGrid
+
+                Spacer()
             }
-            .navigationTitle("Journal")
-            .navigationBarTitleDisplayMode(.inline)
+        }
+        .navigationTitle("Journal")
+        .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     // Temporal Search button
@@ -213,7 +212,6 @@ public struct CalendarView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-        }
     }
     
     // MARK: - Month Header View
