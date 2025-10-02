@@ -10,24 +10,29 @@ public final class DataService: @unchecked Sendable {
     public init() {
         do {
             // Configure SwiftData model container
-            let schema = Schema([Entry.self, AIAnalysis.self])
+            let schema = Schema([
+                Entry.self,
+                AIAnalysis.self,
+                Conversation.self,
+                ChatMessage.self
+            ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
                 isStoredInMemoryOnly: false
             )
-            
+
             self.modelContainer = try ModelContainer(
                 for: schema,
                 configurations: [modelConfiguration]
             )
-            
+
             self._modelContext = ModelContext(modelContainer)
-            
+
             // Validate encryption service
             try encryptionService.validateEncryption()
-            
+
             print("DataService initialized with encryption support")
-            
+
         } catch {
             fatalError("Failed to initialize SwiftData container: \(error)")
         }
@@ -206,18 +211,94 @@ public final class DataService: @unchecked Sendable {
     /// Get analysis statistics
     func getAnalysisStatistics() -> (total: Int, byModel: [String: Int], bySentiment: [String: Int]) {
         let allAnalyses = getAllAnalyses()
-        
+
         var byModel: [String: Int] = [:]
         var bySentiment: [String: Int] = [:]
-        
+
         for analysis in allAnalyses {
             byModel[analysis.modelUsed, default: 0] += 1
             bySentiment[analysis.overallSentiment, default: 0] += 1
         }
-        
+
         return (total: allAnalyses.count, byModel: byModel, bySentiment: bySentiment)
     }
-    
+
+    // MARK: - Conversation Operations
+
+    func createConversation(title: String = "New Conversation", associatedDate: Date? = nil) -> Conversation {
+        let conversation = Conversation(title: title, associatedDate: associatedDate)
+        _modelContext.insert(conversation)
+        saveContext()
+        return conversation
+    }
+
+    func fetchAllConversations() -> [Conversation] {
+        let descriptor = FetchDescriptor<Conversation>(
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+
+        do {
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to fetch conversations: \(error)")
+            return []
+        }
+    }
+
+    func fetchConversation(by id: UUID) throws -> Conversation? {
+        let predicate = #Predicate<Conversation> { conversation in
+            conversation.id == id
+        }
+
+        let descriptor = FetchDescriptor<Conversation>(predicate: predicate)
+        let results = try modelContext.fetch(descriptor)
+        return results.first
+    }
+
+    func updateConversationTitle(_ conversation: Conversation, title: String) {
+        conversation.title = title
+        conversation.updatedAt = Date()
+        saveContext()
+    }
+
+    func deleteConversation(_ conversation: Conversation) {
+        _modelContext.delete(conversation)
+        saveContext()
+    }
+
+    // MARK: - Chat Message Operations
+
+    func addMessage(to conversation: Conversation, content: String, isFromUser: Bool, contextData: String? = nil) -> ChatMessage {
+        let message = ChatMessage(
+            content: content,
+            isFromUser: isFromUser,
+            contextData: contextData
+        )
+        message.conversation = conversation
+        conversation.messages.append(message)
+        conversation.updatedAt = Date()
+        _modelContext.insert(message)
+        saveContext()
+        return message
+    }
+
+    func updateMessageContent(_ message: ChatMessage, content: String) {
+        message.content = content
+        message.conversation?.updatedAt = Date()
+        saveContext()
+    }
+
+    func updateMessageStreamingState(_ message: ChatMessage, isStreaming: Bool) {
+        message.isStreaming = isStreaming
+        saveContext()
+    }
+
+    func deleteMessage(_ message: ChatMessage) {
+        message.conversation?.updatedAt = Date()
+        _modelContext.delete(message)
+        saveContext()
+    }
+
     // MARK: - Private Methods
     
     private func saveContext() {

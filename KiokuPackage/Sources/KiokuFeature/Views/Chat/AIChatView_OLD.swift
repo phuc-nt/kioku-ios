@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct AIChatView: View {
+struct AIChatView_OLD: View {
     @Environment(DataService.self) private var dataService
     @Environment(OpenRouterService.self) private var openRouterService
     
@@ -340,12 +340,12 @@ struct AIChatView: View {
 
 #Preview {
     NavigationView {
-        AIChatView(
+        AIChatView_OLD(
             chatContextService: ChatContextService(
                 dateContextService: DateContextService(dataService: DataService.preview)
             )
         )
-        .navigationTitle("AI Chat")
+        .navigationTitle("AI Chat OLD")
         .navigationBarTitleDisplayMode(.inline)
     }
     .environment(DataService.preview)

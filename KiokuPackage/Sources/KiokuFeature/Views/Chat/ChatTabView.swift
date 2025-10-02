@@ -4,7 +4,8 @@ struct ChatTabView: View {
     @Environment(DataService.self) private var dataService
     @State private var dateContextService: DateContextService?
     @State private var chatContextService: ChatContextService?
-    
+    @State private var showAPIKeySetup = false
+
     @Binding var selectedDate: Date
     
     init(selectedDate: Binding<Date>) {
@@ -15,13 +16,26 @@ struct ChatTabView: View {
         NavigationStack {
             Group {
                 if let chatContextService = chatContextService {
-                    AIChatView(chatContextService: chatContextService)
+                    StreamingChatView(
+                        dataService: dataService,
+                        chatContextService: chatContextService
+                    )
                 } else {
                     ProgressView("Loading chat...")
                 }
             }
             .navigationTitle("AI Chat")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("API Key") {
+                        showAPIKeySetup = true
+                    }
+                }
+            }
+            .sheet(isPresented: $showAPIKeySetup) {
+                APIKeySetupView()
+            }
         }
         .onAppear {
             setupServices()

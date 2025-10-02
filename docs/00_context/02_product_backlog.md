@@ -1,8 +1,8 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: September 30, 2025  
-**Current Status**: Sprint 10 Completed - AI Chat Integration ✅  
-**Story Points Delivered**: 116/142 (82%)
+**Last Updated**: October 2, 2025
+**Current Status**: Sprint 11 Completed - 100% Success ✅
+**Story Points Delivered**: 140/155 (90%)
 
 ## Project Overview
 
@@ -19,36 +19,88 @@
 
 ## Current Sprint Status
 
+### Sprint 11 (Completed) ✅ 100% SUCCESS
+**Full LLM Chat Integration** - 13/13 story points delivered
+- ✅ Streaming chat infrastructure with Gemini 2.0 Flash (SSE)
+- ✅ Conversation threading with sidebar UI (create/switch/delete)
+- ✅ Context discovery integration ready
+- ✅ Auto-title generation verified
+- ✅ Live streaming tested and validated with real API
+- ✅ API Key management (Keychain integration)
+
+**Delivered**: October 2, 2025
+**Test Report**: `docs/03_testing/sprint_11_acceptance_tests.md` (17/17 tests PASS - 100%)
+**Branch**: `sprint-11-full-llm-chat`
+
 ### Sprint 10 (Completed) ✅
 **AI Chat Integration** - 13 story points delivered
 - ✅ AI chat access from note detail screens
-- ✅ Tab-based navigation architecture  
+- ✅ Tab-based navigation architecture
 - ✅ Context-aware chat with historical notes
 - ✅ Date synchronization between Calendar and Chat tabs
 
 ---
 
-## Next Priorities (Sprint 11+)
+## Next Priorities (Sprint 12+)
 
-### Epic: Advanced AI Features
-**Estimated**: 15-20 story points
+### Immediate Priorities (Sprint 12)
+**Estimated**: 5-7 story points
+**Priority**: High
 
-**US-041: Enhanced Conversation Memory**
-- Persistent chat history across sessions
-- Context building from multiple conversations
+**US-S12-001: Production API Key Management**
+- Replace debug APIKeySetupView with Settings UI
+- Proper user onboarding flow
+- Key validation and error messaging
+- **Priority**: High | **Complexity**: Low (2 points)
+
+**US-S12-002: Conversation to Knowledge Graph**
+- "Convert to KG" button implementation
+- Entity extraction from conversation messages
+- Cross-linking with note entities
+- **Priority**: High | **Complexity**: Medium (3 points)
+
+**US-S12-003: Enhanced Context Discovery**
+- Parallel processing (similarity + KG traversal)
+- Result merging and ranking
+- Performance optimization (<3s target)
+- **Priority**: Medium | **Complexity**: High (2 points)
+
+### Epic 6: Knowledge Graph Generation & Querying
+**Estimated**: 10-15 story points
+**Priority**: High (Phase 2 continuation, after Sprint 12)
+
+**US-S12-001: Entity Extraction from Notes**
+- Extract 5 entity types: People, Places, Events, Emotions, Topics
+- Confidence scoring và deduplication
+- Single note và batch conversion workflows
 - **Priority**: High | **Complexity**: Medium
 
-**US-042: Multi-Model AI Support** 
+**US-S12-002: Relationship Mapping**
+- 4 relationship types: Temporal, Causal, Emotional, Topical
+- Cross-note relationship discovery
+- Evidence capture với text excerpts
+- **Priority**: High | **Complexity**: High
+
+**US-S12-003: Graph Explain Screen**
+- Access from chat và note detail
+- Interactive entity và relationship navigation
+- Path explanation với breadcrumbs
+- **Priority**: Medium | **Complexity**: Medium
+
+### Epic: Advanced AI Features (Future)
+**Estimated**: 15-20 story points
+
+**US-041: Multi-Model AI Support**
 - Support multiple AI providers (Claude, GPT-4, Gemini)
 - Model comparison and selection
 - **Priority**: Medium | **Complexity**: High
 
-**US-043: Proactive AI Insights**
+**US-042: Proactive AI Insights**
 - AI-generated daily/weekly insights
 - Pattern recognition and trend analysis
 - **Priority**: High | **Complexity**: High
 
-**US-044: Voice Integration**
+**US-043: Voice Integration**
 - Voice-to-text entry creation
 - Voice conversations with AI
 - **Priority**: Medium | **Complexity**: Medium
