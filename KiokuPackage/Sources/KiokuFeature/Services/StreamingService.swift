@@ -82,24 +82,28 @@ public final class StreamingService: @unchecked Sendable {
     /// Streams chat completion với SSE, calling onToken for each token received
     public func streamCompletion(
         messages: [OpenRouterService.ChatMessage],
-        onToken: @escaping (String) -> Void,
-        onComplete: @escaping (Result<String, Error>) -> Void
+        onToken: @escaping @MainActor @Sendable (String) -> Void,
+        onComplete: @escaping @MainActor @Sendable (Result<String, Error>) -> Void
     ) {
         guard !isStreaming else {
-            onComplete(.failure(StreamingError.streamInterrupted))
+            Task { @MainActor in
+                onComplete(.failure(StreamingError.streamInterrupted))
+            }
             return
         }
 
         isStreaming = true
 
-        currentTask = Task {
+        currentTask = Task { @Sendable [weak self, onToken, onComplete] in
+            guard let self = self else { return }
+
             do {
-                guard hasAPIKey else {
+                guard self.hasAPIKey else {
                     throw StreamingError.invalidAPIKey
                 }
 
-                let apiKey = try getAPIKey()
-                var request = try buildStreamingRequest(messages: messages, apiKey: apiKey)
+                let apiKey = try self.getAPIKey()
+                var request = try self.buildStreamingRequest(messages: messages, apiKey: apiKey)
 
                 let (bytes, response) = try await URLSession.shared.bytes(for: request)
 

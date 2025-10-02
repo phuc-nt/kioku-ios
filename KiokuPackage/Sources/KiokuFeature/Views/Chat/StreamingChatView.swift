@@ -268,7 +268,7 @@ struct StreamingChatView: View {
             onToken: { _ in
                 // Token received - UI updates automatically via SwiftData observation
             },
-            onComplete: { result in
+            onComplete: { @MainActor result in
                 isStreaming = false
 
                 switch result {

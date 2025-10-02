@@ -113,8 +113,8 @@ public struct EntryDetailView: View {
         .sheet(isPresented: $showingAIChat) {
             NavigationView {
                 if let entryDate = entry.date {
-                    AIChatView(chatContextService: createChatContextService(for: entryDate))
-                        .navigationTitle("Chat with AI")
+                    AIChatView_OLD(chatContextService: createChatContextService(for: entryDate))
+                        .navigationTitle("Chat with AI (Legacy)")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {

@@ -55,7 +55,7 @@ public final class OpenRouterService: @unchecked Sendable {
         }
     }
     
-    public struct ChatMessage {
+    public struct ChatMessage: Sendable {
         let role: String // "system", "user", "assistant"
         let content: String
         

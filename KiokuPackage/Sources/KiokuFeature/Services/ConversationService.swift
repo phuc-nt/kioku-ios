@@ -71,8 +71,8 @@ public final class ConversationService: @unchecked Sendable {
     public func sendMessage(
         _ content: String,
         contextNotes: [Entry] = [],
-        onToken: @escaping (String) -> Void,
-        onComplete: @escaping (Result<String, Error>) -> Void
+        onToken: @escaping @MainActor @Sendable (String) -> Void,
+        onComplete: @escaping @MainActor @Sendable (Result<String, Error>) -> Void
     ) {
         let conversation = getOrCreateDefaultConversation()
 
@@ -141,7 +141,8 @@ public final class ConversationService: @unchecked Sendable {
                 case .success(let fullContent):
                     // Generate title if this is the first exchange
                     if conversation.messages.count == 2 {
-                        Task {
+                        Task { @Sendable [weak self] in
+                            guard let self = self else { return }
                             await self.generateConversationTitle(conversation)
                         }
                     }
@@ -159,14 +160,16 @@ public final class ConversationService: @unchecked Sendable {
     /// Regenerates the last AI response
     public func regenerateLastResponse(
         contextNotes: [Entry] = [],
-        onToken: @escaping (String) -> Void,
-        onComplete: @escaping (Result<String, Error>) -> Void
+        onToken: @escaping @MainActor @Sendable (String) -> Void,
+        onComplete: @escaping @MainActor @Sendable (Result<String, Error>) -> Void
     ) {
         guard let conversation = activeConversation,
               let lastMessage = conversation.messages.last,
               !lastMessage.isFromUser,
               conversation.messages.count >= 2 else {
-            onComplete(.failure(NSError(domain: "ConversationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Cannot regenerate"])))
+            Task { @MainActor in
+                onComplete(.failure(NSError(domain: "ConversationService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Cannot regenerate"])))
+            }
             return
         }
 

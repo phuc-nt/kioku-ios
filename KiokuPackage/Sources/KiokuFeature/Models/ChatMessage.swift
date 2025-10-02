@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class ChatMessage {
+public class ChatMessage: @unchecked Sendable {
     public var id: UUID
     public var content: String
     public var isFromUser: Bool

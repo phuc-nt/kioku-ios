@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public class Conversation {
+public class Conversation: @unchecked Sendable {
     public var id: UUID
     public var title: String
     public var createdAt: Date
