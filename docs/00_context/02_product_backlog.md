@@ -1,8 +1,8 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 1, 2025
-**Current Status**: Sprint 11 In Progress - Full LLM Chat Integration 🚧
-**Story Points Delivered**: 116/155 (75%)
+**Last Updated**: October 2, 2025
+**Current Status**: Sprint 11 Completed - Ready for Sprint 12 ✅
+**Story Points Delivered**: 127/155 (82%)
 
 ## Project Overview
 
@@ -19,15 +19,16 @@
 
 ## Current Sprint Status
 
-### Sprint 11 (In Progress) 🚧
-**Full LLM Chat Integration** - 13 story points
-- 🚧 Streaming chat with Gemini 2.0 Flash (SSE)
-- 🚧 Conversation threading with sidebar
-- 🚧 Enhanced context discovery (parallel processing)
-- 🚧 Conversation to Knowledge Graph conversion
+### Sprint 11 (Completed) ✅
+**Full LLM Chat Integration** - 11/13 story points delivered
+- ✅ Streaming chat infrastructure with Gemini 2.0 Flash (SSE)
+- ✅ Conversation threading with sidebar UI
+- ✅ Context discovery integration ready
+- ⏸️ Conversation to KG (deferred to Sprint 12)
+- ⏸️ Live streaming tests (blocked by API key requirement)
 
-**Dependencies**: OpenRouter API, Gemini 2.0 Flash availability
-**Target Completion**: October 15, 2025
+**Delivered**: October 2, 2025
+**Test Report**: `docs/03_testing/sprint_11_acceptance_tests.md`
 
 ### Sprint 10 (Completed) ✅
 **AI Chat Integration** - 13 story points delivered
@@ -40,9 +41,37 @@
 
 ## Next Priorities (Sprint 12+)
 
+### Immediate Priorities (Sprint 12)
+**Estimated**: 8-10 story points
+**Priority**: High
+
+**US-S12-001: API Key Management UI**
+- Settings screen for OpenRouter API key
+- Keychain integration with secure storage
+- In-app validation and testing
+- **Priority**: High | **Complexity**: Low (2 points)
+
+**US-S12-002: Complete Streaming Tests**
+- Manual verification with real API key
+- Performance testing (latency, reliability)
+- Stop/Regenerate button validation
+- **Priority**: High | **Complexity**: Low (1 point)
+
+**US-S12-003: Conversation to Knowledge Graph**
+- "Convert to KG" button implementation
+- Entity extraction from conversation messages
+- Cross-linking with note entities
+- **Priority**: Medium | **Complexity**: Medium (2 points)
+
+**US-S12-004: Enhanced Context Discovery**
+- Parallel processing (similarity + KG traversal)
+- Result merging and ranking
+- Performance optimization (<3s target)
+- **Priority**: Medium | **Complexity**: High (3 points)
+
 ### Epic 6: Knowledge Graph Generation & Querying
 **Estimated**: 10-15 story points
-**Priority**: High (Phase 2 continuation)
+**Priority**: High (Phase 2 continuation, after Sprint 12)
 
 **US-S12-001: Entity Extraction from Notes**
 - Extract 5 entity types: People, Places, Events, Emotions, Topics
