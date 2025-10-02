@@ -228,7 +228,16 @@ struct StreamingChatView: View {
     // MARK: - Methods
 
     private func setupInitialConversation() {
-        _ = conversationService.getOrCreateDefaultConversation()
+        // If we have initial context, create a new conversation for it
+        if let context = initialContext {
+            let dateStr = context.selectedDate.formatted(date: .abbreviated, time: .omitted)
+            _ = conversationService.createConversation(
+                title: "Chat for \(dateStr)",
+                associatedDate: context.selectedDate
+            )
+        } else {
+            _ = conversationService.getOrCreateDefaultConversation()
+        }
     }
 
     private func loadConversations() {
