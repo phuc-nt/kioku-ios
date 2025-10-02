@@ -255,6 +255,34 @@ public final class DataService: @unchecked Sendable {
         return results.first
     }
 
+    func fetchConversation(forDate date: Date) -> Conversation? {
+        // Normalize date to start of day for comparison
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
+            return nil
+        }
+        
+        let predicate = #Predicate<Conversation> { conversation in
+            conversation.associatedDate != nil &&
+            conversation.associatedDate! >= startOfDay &&
+            conversation.associatedDate! < endOfDay
+        }
+        
+        let descriptor = FetchDescriptor<Conversation>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        
+        do {
+            let results = try modelContext.fetch(descriptor)
+            return results.first
+        } catch {
+            print("Failed to fetch conversation for date: \(error)")
+            return nil
+        }
+    }
+
     func updateConversationTitle(_ conversation: Conversation, title: String) {
         conversation.title = title
         conversation.updatedAt = Date()

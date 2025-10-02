@@ -228,13 +228,21 @@ struct StreamingChatView: View {
     // MARK: - Methods
 
     private func setupInitialConversation() {
-        // If we have initial context, create a new conversation for it
+        // If we have initial context, check for existing conversation or create new one
         if let context = initialContext {
             let dateStr = context.selectedDate.formatted(date: .abbreviated, time: .omitted)
-            _ = conversationService.createConversation(
-                title: "Chat for \(dateStr)",
-                associatedDate: context.selectedDate
-            )
+            
+            // Check if conversation already exists for this date
+            if let existingConversation = dataService.fetchConversation(forDate: context.selectedDate) {
+                // Use existing conversation
+                conversationService.switchToConversation(existingConversation)
+            } else {
+                // Create new conversation for this date
+                _ = conversationService.createConversation(
+                    title: "Chat for \(dateStr)",
+                    associatedDate: context.selectedDate
+                )
+            }
         } else {
             _ = conversationService.getOrCreateDefaultConversation()
         }
