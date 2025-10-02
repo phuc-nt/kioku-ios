@@ -19,8 +19,7 @@ struct ChatTabView: View {
         NavigationStack {
             Group {
                 if let chatContextService = chatContextService {
-                    StreamingChatView(
-                        dataService: dataService,
+                    AIChatView_OLD(
                         chatContextService: chatContextService,
                         initialContext: initialContext
                     )
@@ -29,7 +28,7 @@ struct ChatTabView: View {
                     ProgressView("Loading chat...")
                 }
             }
-            .navigationTitle("AI Chat")
+            .navigationTitle("Chat with AI")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

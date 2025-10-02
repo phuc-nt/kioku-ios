@@ -8,45 +8,67 @@ public struct EntryDetailView: View {
     @State private var isEditing = false
     @State private var editedContent = ""
     @State private var showingDeleteAlert = false
-    @State private var analysisResult: AIAnalysisService.EntryAnalysis?
-    @State private var isAnalyzing = false
-    @State private var storedAnalyses: [AIAnalysis] = []
-    @State private var showingAnalysisHistory = false
     @State private var selectedHistoricalEntry: Entry?
     @State private var showingHistoricalDetail = false
     @State private var showingAIChat = false
-    
-    @Query(sort: \Entry.createdAt, order: .reverse) private var allEntries: [Entry]
+    @State private var allEntries: [Entry] = []
     
     public var body: some View {
-        NavigationView {
+        ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Date information
                     dateSection
-                    
+
                     Divider()
-                    
+
                     // Content
                     contentSection
-                    
+
                     if !isEditing {
                         Divider()
-                        
-                        // AI Analysis section
-                        aiAnalysisSection
-                        
+
                         // Historical Notes section
                         historicalNotesSection
                     }
-                    
+
                     Spacer()
                 }
                 .padding()
+                .padding(.bottom, 80) // Space for floating button
             }
-            .navigationTitle("Entry Detail")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+
+            // Floating Chat with AI button
+            if !isEditing {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            openChatWithAI()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "message.fill")
+                                    .font(.system(size: 18))
+                                Text("Chat with AI")
+                                    .fontWeight(.semibold)
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 14)
+                            .background(Color.accentColor)
+                            .cornerRadius(30)
+                            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 20)
+                    }
+                }
+            }
+        }
+        .navigationTitle(entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Entry Detail")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Done") {
                         if isEditing {
@@ -65,38 +87,23 @@ public struct EntryDetailView: View {
                                 Label("Edit", systemImage: "pencil")
                             }
                         }
-                        
+
                         Button(role: .destructive) {
                             showingDeleteAlert = true
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
-                        
+
                         Button {
                             shareEntry()
                         } label: {
                             Label("Share", systemImage: "square.and.arrow.up")
                         }
-                        
-                        Button {
-                            analyzeEntry()
-                        } label: {
-                            Label("AI Analysis", systemImage: "brain.head.profile")
-                        }
-                        
-                        Button {
-                            openChatWithAI()
-                        } label: {
-                            Label("Chat with AI", systemImage: "message")
-                        }
-                        
-                        
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
                 }
             }
-        }
         .alert("Delete Entry", isPresented: $showingDeleteAlert) {
             Button("Delete", role: .destructive) {
                 deleteEntry()
@@ -114,7 +121,7 @@ public struct EntryDetailView: View {
             NavigationView {
                 if let entryDate = entry.date {
                     AIChatView_OLD(chatContextService: createChatContextService(for: entryDate))
-                        .navigationTitle("Chat with AI (Legacy)")
+                        .navigationTitle("Chat with AI")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
@@ -129,169 +136,21 @@ public struct EntryDetailView: View {
                 }
             }
         }
-        .task {
-            loadStoredAnalyses()
+        .onAppear {
+            loadAllEntries()
         }
     }
-    
-    private var aiAnalysisSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("AI Analysis")
-                    .font(.headline)
-                
-                Spacer()
-                
-                if !storedAnalyses.isEmpty {
-                    Button("History (\(storedAnalyses.count))") {
-                        showingAnalysisHistory.toggle()
-                    }
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
-                }
-                
-                if isAnalyzing {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                } else {
-                    Button("Analyze") {
-                        analyzeEntry()
-                    }
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
-                }
-            }
-            
-            // Show current analysis result or latest stored analysis
-            if let analysis = analysisResult ?? storedAnalyses.first?.analysis {
-                // Analysis results
-                VStack(alignment: .leading, spacing: 8) {
-                    // Sentiment
-                    HStack {
-                        sentimentIcon(analysis.sentiment.overall)
-                        Text(analysis.sentiment.overall.rawValue.capitalized)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        if !analysis.sentiment.emotions.isEmpty {
-                            Text("• \(analysis.sentiment.emotions.prefix(3).joined(separator: ", "))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    // Themes
-                    if !analysis.themes.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Themes:")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                            
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 4) {
-                                ForEach(analysis.themes.prefix(4), id: \.name) { theme in
-                                    HStack {
-                                        Text(theme.name)
-                                            .font(.caption2)
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color(.systemGray5))
-                                    .cornerRadius(8)
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Key entities
-                    if !analysis.entities.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Key Elements:")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                            
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 4) {
-                                ForEach(analysis.entities.filter { $0.confidence > 0.6 }.prefix(6), id: \.name) { entity in
-                                    HStack {
-                                        entityIcon(entity.type)
-                                        Text(entity.name)
-                                            .font(.caption2)
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(6)
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Summary
-                    if !analysis.summary.isEmpty {
-                        Text(analysis.summary)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.top, 4)
-                    }
-                    
-                    // Analysis metadata
-                    HStack {
-                        Text("Analyzed with \(analysis.modelUsed.components(separatedBy: "/").last ?? "AI")")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text(analysis.processingDate, style: .relative)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.top, 4)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                
-                // Quick actions for analyzed entries
-                if !storedAnalyses.isEmpty && storedAnalyses.count > 1 {
-                    HStack {
-                        Spacer()
-                        
-                        Button("Analysis History") {
-                            showingAnalysisHistory.toggle()
-                        }
-                        .font(.caption)
-                        .foregroundColor(.accentColor)
-                    }
-                    .padding(.top, 8)
-                }
-                
-                // Analysis history section
-                if showingAnalysisHistory && storedAnalyses.count > 1 {
-                    analysisHistorySection
-                }
-                
-            } else if !isAnalyzing && storedAnalyses.isEmpty {
-                Text("Tap 'Analyze' to get AI insights about this entry")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-            } else if !isAnalyzing && !storedAnalyses.isEmpty {
-                Text("Previous analyses available. Tap 'History' to view or 'Analyze' for a new analysis.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(8)
-            }
+
+    private func loadAllEntries() {
+        let descriptor = FetchDescriptor<Entry>(sortBy: [SortDescriptor(\.createdAt, order: .reverse)])
+        do {
+            allEntries = try dataService.modelContext.fetch(descriptor)
+        } catch {
+            print("Failed to load entries: \(error)")
+            allEntries = []
         }
     }
-    
+
     @ViewBuilder
     private var historicalNotesSection: some View {
         if !historicalNotes.isEmpty {
@@ -319,131 +178,6 @@ public struct EntryDetailView: View {
                 }
             }
         }
-    }
-    
-    private var analysisHistorySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Analysis History")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            LazyVStack(spacing: 8) {
-                ForEach(storedAnalyses.dropFirst(), id: \.id) { storedAnalysis in
-                    if let analysis = storedAnalysis.analysis {
-                        analysisHistoryCard(analysis, storedAnalysis: storedAnalysis)
-                    }
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemGray5))
-        .cornerRadius(10)
-    }
-    
-    private func analysisHistoryCard(_ analysis: AIAnalysisService.EntryAnalysis, storedAnalysis: AIAnalysis) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                // Sentiment
-                HStack(spacing: 4) {
-                    sentimentIcon(analysis.sentiment.overall)
-                    Text(analysis.sentiment.overall.rawValue.capitalized)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                }
-                
-                Spacer()
-                
-                // Date and model
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(analysis.processingDate, style: .date)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text(analysis.modelUsed.components(separatedBy: "/").last ?? "AI")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            // Themes (compact view)
-            if !analysis.themes.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
-                        ForEach(analysis.themes.prefix(3), id: \.name) { theme in
-                            Text(theme.name)
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color(.systemGray4))
-                                .cornerRadius(4)
-                        }
-                        
-                        if analysis.themes.count > 3 {
-                            Text("+\(analysis.themes.count - 3)")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-            }
-            
-            // Summary (truncated)
-            if !analysis.summary.isEmpty {
-                Text(analysis.summary)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
-            }
-        }
-        .padding(8)
-        .background(Color(.systemBackground))
-        .cornerRadius(6)
-    }
-    
-    private func sentimentIcon(_ sentiment: AIAnalysisService.EntryAnalysis.Sentiment.SentimentType) -> some View {
-        Group {
-            switch sentiment {
-            case .positive:
-                Image(systemName: "face.smiling")
-                    .foregroundColor(.green)
-            case .negative:
-                Image(systemName: "face.dashed")
-                    .foregroundColor(.red)
-            case .neutral:
-                Image(systemName: "face.expressionless")
-                    .foregroundColor(.gray)
-            case .mixed:
-                Image(systemName: "face.smiling.inverse")
-                    .foregroundColor(.orange)
-            }
-        }
-        .font(.caption)
-    }
-    
-    private func entityIcon(_ entityType: AIAnalysisService.EntryAnalysis.Entity.EntityType) -> some View {
-        Group {
-            switch entityType {
-            case .person:
-                Image(systemName: "person.fill")
-                    .foregroundColor(.blue)
-            case .place:
-                Image(systemName: "location.fill")
-                    .foregroundColor(.green)
-            case .event:
-                Image(systemName: "calendar")
-                    .foregroundColor(.orange)
-            case .emotion:
-                Image(systemName: "heart.fill")
-                    .foregroundColor(.pink)
-            case .concept:
-                Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
-            case .activity:
-                Image(systemName: "figure.walk")
-                    .foregroundColor(.purple)
-            }
-        }
-        .font(.caption2)
     }
     
     private var dateSection: some View {
@@ -576,43 +310,6 @@ public struct EntryDetailView: View {
         rootViewController.present(activityController, animated: true)
     }
     
-    private func loadStoredAnalyses() {
-        storedAnalyses = AIAnalysisService.shared.getStoredAnalyses(for: entry)
-        
-        // If we have stored analyses, show the latest one
-        if let latestAnalysis = storedAnalyses.first?.analysis {
-            analysisResult = latestAnalysis
-        }
-    }
-    
-    private func analyzeEntry() {
-        guard !isAnalyzing else { return }
-        
-        isAnalyzing = true
-        let entryId = entry.id
-        let entryContent = entry.content
-        
-        Task {
-            do {
-                // This will now persist the analysis automatically, but we need to use entry ID and content
-                let analysis = try await AIAnalysisService.shared.analyzeEntry(entryId: entryId, content: entryContent, persist: true)
-                
-                await MainActor.run {
-                    analysisResult = analysis
-                    isAnalyzing = false
-                    // Reload stored analyses to include the new one
-                    loadStoredAnalyses()
-                }
-            } catch {
-                await MainActor.run {
-                    isAnalyzing = false
-                    print("Analysis failed: \(error)")
-                    // In a real app, we'd show an error alert here
-                }
-            }
-        }
-    }
-    
     private func openChatWithAI() {
         showingAIChat = true
     }
@@ -681,6 +378,7 @@ public struct EntryDetailView: View {
     
     public init(entry: Entry) {
         self.entry = entry
+        print("DEBUG EntryDetailView: Init with entry content: \(entry.content)")
     }
 }
 

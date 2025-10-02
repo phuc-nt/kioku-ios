@@ -180,9 +180,9 @@ public struct CalendarView: View {
             .sheet(isPresented: $showingDateEntry) {
                 EntryCreationView(selectedDate: selectedDate)
             }
-            .sheet(isPresented: $showingEntryDetail) {
-                if let selectedEntry = selectedEntry {
-                    EntryDetailView(entry: selectedEntry)
+            .sheet(item: $selectedEntry) { entry in
+                NavigationView {
+                    EntryDetailView(entry: entry)
                 }
             }
             .sheet(isPresented: $showingDatePicker) {
@@ -288,9 +288,10 @@ public struct CalendarView: View {
                     ) {
                         selectedDate = date
                         if let existingEntry = getEntry(for: date) {
+                            print("DEBUG: Found entry for date: \(date), content: \(existingEntry.content)")
                             selectedEntry = existingEntry
-                            showingEntryDetail = true
                         } else {
+                            print("DEBUG: No entry for date: \(date)")
                             showingDateEntry = true
                         }
                     } onLongPress: {
