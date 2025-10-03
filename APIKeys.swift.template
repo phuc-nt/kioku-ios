@@ -1,0 +1,31 @@
+import Foundation
+
+/// API Keys Configuration Template
+///
+/// INSTRUCTIONS:
+/// 1. Copy this file to "APIKeys.swift" (without .template extension)
+/// 2. Replace "YOUR_API_KEY_HERE" with your actual OpenRouter API key
+/// 3. NEVER commit "APIKeys.swift" - it's in .gitignore
+/// 4. Use TestAPIKeys.getKey() in your test code
+///
+/// To get an OpenRouter API key:
+/// - Visit: https://openrouter.ai/
+/// - Sign up for free account
+/// - Generate API key from dashboard
+/// - Key format: sk-or-v1-[64 hex characters]
+
+enum TestAPIKeys {
+    /// OpenRouter API Key for local testing
+    /// DO NOT COMMIT REAL KEYS!
+    static let openRouterKey = "YOUR_API_KEY_HERE"
+
+    /// Get the API key, or return nil if not configured
+    static func getKey() -> String? {
+        guard openRouterKey != "YOUR_API_KEY_HERE" else {
+            print("⚠️ WARNING: API key not configured!")
+            print("📝 Copy APIKeys.swift.template to APIKeys.swift and add your key")
+            return nil
+        }
+        return openRouterKey
+    }
+}
