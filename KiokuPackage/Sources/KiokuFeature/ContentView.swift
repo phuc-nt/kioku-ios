@@ -14,13 +14,20 @@ public struct ContentView: View {
                     Text("Calendar")
                 }
                 .tag(0)
-            
+
             ChatTabView(selectedDate: $selectedDate)
                 .tabItem {
                     Image(systemName: "message")
                     Text("Chat")
                 }
                 .tag(1)
+
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gearshape")
+                    Text("Settings")
+                }
+                .tag(2)
         }
     }
     

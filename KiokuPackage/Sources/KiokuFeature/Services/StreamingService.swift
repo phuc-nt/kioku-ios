@@ -33,7 +33,8 @@ public final class StreamingService: @unchecked Sendable {
     // MARK: - Properties
 
     private let baseURL = "https://openrouter.ai/api/v1"
-    private let keyIdentifier = "com.phucnt.kioku.openrouter.apikey"
+    private let keychainService = "com.phucnt.kioku.openrouter"
+    private let keychainAccount = "api-key"
     private let geminiModel = "google/gemini-2.0-flash-exp:free"
 
     // Stream control
@@ -51,9 +52,9 @@ public final class StreamingService: @unchecked Sendable {
     public func getAPIKey() throws -> String {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: keyIdentifier,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount,
+            kSecReturnData as String: true
         ]
 
         var result: AnyObject?

@@ -64,3 +64,20 @@ fastlane/test_output
 # Documentation images and large files
 docs/03_lesson/img/
 docs/99_lesson/img/
+
+# Security - API Keys and Secrets
+# IMPORTANT: Never commit real API keys!
+*.secret
+*.apikey
+.env
+.env.local
+Config.xcconfig
+Secrets.plist
+APIKeys.swift
+**/Debug/APIKeySetupView.swift
+TestAPIKeys.swift
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

@@ -16,29 +16,16 @@ struct ChatTabView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            Group {
-                if let chatContextService = chatContextService {
-                    AIChatView_OLD(
-                        chatContextService: chatContextService,
-                        initialContext: initialContext
-                    )
-                    .id(chatViewID)
-                } else {
-                    ProgressView("Loading chat...")
-                }
-            }
-            .navigationTitle("Chat with AI")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("API Key") {
-                        showAPIKeySetup = true
-                    }
-                }
-            }
-            .sheet(isPresented: $showAPIKeySetup) {
-                APIKeySetupView()
+        Group {
+            if let chatContextService = chatContextService {
+                StreamingChatView(
+                    dataService: dataService,
+                    chatContextService: chatContextService,
+                    initialContext: initialContext
+                )
+                .id(chatViewID)
+            } else {
+                ProgressView("Loading chat...")
             }
         }
         .onAppear {

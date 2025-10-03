@@ -90,6 +90,12 @@ struct StreamingChatView: View {
                         .font(.title3)
                         .foregroundColor(.red)
                 }
+            } else if canRegenerateLastResponse {
+                Button(action: regenerateLastResponse) {
+                    Image(systemName: "arrow.clockwise.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                }
             }
         }
         .padding()
@@ -170,6 +176,15 @@ struct StreamingChatView: View {
 
     private var canSendMessage: Bool {
         !currentMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var canRegenerateLastResponse: Bool {
+        guard let conversation = conversationService.activeConversation,
+              let lastMessage = conversation.messages.last else {
+            return false
+        }
+        // Can regenerate if last message is from AI (not user)
+        return !lastMessage.isFromUser && !isStreaming
     }
 
     // MARK: - Sidebar
@@ -302,6 +317,31 @@ struct StreamingChatView: View {
     private func stopStreaming() {
         conversationService.stopStreaming()
         isStreaming = false
+    }
+
+    private func regenerateLastResponse() {
+        isStreaming = true
+
+        let context = initialContext ?? chatContextService.generateContext()
+        let contextNotes = getAllContextNotes(from: context)
+
+        conversationService.regenerateLastResponse(
+            contextNotes: contextNotes,
+            onToken: { _ in
+                // Token received - UI updates automatically via SwiftData observation
+            },
+            onComplete: { @MainActor result in
+                isStreaming = false
+
+                switch result {
+                case .success:
+                    break // Success - messages already in database
+
+                case .failure(let error):
+                    showError = error.localizedDescription
+                }
+            }
+        )
     }
 
     private func getAllContextNotes(from context: ChatContext) -> [Entry] {
