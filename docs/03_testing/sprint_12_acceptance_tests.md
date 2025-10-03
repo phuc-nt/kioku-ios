@@ -17,11 +17,11 @@
 
 | Category | Tests Planned | Tests Passed | Tests Failed | Notes |
 |----------|---------------|--------------|--------------|-------|
-| API Key Management | 5 | 0 | 0 | Not yet tested |
-| Stop/Regenerate | 5 | 0 | 0 | Not yet tested |
-| Date Association | 5 | 0 | 0 | Not yet tested |
-| Enhanced Context | 5 | 0 | 0 | Not yet tested |
-| **TOTAL** | **20** | **0** | **0** | **Sprint in progress** |
+| API Key Management | 5 | 5 | 0 | ✅ PASSED - All automated tests |
+| Stop/Regenerate | 5 | 0 | 0 | Code verified, manual test pending |
+| Date Association | 5 | 0 | 0 | Implementation verified |
+| Enhanced Context | 5 | 0 | 0 | Components implemented |
+| **TOTAL** | **20** | **5** | **0** | **US-S12-001 complete, others code-verified** |
 
 ---
 
@@ -30,7 +30,7 @@
 ### Test Case 1: Settings Navigation
 **Test ID**: TC-S12-001
 **Priority**: High
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ PASSED
 
 **Objective**: Verify settings screen is accessible from main navigation
 
@@ -69,7 +69,7 @@
 ### Test Case 2: API Key Input and Validation
 **Test ID**: TC-S12-002
 **Priority**: High
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ PASSED
 
 **Objective**: Verify API key input accepts text and validates format
 
@@ -121,7 +121,7 @@
 ### Test Case 3: Show/Hide API Key Toggle
 **Test ID**: TC-S12-003
 **Priority**: Medium
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ PASSED
 
 **Objective**: Verify API key can be shown/hidden for security
 
@@ -161,7 +161,7 @@
 ### Test Case 4: Keychain Persistence
 **Test ID**: TC-S12-004
 **Priority**: High
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ PASSED
 
 **Objective**: Verify API key persists across app restarts
 
@@ -207,7 +207,7 @@
 ### Test Case 5: Help Links and Onboarding
 **Test ID**: TC-S12-005
 **Priority**: Medium
-**Status**: ⏳ NOT STARTED
+**Status**: ✅ PASSED
 
 **Objective**: Verify help resources are accessible and useful
 
@@ -1025,21 +1025,35 @@
 
 ## Test Execution Log
 
-**Latest Execution Date**: TBD
+**Latest Execution Date**: October 3, 2025
 **Test Environment**: iPhone 16 Simulator (iOS 18.5)
 **Execution Method**: XcodeBuildMCP Automation + Manual Verification
 
 ### Test Results Summary
 
-(To be filled during sprint execution)
+**Sprint 12 Test Execution - October 3, 2025**
+
+**US-S12-001 Testing**: ✅ COMPLETE (5/5 tests PASSED)
+- All Settings functionality verified through XcodeBuildMCP automation
+- **Critical Bug Fixed**: Keychain identifier mismatch between SettingsView and StreamingService
+  - **Issue**: SettingsView used `service="com.phucnt.kioku.openrouter", account="api-key"` but StreamingService queried with `account="com.phucnt.kioku.openrouter.apikey"`
+  - **Fix**: Updated StreamingService to match SettingsView identifiers
+  - **Impact**: API key now correctly retrieved for streaming chat
+- Test execution successful with real API key validation
+
+**US-S12-002, US-S12-003, US-S12-004**: Implementation verified via code inspection
+- Stop/Regenerate buttons implemented in StreamingChatView
+- Date association working with conversation management
+- Enhanced context display with individual note cards
+- Full integration testing pending manual QA
 
 | Test Case | Status | Notes |
 |-----------|--------|-------|
-| TC-S12-001 | ⏳ NOT STARTED | Settings navigation |
-| TC-S12-002 | ⏳ NOT STARTED | API key validation |
-| TC-S12-003 | ⏳ NOT STARTED | Show/hide toggle |
-| TC-S12-004 | ⏳ NOT STARTED | Keychain persistence |
-| TC-S12-005 | ⏳ NOT STARTED | Help links |
+| TC-S12-001 | ✅ PASSED | Settings navigation verified |
+| TC-S12-002 | ✅ PASSED | API key validation works correctly |
+| TC-S12-003 | ✅ PASSED | Show/hide toggle functional |
+| TC-S12-004 | ✅ PASSED | Keychain persistence confirmed, bug fixed |
+| TC-S12-005 | ✅ PASSED | Help section accessible |
 | TC-S12-006 | ⏳ NOT STARTED | Stop during streaming |
 | TC-S12-007 | ⏳ NOT STARTED | Partial message handling |
 | TC-S12-008 | ⏳ NOT STARTED | Regenerate message |
@@ -1060,17 +1074,29 @@
 
 ## Issues Found
 
-(To be filled during testing)
+### Issue #1: Keychain Identifier Mismatch
+**Issue #**: 001
+**Severity**: Critical
+**Test Case**: TC-S12-004 (Keychain Persistence)
+**Description**: API key saved in Settings but not retrieved by StreamingService due to identifier mismatch
+**Steps to Reproduce**:
+1. Save API key in Settings tab
+2. Navigate to Chat tab
+3. Send message to AI
+4. Error: "Invalid OpenRouter API key"
 
-### Issue Template
-**Issue #**: [Number]
-**Severity**: [Critical/High/Medium/Low]
-**Test Case**: [TC-ID]
-**Description**: [What went wrong]
-**Steps to Reproduce**: [How to reproduce]
-**Expected**: [What should happen]
-**Actual**: [What actually happened]
-**Status**: [Open/Fixed/Wontfix]
+**Expected**: Saved API key should be retrieved and used for API calls
+**Actual**: StreamingService failed to find API key in Keychain
+**Root Cause**:
+- SettingsView saved with: `kSecAttrService="com.phucnt.kioku.openrouter"`, `kSecAttrAccount="api-key"`
+- StreamingService queried with: `kSecAttrAccount="com.phucnt.kioku.openrouter.apikey"` (missing kSecAttrService)
+**Fix Applied**: Updated StreamingService.swift to use matching identifiers:
+```swift
+private let keychainService = "com.phucnt.kioku.openrouter"
+private let keychainAccount = "api-key"
+```
+**Status**: ✅ FIXED (October 3, 2025)
+**Verified**: Re-tested TC-S12-004, API key now correctly retrieved
 
 ---
 
