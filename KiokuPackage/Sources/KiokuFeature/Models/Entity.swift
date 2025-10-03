@@ -18,6 +18,9 @@ public final class Entity: @unchecked Sendable {
     @Relationship(inverse: \Entry.entities)
     public var entries: [Entry] = []
 
+    @Relationship(inverse: \Conversation.extractedEntities)
+    public var conversations: [Conversation] = []
+
     // Relationships where this entity is the source
     @Relationship(deleteRule: .cascade)
     public var outgoingRelationships: [EntityRelationship] = []

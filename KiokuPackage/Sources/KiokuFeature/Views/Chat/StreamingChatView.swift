@@ -6,6 +6,7 @@ struct StreamingChatView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var conversationService: ConversationService
+    @State private var conversationEntityService: ConversationEntityService
     @State private var currentMessage = ""
     @State private var isStreaming = false
     @State private var showError: String?
@@ -13,6 +14,10 @@ struct StreamingChatView: View {
     // Conversation management
     @State private var conversations: [Conversation] = []
     @State private var showSidebar = false
+
+    // Entity extraction
+    @State private var isExtractingEntities = false
+    @State private var showExtractionSuccess = false
 
     // Context
     private let chatContextService: ChatContextService
@@ -24,6 +29,7 @@ struct StreamingChatView: View {
         initialContext: ChatContext? = nil
     ) {
         self._conversationService = State(initialValue: ConversationService(dataService: dataService))
+        self._conversationEntityService = State(initialValue: ConversationEntityService(dataService: dataService))
         self.chatContextService = chatContextService
         self.initialContext = initialContext
     }
@@ -55,6 +61,11 @@ struct StreamingChatView: View {
         } message: {
             Text(showError ?? "")
         }
+        .alert("Success", isPresented: $showExtractionSuccess) {
+            Button("OK") {}
+        } message: {
+            Text("Entities extracted successfully and added to Knowledge Graph!")
+        }
         .onAppear {
             setupInitialConversation()
             loadConversations()
@@ -84,15 +95,28 @@ struct StreamingChatView: View {
 
             Spacer()
 
-            if isStreaming {
-                Button(action: stopStreaming) {
-                    Image(systemName: "stop.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.red)
+            HStack(spacing: 12) {
+                if isStreaming {
+                    Button(action: stopStreaming) {
+                        Image(systemName: "stop.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.red)
+                    }
+                } else if canRegenerateLastResponse {
+                    Button(action: regenerateLastResponse) {
+                        Image(systemName: "arrow.clockwise.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.accentColor)
+                    }
                 }
-            } else if canRegenerateLastResponse {
-                Button(action: regenerateLastResponse) {
-                    Image(systemName: "arrow.clockwise.circle.fill")
+
+                Menu {
+                    Button(action: extractToKnowledgeGraph) {
+                        Label("Extract to Knowledge Graph", systemImage: "network")
+                    }
+                    .disabled(isExtractingEntities || !canExtractEntities)
+                } label: {
+                    Image(systemName: "ellipsis.circle")
                         .font(.title3)
                         .foregroundColor(.accentColor)
                 }
@@ -185,6 +209,14 @@ struct StreamingChatView: View {
         }
         // Can regenerate if last message is from AI (not user)
         return !lastMessage.isFromUser && !isStreaming
+    }
+
+    private var canExtractEntities: Bool {
+        guard let conversation = conversationService.activeConversation else {
+            return false
+        }
+        // Can extract if conversation has at least 2 messages (1 user + 1 AI response)
+        return conversation.messageCount >= 2 && !isStreaming
     }
 
     // MARK: - Sidebar
@@ -355,6 +387,36 @@ struct StreamingChatView: View {
         notes.append(contentsOf: context.recentNotes.prefix(5))
 
         return notes
+    }
+
+    private func extractToKnowledgeGraph() {
+        guard let conversation = conversationService.activeConversation else {
+            showError = "No active conversation"
+            return
+        }
+
+        isExtractingEntities = true
+
+        Task {
+            do {
+                let entities = try await conversationEntityService.extractEntities(from: conversation)
+
+                await MainActor.run {
+                    isExtractingEntities = false
+                    if entities.isEmpty {
+                        showError = "No entities found in this conversation"
+                    } else {
+                        conversation.hasKnowledgeGraph = true
+                        showExtractionSuccess = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isExtractingEntities = false
+                    showError = error.localizedDescription
+                }
+            }
+        }
     }
 }
 
