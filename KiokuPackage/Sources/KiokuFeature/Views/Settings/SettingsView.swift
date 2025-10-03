@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(DataService.self) private var dataService
     @State private var apiKey: String = ""
     @State private var isShowingKey: Bool = false
     @State private var validationState: ValidationState = .empty
@@ -47,6 +48,14 @@ public struct SettingsView: View {
                     Text("OpenRouter API Key")
                 } footer: {
                     footerText
+                }
+
+                Section {
+                    knowledgeGraphSection
+                } header: {
+                    Text("Knowledge Graph")
+                } footer: {
+                    Text("Extract entities and relationships from your journal entries to build a knowledge graph.")
                 }
 
                 Section {
@@ -162,6 +171,18 @@ public struct SettingsView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+            }
+        }
+    }
+
+    private var knowledgeGraphSection: some View {
+        NavigationLink {
+            EntityExtractionView(dataService: dataService)
+        } label: {
+            HStack {
+                Image(systemName: "brain.head.profile")
+                Text("Entity Extraction")
+                Spacer()
             }
         }
     }
