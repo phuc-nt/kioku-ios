@@ -5,15 +5,21 @@ struct EntityExtractionView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var extractionService: EntityExtractionService
+    @State private var relationshipService: RelationshipDiscoveryService
     @State private var isProcessing = false
     @State private var progress: Double = 0.0
     @State private var currentEntryText: String = ""
     @State private var showError: String?
     @State private var showSuccess = false
     @State private var extractionStats: (total: Int, byType: [EntityType: Int])?
+    @State private var relationshipStats: (total: Int, byType: [RelationshipType: Int])?
+    @State private var isDiscoveringRelationships = false
+    @State private var discoveryProgress: Double = 0.0
+    @State private var showRelationshipSuccess = false
 
     init(dataService: DataService) {
         self._extractionService = State(initialValue: EntityExtractionService(dataService: dataService))
+        self._relationshipService = State(initialValue: RelationshipDiscoveryService(dataService: dataService))
     }
 
     var body: some View {
@@ -34,6 +40,21 @@ struct EntityExtractionView: View {
                     // Progress
                     if isProcessing {
                         progressSection
+                    }
+
+                    // Relationship discovery section
+                    if let stats = extractionStats, stats.total >= 2 {
+                        relationshipDiscoverySection
+                    }
+
+                    // Relationship stats
+                    if let relStats = relationshipStats, relStats.total > 0 {
+                        relationshipStatsSection(stats: relStats)
+                    }
+
+                    // Discovery progress
+                    if isDiscoveringRelationships {
+                        discoveryProgressSection
                     }
                 }
                 .padding()
@@ -62,6 +83,14 @@ struct EntityExtractionView: View {
                 }
             } message: {
                 Text("Successfully extracted entities from your journal entries!")
+            }
+            .alert("Discovery Complete", isPresented: $showRelationshipSuccess) {
+                Button("OK") {
+                    showRelationshipSuccess = false
+                    loadStats()
+                }
+            } message: {
+                Text("Successfully discovered relationships between entities!")
             }
             .onAppear {
                 loadStats()
@@ -187,6 +216,93 @@ struct EntityExtractionView: View {
         .cornerRadius(12)
     }
 
+    // MARK: - Relationship Discovery Section
+
+    private var relationshipDiscoverySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Relationship Discovery")
+                .font(.headline)
+
+            Text("Discover relationships between extracted entities. Requires at least 2 entities.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Button(action: startRelationshipDiscovery) {
+                HStack {
+                    Image(systemName: isDiscoveringRelationships ? "stop.circle.fill" : "arrow.triangle.branch")
+                    Text(isDiscoveringRelationships ? "Stop Discovery" : "Discover Relationships")
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(isDiscoveringRelationships ? .red : .orange)
+            .disabled(!hasAPIKey || isProcessing)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+
+    private func relationshipStatsSection(stats: (total: Int, byType: [RelationshipType: Int])) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Discovered Relationships")
+                .font(.headline)
+
+            VStack(spacing: 8) {
+                HStack {
+                    Image(systemName: "link.circle.fill")
+                        .foregroundColor(.orange)
+                    Text("Total Relationships")
+                    Spacer()
+                    Text("\(stats.total)")
+                        .fontWeight(.semibold)
+                }
+
+                Divider()
+
+                ForEach(RelationshipType.allCases, id: \.self) { type in
+                    HStack {
+                        Image(systemName: type.icon)
+                            .foregroundColor(.secondary)
+                        Text(type.displayName)
+                        Spacer()
+                        Text("\(stats.byType[type] ?? 0)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
+        }
+    }
+
+    private var discoveryProgressSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Discovering...")
+                .font(.headline)
+
+            ProgressView(value: discoveryProgress, total: 1.0) {
+                HStack {
+                    Text("Progress")
+                    Spacer()
+                    Text("\(Int(discoveryProgress * 100))%")
+                }
+                .font(.caption)
+            }
+
+            if !currentEntryText.isEmpty {
+                Text("Analyzing: \(currentEntryText)...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+
     // MARK: - Methods
 
     private var hasAPIKey: Bool {
@@ -196,6 +312,9 @@ struct EntityExtractionView: View {
     private func loadStats() {
         let stats = extractionService.getExtractionStats()
         extractionStats = (total: stats.totalEntities, byType: stats.byType)
+
+        let relStats = relationshipService.getDiscoveryStats()
+        relationshipStats = (total: relStats.totalRelationships, byType: relStats.byType)
     }
 
     private func startExtraction() {
@@ -241,6 +360,56 @@ struct EntityExtractionView: View {
                 await MainActor.run {
                     isProcessing = false
                     progress = 0.0
+                    currentEntryText = ""
+                    showError = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func startRelationshipDiscovery() {
+        if isDiscoveringRelationships {
+            // Stop discovery
+            relationshipService.cancelDiscovery()
+            isDiscoveringRelationships = false
+            discoveryProgress = 0.0
+            currentEntryText = ""
+            return
+        }
+
+        // Start discovery - only process entries that have entities
+        let allEntries = dataService.fetchAllEntries().filter { $0.entities.count >= 2 }
+
+        guard !allEntries.isEmpty else {
+            showError = "No entries with entities found. Extract entities first."
+            return
+        }
+
+        isDiscoveringRelationships = true
+        discoveryProgress = 0.0
+        currentEntryText = ""
+
+        Task {
+            do {
+                try await relationshipService.discoverRelationshipsFromBatch(
+                    entries: allEntries,
+                    onProgress: { @MainActor newProgress, entryText in
+                        discoveryProgress = newProgress
+                        currentEntryText = entryText
+                    }
+                )
+
+                await MainActor.run {
+                    isDiscoveringRelationships = false
+                    discoveryProgress = 1.0
+                    currentEntryText = ""
+                    showRelationshipSuccess = true
+                }
+
+            } catch {
+                await MainActor.run {
+                    isDiscoveringRelationships = false
+                    discoveryProgress = 0.0
                     currentEntryText = ""
                     showError = error.localizedDescription
                 }
