@@ -134,6 +134,15 @@ public final class EntityExtractionService: @unchecked Sendable {
         var processedCount = 0
 
         for entry in entries {
+            // Check if extraction was cancelled
+            guard await MainActor.run(body: { isExtracting }) else {
+                print("⚠️ Extraction cancelled by user")
+                await MainActor.run {
+                    onProgress(progress, "Cancelled")
+                }
+                return
+            }
+
             // Skip if already extracted
             if entry.isEntitiesExtracted {
                 processedCount += 1
@@ -168,13 +177,27 @@ public final class EntityExtractionService: @unchecked Sendable {
 
                 processedCount += 1
 
-                // Small delay to avoid rate limiting
-                try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                // Delay to avoid rate limiting (1.5 seconds between requests)
+                try await Task.sleep(nanoseconds: 1_500_000_000)
 
             } catch {
                 print("❌ EXTRACTION ERROR for entry \(entry.id): \(error)")
                 print("   Error type: \(type(of: error))")
                 print("   Error description: \(error.localizedDescription)")
+
+                // Check if it's a rate limit error
+                if let extractionError = error as? ExtractionError,
+                   case .networkError(let underlyingError) = extractionError,
+                   let openRouterError = underlyingError as? OpenRouterService.OpenRouterError,
+                   case .rateLimitExceeded = openRouterError {
+
+                    print("⚠️ Rate limit exceeded - stopping extraction")
+                    await MainActor.run {
+                        isExtracting = false
+                        onProgress(progress, "Rate limit exceeded - please wait and try again")
+                    }
+                    return
+                }
 
                 // Update progress with error message
                 await MainActor.run {
