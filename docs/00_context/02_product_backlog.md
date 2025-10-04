@@ -68,64 +68,51 @@
 
 ## Known Issues
 
-### Issue 1: Entity Extraction API Rate Limiting
-**Status**: 🔴 Open - High Priority
-**Discovered**: October 5, 2025
-**Component**: Entity Extraction Service
-**Severity**: Medium
+### ~~Issue 1: Entity Extraction API Rate Limiting~~ ✅ RESOLVED
+**Status**: ✅ Resolved - October 5, 2025
+**Component**: Entity Extraction & Relationship Discovery Services
+**Resolution**: Changed models from free tier to paid tier
 
-**Description**:
-Entity extraction feature is hitting OpenRouter API rate limits when processing journal entries. This causes extraction failures and impacts the knowledge graph functionality.
+**Original Problem**:
+- Entity extraction and relationship discovery hitting rate limits
+- Both services using `google/gemini-2.0-flash-exp:free` (FREE tier)
+- Chat working fine with `openai/gpt-4o-mini` (PAID tier)
 
-**Symptoms**:
-- Rate limit errors during entity extraction
-- Successful chat interactions (not affected)
-- Only affects batch processing of entries
+**Root Cause Identified**:
+- Free tier models have separate, very low rate limits (~20 requests/day)
+- Paid tier models have much higher limits
+- Same API key, different models = different rate limit pools
 
-**Impact**:
-- ❌ Entity extraction fails for existing notes
-- ❌ Knowledge graph cannot be populated
-- ✅ Chat functionality works normally (separate service)
+**Solution Implemented**:
+1. ✅ Changed `EntityExtractionService.extractionModel` to `openai/gpt-4o-mini`
+2. ✅ Changed `RelationshipDiscoveryService.discoveryModel` to `openai/gpt-4o-mini`
+3. ✅ Fixed aliases array parsing bug in entity extraction
+4. ✅ All services now use same paid tier model
 
-**Root Cause**:
-Suspected issues:
-1. Too many concurrent API requests during batch processing
-2. Missing rate limit handling/retry logic
-3. No request throttling or queuing system
+**Test Results**: ✅ 10/10 entries processed successfully
+- No rate limit errors
+- No parsing errors
+- 100% success rate for both entity extraction and relationship discovery
 
-**Proposed Solutions**:
-1. Add request queue with rate limiting (1 request per second)
-2. Implement exponential backoff retry logic
-3. Add batch processing with delays between requests
-4. Consider local LLM for entity extraction (future)
+**Documentation**: [`docs/03_testing/entity_extraction_rate_limit_fix.md`](../03_testing/entity_extraction_rate_limit_fix.md)
 
-**Priority**: High - Blocks Knowledge Graph Epic (Sprint 13+)
-**Assigned To**: Next sprint task
-**Related Epic**: Epic 6 - Knowledge Graph Generation
+**Impact**: Knowledge Graph Epic (Sprint 13+) is now unblocked and ready
 
 ---
 
 ## Next Priorities (Sprint 13+)
 
 ### Immediate Priorities (Sprint 13)
-**Focus**: Fix Entity Extraction + Knowledge Graph Integration
-**Estimated**: 11-14 story points
+**Focus**: Knowledge Graph Integration
+**Estimated**: 9-12 story points
 **Priority**: High
-
-**🔥 US-S13-000: Fix Entity Extraction Rate Limiting (CRITICAL)**
-- Implement request queue with rate limiting
-- Add exponential backoff retry logic
-- Batch processing with configurable delays
-- Monitor and log rate limit metrics
-- **Priority**: Critical | **Complexity**: Medium (2 points)
-- **Blocks**: All Knowledge Graph stories
 
 **US-S13-001: Entity Extraction from Notes**
 - Extract 5 entity types: People, Places, Events, Emotions, Topics
 - Confidence scoring and deduplication
 - Single note and batch conversion workflows
 - **Priority**: High | **Complexity**: Medium (3 points)
-- **Depends On**: US-S13-000
+- **Status**: ✅ Backend ready, needs UI integration
 
 **US-S13-002: Relationship Mapping**
 - 4 relationship types: Temporal, Causal, Emotional, Topical

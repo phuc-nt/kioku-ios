@@ -571,8 +571,49 @@ After Sprint 12 completion, a comprehensive security system was implemented to p
 - ✅ Simplified maintenance
 
 **Known Issue Documented**:
-- Entity Extraction hitting API rate limits (separate from chat)
-- To be addressed in next sprint task
+- ~~Entity Extraction hitting API rate limits~~ ✅ **RESOLVED** (October 5, 2025)
+
+---
+
+## Post-Sprint Fix: Entity Extraction & Relationship Discovery Rate Limiting
+
+### Issue Resolution (October 5, 2025)
+
+**Problems Fixed**:
+1. ✅ Entity Extraction hitting rate limits with free tier model
+2. ✅ Relationship Discovery completely failing with rate limits
+3. ✅ CoreData aliases array parsing errors
+
+**Root Cause**:
+- Both services using `google/gemini-2.0-flash-exp:free` (FREE tier)
+- Free tier has very low rate limits (~20 requests/day)
+- Chat service using `openai/gpt-4o-mini` (PAID tier) worked fine
+- Different models = different rate limit pools
+
+**Solutions Implemented**:
+1. ✅ Changed `EntityExtractionService.extractionModel` → `openai/gpt-4o-mini`
+2. ✅ Changed `RelationshipDiscoveryService.discoveryModel` → `openai/gpt-4o-mini`
+3. ✅ Fixed aliases array parsing with robust `compactMap` approach
+4. ✅ All AI services now unified on same paid tier model
+
+**Test Results**: ✅ 100% Success
+- Entity Extraction: 10/10 entries processed
+- Relationship Discovery: 10/10 entries processed
+- Zero rate limit errors
+- Zero parsing errors
+
+**Documentation**: [`docs/03_testing/entity_extraction_rate_limit_fix.md`](../03_testing/entity_extraction_rate_limit_fix.md)
+
+**Files Changed**:
+- Modified: `EntityExtractionService.swift` (model + parsing fix)
+- Modified: `RelationshipDiscoveryService.swift` (model change)
+- Created: Fix documentation and test results
+
+**Impact**:
+- ✅ Knowledge Graph Epic fully unblocked
+- ✅ Production-ready backend services
+- ✅ Consistent AI quality across all features
+- ✅ Cost-effective with `gpt-4o-mini` pricing
 
 ---
 
@@ -582,5 +623,5 @@ After Sprint 12 completion, a comprehensive security system was implemented to p
 2. ✅ COMPLETE: XcodeBuildMCP test scenarios executed
 3. ✅ COMPLETE: Security protection system implemented
 4. ✅ COMPLETE: Chat UI unification (post-sprint)
-5. 🔜 TODO: Fix Entity Extraction rate limiting issue
-6. Ready for Sprint 13: Knowledge Graph Integration
+5. ✅ COMPLETE: Entity Extraction & Relationship Discovery rate limit fix
+6. ✅ Ready for Sprint 13: Knowledge Graph Integration (fully unblocked)

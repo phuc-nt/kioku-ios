@@ -33,7 +33,7 @@ public final class EntityExtractionService: @unchecked Sendable {
     private let dataService: DataService
 
     // Extraction configuration
-    public var extractionModel = "google/gemini-2.0-flash-exp:free" // Cost-effective for extraction
+    public var extractionModel = "openai/gpt-4o-mini" // Same as chat for consistent rate limits
     public var minConfidence: Double = 0.5 // Minimum confidence to accept entity
     public var batchSize = 10 // Process N entries at a time
 
@@ -249,11 +249,15 @@ public final class EntityExtractionService: @unchecked Sendable {
                       let type = EntityType(rawValue: typeString.lowercased()),
                       let value = entityDict["value"] as? String,
                       let confidence = entityDict["confidence"] as? Double else {
-                    print("Skipping invalid entity: \(entityDict)")
+                    print("⚠️ Skipping invalid entity: \(entityDict)")
                     continue
                 }
 
-                let aliases = (entityDict["aliases"] as? [String]) ?? []
+                // Handle aliases array more robustly
+                var aliases: [String] = []
+                if let aliasesArray = entityDict["aliases"] as? [Any] {
+                    aliases = aliasesArray.compactMap { $0 as? String }
+                }
 
                 let entity = Entity(
                     type: type,

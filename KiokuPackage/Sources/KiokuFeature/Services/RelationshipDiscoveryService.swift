@@ -36,7 +36,7 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
     private let dataService: DataService
 
     // Discovery configuration
-    public var discoveryModel = "google/gemini-2.0-flash-exp:free"
+    public var discoveryModel = "openai/gpt-4o-mini" // Same as chat for consistent rate limits
     public var minConfidence: Double = 0.6 // Higher threshold for relationships
     public var batchSize = 5 // Process N entries at a time
 
