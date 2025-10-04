@@ -25,27 +25,9 @@ public final class TestDataService: @unchecked Sendable {
 
     /// Clear all data from the database
     public func clearAllData() {
-        // Delete all entries
-        let entries = dataService.fetchAllEntries()
-        for entry in entries {
-            dataService.deleteEntry(entry)
-        }
+        // Delete in reverse order to avoid relationship issues
 
-        // Delete all conversations
-        let conversations = dataService.fetchAllConversations()
-        for conversation in conversations {
-            dataService.deleteConversation(conversation)
-        }
-
-        // Delete all entities
-        let descriptor = FetchDescriptor<Entity>()
-        if let entities = try? dataService.modelContext.fetch(descriptor) {
-            for entity in entities {
-                dataService.modelContext.delete(entity)
-            }
-        }
-
-        // Delete all relationships
+        // 1. Delete all relationships first (they reference entities)
         let relDescriptor = FetchDescriptor<EntityRelationship>()
         if let relationships = try? dataService.modelContext.fetch(relDescriptor) {
             for relationship in relationships {
@@ -53,7 +35,32 @@ public final class TestDataService: @unchecked Sendable {
             }
         }
 
-        try? dataService.modelContext.save()
+        // 2. Delete all entities (they reference entries)
+        let descriptor = FetchDescriptor<Entity>()
+        if let entities = try? dataService.modelContext.fetch(descriptor) {
+            for entity in entities {
+                dataService.modelContext.delete(entity)
+            }
+        }
+
+        // 3. Delete all conversations
+        let conversations = dataService.fetchAllConversations()
+        for conversation in conversations {
+            dataService.deleteConversation(conversation)
+        }
+
+        // 4. Delete all entries last
+        let entries = dataService.fetchAllEntries()
+        for entry in entries {
+            dataService.deleteEntry(entry)
+        }
+
+        // Save changes
+        do {
+            try dataService.modelContext.save()
+        } catch {
+            print("Error saving after clear: \(error)")
+        }
     }
 
     // MARK: - Test Data Generation
