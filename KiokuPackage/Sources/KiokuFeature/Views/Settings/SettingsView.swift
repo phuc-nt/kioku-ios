@@ -471,8 +471,10 @@ public struct SettingsView: View {
         isClearingData = true
 
         Task {
-            let testDataService = TestDataService(dataService: dataService)
-            testDataService.clearAllData()
+            await MainActor.run {
+                let testDataService = TestDataService(dataService: dataService)
+                testDataService.clearAllData()
+            }
 
             try? await Task.sleep(for: .milliseconds(500))
 
