@@ -348,6 +348,45 @@ public struct SettingsView: View {
     }
 
     private func loadAPIKey() {
+        #if DEBUG
+        // In DEBUG mode, always sync from APIKeys.swift if available
+        if let apiKeysType = NSClassFromString("Kioku.APIKeys") as? NSObject.Type,
+           let devKey = apiKeysType.value(forKey: "openRouterAPIKey") as? String,
+           !devKey.isEmpty {
+
+            // Check if this key differs from what's in Keychain
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: keychainService,
+                kSecAttrAccount as String: keychainAccount,
+                kSecReturnData as String: true
+            ]
+
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+            let keychainKey = (status == errSecSuccess && result is Data)
+                ? String(data: result as! Data, encoding: .utf8)
+                : nil
+
+            // If keys differ or no key in keychain, update it
+            if keychainKey != devKey {
+                apiKey = devKey
+                validationState = .validating
+                Task {
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                    await MainActor.run {
+                        if devKey.hasPrefix("sk-or-v1-") && devKey.count >= 40 {
+                            validationState = .valid
+                            saveAPIKey()
+                        }
+                    }
+                }
+                return
+            }
+        }
+        #endif
+
         // Try to load existing key from Keychain
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -364,27 +403,6 @@ public struct SettingsView: View {
            let key = String(data: data, encoding: .utf8) {
             apiKey = key
             validationState = .valid
-        } else {
-            // Auto-populate from APIKeys.swift for development (if available)
-            #if DEBUG
-            if let apiKeysType = NSClassFromString("Kioku.APIKeys") as? NSObject.Type,
-               let openRouterKey = apiKeysType.value(forKey: "openRouterAPIKey") as? String,
-               !openRouterKey.isEmpty {
-                apiKey = openRouterKey
-                validationState = .validating
-                // Auto-save to keychain
-                Task {
-                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
-                    await MainActor.run {
-                        // Validate
-                        if openRouterKey.hasPrefix("sk-or-v1-") && openRouterKey.count >= 40 {
-                            validationState = .valid
-                            saveAPIKey()
-                        }
-                    }
-                }
-            }
-            #endif
         }
     }
 

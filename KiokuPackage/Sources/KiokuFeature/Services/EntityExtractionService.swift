@@ -134,6 +134,16 @@ public final class EntityExtractionService: @unchecked Sendable {
         var processedCount = 0
 
         for entry in entries {
+            // Skip if already extracted
+            if entry.isEntitiesExtracted {
+                processedCount += 1
+                await MainActor.run {
+                    progress = Double(processedCount) / Double(totalEntries)
+                    onProgress(progress, "Skipped (already extracted)")
+                }
+                continue
+            }
+
             // Update progress
             await MainActor.run {
                 currentEntry = String(entry.content.prefix(50))

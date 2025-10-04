@@ -61,19 +61,28 @@ public final class TestDataService: @unchecked Sendable {
     private func generateVietnameseEntries() -> [Entry] {
         var entries: [Entry] = []
         let calendar = Calendar.current
-        let endDate = Date()
-        let startDate = calendar.date(byAdding: .month, value: -2, to: endDate)!
 
-        var currentDate = startDate
+        // Create 10 entries with overlapping dates in September and October 2025
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
 
-        while currentDate <= endDate {
-            // Skip some days randomly (not everyone writes every day)
-            if Int.random(in: 0...10) < 7 { // 70% chance of writing
-                let entry = generateEntry(for: currentDate)
-                entries.append(entry)
-            }
+        // Define specific dates: some in Sep, some in Oct, some on same day of different months
+        let testDates = [
+            dateFormatter.date(from: "2025-09-15")!, // Sep 15
+            dateFormatter.date(from: "2025-10-15")!, // Oct 15 (same day)
+            dateFormatter.date(from: "2025-09-20")!, // Sep 20
+            dateFormatter.date(from: "2025-10-20")!, // Oct 20 (same day)
+            dateFormatter.date(from: "2025-09-25")!, // Sep 25
+            dateFormatter.date(from: "2025-10-25")!, // Oct 25 (same day)
+            dateFormatter.date(from: "2025-09-10")!, // Sep 10
+            dateFormatter.date(from: "2025-10-10")!, // Oct 10 (same day)
+            dateFormatter.date(from: "2025-09-05")!, // Sep 5
+            dateFormatter.date(from: "2025-10-05")!, // Oct 5 (same day)
+        ]
 
-            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate)!
+        for date in testDates {
+            let entry = generateEntry(for: date)
+            entries.append(entry)
         }
 
         return entries
