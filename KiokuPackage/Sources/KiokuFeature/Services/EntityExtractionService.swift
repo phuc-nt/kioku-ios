@@ -151,6 +151,9 @@ public final class EntityExtractionService: @unchecked Sendable {
                     entry.isEntitiesExtracted = true
                     entry.entitiesExtractedAt = Date()
                     entry.entitiesExtractionModel = extractionModel
+
+                    // Explicitly save the context
+                    try? dataService.modelContext.save()
                 }
 
                 processedCount += 1

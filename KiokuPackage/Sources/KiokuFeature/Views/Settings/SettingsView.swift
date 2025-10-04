@@ -364,6 +364,27 @@ public struct SettingsView: View {
            let key = String(data: data, encoding: .utf8) {
             apiKey = key
             validationState = .valid
+        } else {
+            // Auto-populate from APIKeys.swift for development (if available)
+            #if DEBUG
+            if let apiKeysType = NSClassFromString("Kioku.APIKeys") as? NSObject.Type,
+               let openRouterKey = apiKeysType.value(forKey: "openRouterAPIKey") as? String,
+               !openRouterKey.isEmpty {
+                apiKey = openRouterKey
+                validationState = .validating
+                // Auto-save to keychain
+                Task {
+                    try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+                    await MainActor.run {
+                        // Validate
+                        if openRouterKey.hasPrefix("sk-or-v1-") && openRouterKey.count >= 40 {
+                            validationState = .valid
+                            saveAPIKey()
+                        }
+                    }
+                }
+            }
+            #endif
         }
     }
 
