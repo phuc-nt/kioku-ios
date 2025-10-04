@@ -18,12 +18,12 @@ struct ChatTabView: View {
     var body: some View {
         Group {
             if let chatContextService = chatContextService {
-                StreamingChatView(
-                    dataService: dataService,
+                AIChatView(
                     chatContextService: chatContextService,
                     initialContext: initialContext
                 )
                 .id(chatViewID)
+                .environment(OpenRouterService.shared)
             } else {
                 ProgressView("Loading chat...")
             }
@@ -57,7 +57,7 @@ struct ChatTabView: View {
                 self.initialContext = chatContextService.generateContext()
                 self.lastLoadedDate = selectedDate
                 
-                // Force recreate StreamingChatView with new date context
+                // Force recreate AIChatView with new date context
                 chatViewID = UUID()
             }
         }
@@ -76,7 +76,7 @@ struct ChatTabView: View {
             self.initialContext = chatContextService.generateContext()
             self.lastLoadedDate = selectedDate
             
-            // Force recreate StreamingChatView with new context
+            // Force recreate AIChatView with new context
             chatViewID = UUID()
         }
     }

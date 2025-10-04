@@ -526,9 +526,61 @@ After Sprint 12 completion, a comprehensive security system was implemented to p
 
 ---
 
+## Post-Sprint Work: Chat UI Unification
+
+### Additional Task: Unify Chat Components (October 5, 2025)
+
+**Problem**: Chat Tab and "Chat with AI from note detail" used different components (StreamingChatView vs AIChatView_OLD), causing UI inconsistency and code duplication.
+
+**Solution Implemented**:
+1. ✅ Unified both features to use single `AIChatView` component
+2. ✅ Deleted redundant components:
+   - `StreamingChatView.swift`
+   - `ConversationService.swift`
+   - `StreamingService.swift`
+3. ✅ Renamed `AIChatView_OLD.swift` → `AIChatView.swift`
+4. ✅ Added streaming support to unified component:
+   - Animated streaming indicator with dots
+   - Stop button during AI response
+   - Placeholder message pattern
+   - Proper async/await Task cancellation
+5. ✅ Updated references in:
+   - `ChatTabView.swift` - Uses unified AIChatView
+   - `EntryDetailView.swift` - Updated component reference
+
+**Test Results**: ✅ ALL PASSED (6/6 scenarios)
+- Context loading for selected date
+- Message input and sending
+- AI response generation via OpenRouter
+- Streaming UI features (indicator, stop button)
+- UI consistency between views
+- Build system validation (clean build success)
+
+**Test Documentation**: [`docs/03_testing/chat_ui_unification_test_results.md`](../03_testing/chat_ui_unification_test_results.md)
+
+**Files Changed**:
+- Modified: `AIChatView.swift` (renamed + streaming features)
+- Modified: `ChatTabView.swift` (use unified view)
+- Modified: `EntryDetailView.swift` (updated reference)
+- Deleted: 3 obsolete files
+
+**Impact**:
+- ✅ Consistent UX across all chat features
+- ✅ Reduced code duplication (~500 lines removed)
+- ✅ Single source of truth for chat UI
+- ✅ Simplified maintenance
+
+**Known Issue Documented**:
+- Entity Extraction hitting API rate limits (separate from chat)
+- To be addressed in next sprint task
+
+---
+
 ## Next Steps
 
 1. ✅ COMPLETE: US-S12-001 through US-S12-004
 2. ✅ COMPLETE: XcodeBuildMCP test scenarios executed
 3. ✅ COMPLETE: Security protection system implemented
-4. Ready for Sprint 13: Knowledge Graph Integration
+4. ✅ COMPLETE: Chat UI unification (post-sprint)
+5. 🔜 TODO: Fix Entity Extraction rate limiting issue
+6. Ready for Sprint 13: Knowledge Graph Integration

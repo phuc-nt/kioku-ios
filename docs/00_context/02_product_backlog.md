@@ -1,7 +1,7 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 3, 2025
-**Current Status**: Sprint 12 Completed - Chat UX Improvements ✅
+**Last Updated**: October 5, 2025
+**Current Status**: Sprint 12 Completed + Chat UI Unified ✅
 **Story Points Delivered**: 153/163 (94%)
 
 ## Project Overview
@@ -46,6 +46,13 @@
 **Sprint Plan**: `docs/01_sprints/sprint_12_planning.md`
 **Quality**: Production-ready, critical bug fixed
 
+**Post-Sprint Work (October 5, 2025)**:
+- ✅ **Chat UI Unification**: Merged Chat Tab and "Chat with AI from note detail" into single `AIChatView`
+  - Deleted 3 redundant components (~500 lines)
+  - Added streaming features: animated indicator, stop button
+  - **Tests**: 6/6 automated scenarios PASSED
+  - **Test Report**: `docs/03_testing/chat_ui_unification_test_results.md`
+
 ### Sprint 11 (Completed) ✅
 **Full LLM Chat Integration + UI Refinement** - 18/18 story points
 - ✅ Streaming chat with Gemini 2.0 Flash
@@ -59,18 +66,66 @@
 
 ---
 
+## Known Issues
+
+### Issue 1: Entity Extraction API Rate Limiting
+**Status**: 🔴 Open - High Priority
+**Discovered**: October 5, 2025
+**Component**: Entity Extraction Service
+**Severity**: Medium
+
+**Description**:
+Entity extraction feature is hitting OpenRouter API rate limits when processing journal entries. This causes extraction failures and impacts the knowledge graph functionality.
+
+**Symptoms**:
+- Rate limit errors during entity extraction
+- Successful chat interactions (not affected)
+- Only affects batch processing of entries
+
+**Impact**:
+- ❌ Entity extraction fails for existing notes
+- ❌ Knowledge graph cannot be populated
+- ✅ Chat functionality works normally (separate service)
+
+**Root Cause**:
+Suspected issues:
+1. Too many concurrent API requests during batch processing
+2. Missing rate limit handling/retry logic
+3. No request throttling or queuing system
+
+**Proposed Solutions**:
+1. Add request queue with rate limiting (1 request per second)
+2. Implement exponential backoff retry logic
+3. Add batch processing with delays between requests
+4. Consider local LLM for entity extraction (future)
+
+**Priority**: High - Blocks Knowledge Graph Epic (Sprint 13+)
+**Assigned To**: Next sprint task
+**Related Epic**: Epic 6 - Knowledge Graph Generation
+
+---
+
 ## Next Priorities (Sprint 13+)
 
 ### Immediate Priorities (Sprint 13)
-**Focus**: Knowledge Graph Integration
-**Estimated**: 10-12 story points
+**Focus**: Fix Entity Extraction + Knowledge Graph Integration
+**Estimated**: 11-14 story points
 **Priority**: High
+
+**🔥 US-S13-000: Fix Entity Extraction Rate Limiting (CRITICAL)**
+- Implement request queue with rate limiting
+- Add exponential backoff retry logic
+- Batch processing with configurable delays
+- Monitor and log rate limit metrics
+- **Priority**: Critical | **Complexity**: Medium (2 points)
+- **Blocks**: All Knowledge Graph stories
 
 **US-S13-001: Entity Extraction from Notes**
 - Extract 5 entity types: People, Places, Events, Emotions, Topics
 - Confidence scoring and deduplication
 - Single note and batch conversion workflows
 - **Priority**: High | **Complexity**: Medium (3 points)
+- **Depends On**: US-S13-000
 
 **US-S13-002: Relationship Mapping**
 - 4 relationship types: Temporal, Causal, Emotional, Topical

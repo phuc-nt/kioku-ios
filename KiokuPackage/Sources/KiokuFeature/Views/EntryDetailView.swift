@@ -132,7 +132,7 @@ public struct EntryDetailView: View {
         .sheet(isPresented: $showingAIChat) {
             NavigationView {
                 if let entryDate = entry.date {
-                    AIChatView_OLD(chatContextService: createChatContextService(for: entryDate))
+                    AIChatView(chatContextService: createChatContextService(for: entryDate))
                         .navigationTitle("Chat with AI")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
@@ -142,6 +142,7 @@ public struct EntryDetailView: View {
                                 }
                             }
                         }
+                        .environment(OpenRouterService.shared)
                 } else {
                     Text("Unable to load chat context")
                         .foregroundColor(.secondary)
