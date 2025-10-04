@@ -172,7 +172,15 @@ public final class EntityExtractionService: @unchecked Sendable {
                 try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
 
             } catch {
-                print("Failed to extract entities from entry \(entry.id): \(error)")
+                print("❌ EXTRACTION ERROR for entry \(entry.id): \(error)")
+                print("   Error type: \(type(of: error))")
+                print("   Error description: \(error.localizedDescription)")
+
+                // Update progress with error message
+                await MainActor.run {
+                    onProgress(progress, "Error: \(error.localizedDescription)")
+                }
+
                 // Continue with next entry
                 processedCount += 1
             }
