@@ -166,6 +166,21 @@ struct EntityExtractionView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
 
+            // Show extraction status
+            let allEntries = dataService.fetchAllEntries()
+            let extractedCount = allEntries.filter { $0.isEntitiesExtracted }.count
+            let totalCount = allEntries.count
+
+            if totalCount > 0 {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(extractedCount == totalCount ? .green : .orange)
+                    Text("\(extractedCount) of \(totalCount) entries extracted")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
             Button(action: startExtraction) {
                 HStack {
                     Image(systemName: isProcessing ? "stop.circle.fill" : "play.circle.fill")
@@ -327,11 +342,12 @@ struct EntityExtractionView: View {
             return
         }
 
-        // Start extraction
+        // Start extraction - only process entries that haven't been extracted yet
         let allEntries = dataService.fetchAllEntries()
+        let unextractedEntries = allEntries.filter { !$0.isEntitiesExtracted }
 
-        guard !allEntries.isEmpty else {
-            showError = "No journal entries found"
+        guard !unextractedEntries.isEmpty else {
+            showError = "No unextracted journal entries found. All entries have already been processed."
             return
         }
 
@@ -342,7 +358,7 @@ struct EntityExtractionView: View {
         Task {
             do {
                 try await extractionService.extractEntitiesFromBatch(
-                    entries: allEntries,
+                    entries: unextractedEntries,
                     onProgress: { @MainActor newProgress, entryText in
                         progress = newProgress
                         currentEntryText = entryText

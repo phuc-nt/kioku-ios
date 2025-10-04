@@ -145,9 +145,12 @@ public final class EntityExtractionService: @unchecked Sendable {
                 // Extract entities from entry
                 let entities = try await extractEntities(from: entry)
 
-                // Link entities to entry
+                // Link entities to entry and mark as extracted
                 await MainActor.run {
                     entry.entities.append(contentsOf: entities)
+                    entry.isEntitiesExtracted = true
+                    entry.entitiesExtractedAt = Date()
+                    entry.entitiesExtractionModel = extractionModel
                 }
 
                 processedCount += 1
