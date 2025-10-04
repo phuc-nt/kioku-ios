@@ -25,41 +25,26 @@ public final class TestDataService: @unchecked Sendable {
 
     /// Clear all data from the database
     public func clearAllData() {
-        // Delete in reverse order to avoid relationship issues
+        // SwiftData will cascade delete related entities automatically
+        // Only need to delete top-level objects: entries and conversations
 
-        // 1. Delete all relationships first (they reference entities)
-        let relDescriptor = FetchDescriptor<EntityRelationship>()
-        if let relationships = try? dataService.modelContext.fetch(relDescriptor) {
-            for relationship in relationships {
-                dataService.modelContext.delete(relationship)
-            }
-        }
-
-        // 2. Delete all entities (they reference entries)
-        let descriptor = FetchDescriptor<Entity>()
-        if let entities = try? dataService.modelContext.fetch(descriptor) {
-            for entity in entities {
-                dataService.modelContext.delete(entity)
-            }
-        }
-
-        // 3. Delete all conversations
+        // Delete all conversations
         let conversations = dataService.fetchAllConversations()
         for conversation in conversations {
-            dataService.deleteConversation(conversation)
+            dataService.modelContext.delete(conversation)
         }
 
-        // 4. Delete all entries last
+        // Delete all entries (will cascade delete entities and relationships)
         let entries = dataService.fetchAllEntries()
         for entry in entries {
-            dataService.deleteEntry(entry)
+            dataService.modelContext.delete(entry)
         }
 
         // Save changes
         do {
             try dataService.modelContext.save()
         } catch {
-            print("Error saving after clear: \(error)")
+            print("Error clearing data: \(error.localizedDescription)")
         }
     }
 
