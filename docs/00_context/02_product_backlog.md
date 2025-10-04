@@ -1,7 +1,7 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 3, 2025
-**Current Status**: Sprint 12 Completed - Chat UX Improvements ✅
+**Last Updated**: October 5, 2025
+**Current Status**: Sprint 12 Completed + Chat UI Unified ✅
 **Story Points Delivered**: 153/163 (94%)
 
 ## Project Overview
@@ -46,6 +46,13 @@
 **Sprint Plan**: `docs/01_sprints/sprint_12_planning.md`
 **Quality**: Production-ready, critical bug fixed
 
+**Post-Sprint Work (October 5, 2025)**:
+- ✅ **Chat UI Unification**: Merged Chat Tab and "Chat with AI from note detail" into single `AIChatView`
+  - Deleted 3 redundant components (~500 lines)
+  - Added streaming features: animated indicator, stop button
+  - **Tests**: 6/6 automated scenarios PASSED
+  - **Test Report**: `docs/03_testing/chat_ui_unification_test_results.md`
+
 ### Sprint 11 (Completed) ✅
 **Full LLM Chat Integration + UI Refinement** - 18/18 story points
 - ✅ Streaming chat with Gemini 2.0 Flash
@@ -59,11 +66,45 @@
 
 ---
 
+## Known Issues
+
+### ~~Issue 1: Entity Extraction API Rate Limiting~~ ✅ RESOLVED
+**Status**: ✅ Resolved - October 5, 2025
+**Component**: Entity Extraction & Relationship Discovery Services
+**Resolution**: Changed models from free tier to paid tier
+
+**Original Problem**:
+- Entity extraction and relationship discovery hitting rate limits
+- Both services using `google/gemini-2.0-flash-exp:free` (FREE tier)
+- Chat working fine with `openai/gpt-4o-mini` (PAID tier)
+
+**Root Cause Identified**:
+- Free tier models have separate, very low rate limits (~20 requests/day)
+- Paid tier models have much higher limits
+- Same API key, different models = different rate limit pools
+
+**Solution Implemented**:
+1. ✅ Changed `EntityExtractionService.extractionModel` to `openai/gpt-4o-mini`
+2. ✅ Changed `RelationshipDiscoveryService.discoveryModel` to `openai/gpt-4o-mini`
+3. ✅ Fixed aliases array parsing bug in entity extraction
+4. ✅ All services now use same paid tier model
+
+**Test Results**: ✅ 10/10 entries processed successfully
+- No rate limit errors
+- No parsing errors
+- 100% success rate for both entity extraction and relationship discovery
+
+**Documentation**: [`docs/03_testing/entity_extraction_rate_limit_fix.md`](../03_testing/entity_extraction_rate_limit_fix.md)
+
+**Impact**: Knowledge Graph Epic (Sprint 13+) is now unblocked and ready
+
+---
+
 ## Next Priorities (Sprint 13+)
 
 ### Immediate Priorities (Sprint 13)
 **Focus**: Knowledge Graph Integration
-**Estimated**: 10-12 story points
+**Estimated**: 9-12 story points
 **Priority**: High
 
 **US-S13-001: Entity Extraction from Notes**
@@ -71,6 +112,7 @@
 - Confidence scoring and deduplication
 - Single note and batch conversion workflows
 - **Priority**: High | **Complexity**: Medium (3 points)
+- **Status**: ✅ Backend ready, needs UI integration
 
 **US-S13-002: Relationship Mapping**
 - 4 relationship types: Temporal, Causal, Emotional, Topical

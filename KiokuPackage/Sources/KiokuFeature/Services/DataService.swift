@@ -327,6 +327,75 @@ public final class DataService: @unchecked Sendable {
         saveContext()
     }
 
+    // MARK: - Entity Operations
+
+    public func fetchAllEntities() -> [Entity] {
+        let descriptor = FetchDescriptor<Entity>(
+            sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    public func fetchEntities(type: EntityType) -> [Entity] {
+        let descriptor = FetchDescriptor<Entity>(
+            predicate: #Predicate<Entity> { entity in
+                entity.type == type
+            },
+            sortBy: [SortDescriptor(\.confidence, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    public func fetchEntities(type: EntityType, searchText: String) -> [Entity] {
+        let lowercasedSearch = searchText.lowercased()
+        let descriptor = FetchDescriptor<Entity>(
+            predicate: #Predicate<Entity> { entity in
+                entity.type == type &&
+                (entity.value.localizedStandardContains(lowercasedSearch))
+            },
+            sortBy: [SortDescriptor(\.confidence, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    public func fetchEntity(by id: UUID) -> Entity? {
+        let descriptor = FetchDescriptor<Entity>(
+            predicate: #Predicate<Entity> { entity in
+                entity.id == id
+            }
+        )
+        return try? modelContext.fetch(descriptor).first
+    }
+
+    public func deleteEntity(_ entity: Entity) {
+        modelContext.delete(entity)
+        saveContext()
+    }
+
+    // MARK: - Entity Relationship Operations
+
+    public func fetchRelationships(for entity: Entity) -> [EntityRelationship] {
+        // Get both outgoing and incoming relationships
+        var relationships = entity.outgoingRelationships
+        relationships.append(contentsOf: entity.incomingRelationships)
+        return relationships.sorted { $0.confidence > $1.confidence }
+    }
+
+    public func fetchRelationships(type: RelationshipType) -> [EntityRelationship] {
+        let descriptor = FetchDescriptor<EntityRelationship>(
+            predicate: #Predicate<EntityRelationship> { relationship in
+                relationship.type == type
+            },
+            sortBy: [SortDescriptor(\.confidence, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
+    public func deleteRelationship(_ relationship: EntityRelationship) {
+        modelContext.delete(relationship)
+        saveContext()
+    }
+
     // MARK: - Private Methods
     
     private func saveContext() {

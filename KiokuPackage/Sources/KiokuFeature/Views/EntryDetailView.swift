@@ -3,6 +3,7 @@ import SwiftData
 
 public struct EntryDetailView: View {
     let entry: Entry
+    var isPresentedInSheet: Bool = false
     @Environment(\.dismiss) private var dismiss
     @Environment(DataService.self) private var dataService
     @State private var isEditing = false
@@ -69,15 +70,17 @@ public struct EntryDetailView: View {
         .navigationTitle(entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Entry Detail")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        if isEditing {
-                            saveChanges()
+                if !isPresentedInSheet {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Done") {
+                            if isEditing {
+                                saveChanges()
+                            }
+                            dismiss()
                         }
-                        dismiss()
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         if !isEditing {
@@ -114,13 +117,22 @@ public struct EntryDetailView: View {
         }
         .sheet(isPresented: $showingHistoricalDetail) {
             if let selectedHistoricalEntry = selectedHistoricalEntry {
-                EntryDetailView(entry: selectedHistoricalEntry)
+                NavigationView {
+                    EntryDetailView(entry: selectedHistoricalEntry, isPresentedInSheet: true)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("Done") {
+                                    showingHistoricalDetail = false
+                                }
+                            }
+                        }
+                }
             }
         }
         .sheet(isPresented: $showingAIChat) {
             NavigationView {
                 if let entryDate = entry.date {
-                    AIChatView_OLD(chatContextService: createChatContextService(for: entryDate))
+                    AIChatView(chatContextService: createChatContextService(for: entryDate))
                         .navigationTitle("Chat with AI")
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbar {
@@ -130,6 +142,7 @@ public struct EntryDetailView: View {
                                 }
                             }
                         }
+                        .environment(OpenRouterService.shared)
                 } else {
                     Text("Unable to load chat context")
                         .foregroundColor(.secondary)
@@ -376,8 +389,9 @@ public struct EntryDetailView: View {
         }
     }
     
-    public init(entry: Entry) {
+    public init(entry: Entry, isPresentedInSheet: Bool = false) {
         self.entry = entry
+        self.isPresentedInSheet = isPresentedInSheet
         print("DEBUG EntryDetailView: Init with entry content: \(entry.content)")
     }
 }

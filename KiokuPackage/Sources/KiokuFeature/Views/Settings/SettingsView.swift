@@ -2,11 +2,17 @@ import SwiftUI
 
 public struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(DataService.self) private var dataService
     @State private var apiKey: String = ""
     @State private var isShowingKey: Bool = false
     @State private var validationState: ValidationState = .empty
     @State private var isSaving: Bool = false
     @State private var showingHelp: Bool = false
+    @State private var showClearDataAlert: Bool = false
+    @State private var isImportingTestData: Bool = false
+    @State private var isClearingData: Bool = false
+    @State private var showError: String?
+    @State private var showSuccess: Bool = false
 
     private let keychainService = "com.phucnt.kioku.openrouter"
     private let keychainAccount = "api-key"
@@ -50,6 +56,22 @@ public struct SettingsView: View {
                 }
 
                 Section {
+                    knowledgeGraphSection
+                } header: {
+                    Text("Knowledge Graph")
+                } footer: {
+                    Text("Extract entities and relationships from your journal entries to build a knowledge graph.")
+                }
+
+                Section {
+                    developerToolsSection
+                } header: {
+                    Text("Developer Tools")
+                } footer: {
+                    Text("Tools for testing and development. Use with caution!")
+                }
+
+                Section {
                     helpSection
                 } header: {
                     Text("Help & Resources")
@@ -66,6 +88,21 @@ public struct SettingsView: View {
             }
             .sheet(isPresented: $showingHelp) {
                 helpSheet
+            }
+            .alert("Error", isPresented: .init(
+                get: { showError != nil },
+                set: { if !$0 { showError = nil } }
+            )) {
+                Button("OK") { showError = nil }
+            } message: {
+                if let error = showError {
+                    Text(error)
+                }
+            }
+            .alert("Success", isPresented: $showSuccess) {
+                Button("OK") {}
+            } message: {
+                Text("Test data imported successfully! Check the Calendar tab.")
             }
             .onAppear {
                 loadAPIKey()
@@ -166,6 +203,58 @@ public struct SettingsView: View {
         }
     }
 
+    private var knowledgeGraphSection: some View {
+        NavigationLink {
+            EntityExtractionView(dataService: dataService)
+        } label: {
+            HStack {
+                Image(systemName: "brain.head.profile")
+                Text("Entity Extraction")
+                Spacer()
+            }
+        }
+    }
+
+    private var developerToolsSection: some View {
+        Group {
+            // Import Test Data
+            Button(action: importTestData) {
+                HStack {
+                    if isImportingTestData {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "square.and.arrow.down")
+                    }
+                    Text("Import Test Data")
+                    Spacer()
+                }
+            }
+            .disabled(isImportingTestData || isClearingData)
+
+            // Clear All Data
+            Button(role: .destructive, action: { showClearDataAlert = true }) {
+                HStack {
+                    if isClearingData {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "trash")
+                    }
+                    Text("Clear All Data")
+                    Spacer()
+                }
+            }
+            .disabled(isImportingTestData || isClearingData)
+            .alert("Clear All Data?", isPresented: $showClearDataAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Clear", role: .destructive, action: clearAllData)
+            } message: {
+                Text("This will permanently delete all journal entries, conversations, and knowledge graph data. This action cannot be undone.")
+            }
+        }
+    }
+
     private var helpSheet: some View {
         NavigationStack {
             ScrollView {
@@ -259,6 +348,45 @@ public struct SettingsView: View {
     }
 
     private func loadAPIKey() {
+        #if DEBUG
+        // In DEBUG mode, always sync from APIKeys.swift if available
+        if let apiKeysType = NSClassFromString("Kioku.APIKeys") as? NSObject.Type,
+           let devKey = apiKeysType.value(forKey: "openRouterAPIKey") as? String,
+           !devKey.isEmpty {
+
+            // Check if this key differs from what's in Keychain
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: keychainService,
+                kSecAttrAccount as String: keychainAccount,
+                kSecReturnData as String: true
+            ]
+
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+
+            let keychainKey = (status == errSecSuccess && result is Data)
+                ? String(data: result as! Data, encoding: .utf8)
+                : nil
+
+            // If keys differ or no key in keychain, update it
+            if keychainKey != devKey {
+                apiKey = devKey
+                validationState = .validating
+                Task {
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                    await MainActor.run {
+                        if devKey.hasPrefix("sk-or-v1-") && devKey.count >= 40 {
+                            validationState = .valid
+                            saveAPIKey()
+                        }
+                    }
+                }
+                return
+            }
+        }
+        #endif
+
         // Try to load existing key from Keychain
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -309,6 +437,49 @@ public struct SettingsView: View {
                     // Show success feedback
                     validationState = .valid
                 }
+            }
+        }
+    }
+
+    // MARK: - Developer Tools
+
+    private func importTestData() {
+        isImportingTestData = true
+
+        Task {
+            do {
+                let testDataService = TestDataService(dataService: dataService)
+                try await testDataService.generateTestData()
+
+                print("✅ Test data imported successfully")
+
+                await MainActor.run {
+                    isImportingTestData = false
+                    showSuccess = true
+                }
+            } catch {
+                print("❌ Error importing test data: \(error)")
+                await MainActor.run {
+                    isImportingTestData = false
+                    showError = "Failed to import test data: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    private func clearAllData() {
+        isClearingData = true
+
+        Task {
+            await MainActor.run {
+                let testDataService = TestDataService(dataService: dataService)
+                testDataService.clearAllData()
+            }
+
+            try? await Task.sleep(for: .milliseconds(500))
+
+            await MainActor.run {
+                isClearingData = false
             }
         }
     }

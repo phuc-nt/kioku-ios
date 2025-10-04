@@ -14,6 +14,10 @@ public class Conversation: @unchecked Sendable {
     @Relationship(deleteRule: .cascade)
     public var messages: [ChatMessage] = []
 
+    // Knowledge Graph relationships
+    @Relationship(deleteRule: .cascade)
+    public var extractedEntities: [Entity] = []
+
     public init(
         title: String = "New Conversation",
         associatedDate: Date? = nil

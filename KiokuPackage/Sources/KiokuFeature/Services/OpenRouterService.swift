@@ -97,10 +97,13 @@ public final class OpenRouterService: @unchecked Sendable {
     }
     
     // MARK: - Properties
-    
+
     private let session = URLSession.shared
     private let baseURL = "https://openrouter.ai/api/v1"
-    private let keyIdentifier = "com.phucnt.kioku.openrouter.apikey"
+
+    // Keychain identifiers - MUST match SettingsView
+    private let keychainService = "com.phucnt.kioku.openrouter"
+    private let keychainAccount = "api-key"
     
     // API configuration
     public var currentModel = "openai/gpt-4o-mini" // Default cost-effective model
@@ -125,24 +128,26 @@ public final class OpenRouterService: @unchecked Sendable {
         guard !apiKey.isEmpty else {
             throw OpenRouterError.invalidAPIKey
         }
-        
+
         let keyData = apiKey.data(using: .utf8) ?? Data()
-        
+
         // Delete existing key if any
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: keyIdentifier
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount
         ]
         SecItemDelete(deleteQuery as CFDictionary)
-        
+
         // Add new key
         let addQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: keyIdentifier,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount,
             kSecValueData as String: keyData,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlock
         ]
-        
+
         let status = SecItemAdd(addQuery as CFDictionary, nil)
         guard status == errSecSuccess else {
             throw OpenRouterError.invalidAPIKey
@@ -153,20 +158,21 @@ public final class OpenRouterService: @unchecked Sendable {
     public func getAPIKey() throws -> String {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: keyIdentifier,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
-        
+
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
+
         guard status == errSecSuccess,
               let keyData = result as? Data,
               let apiKey = String(data: keyData, encoding: .utf8) else {
             throw OpenRouterError.invalidAPIKey
         }
-        
+
         return apiKey
     }
     

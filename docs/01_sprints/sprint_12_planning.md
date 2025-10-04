@@ -526,9 +526,102 @@ After Sprint 12 completion, a comprehensive security system was implemented to p
 
 ---
 
+## Post-Sprint Work: Chat UI Unification
+
+### Additional Task: Unify Chat Components (October 5, 2025)
+
+**Problem**: Chat Tab and "Chat with AI from note detail" used different components (StreamingChatView vs AIChatView_OLD), causing UI inconsistency and code duplication.
+
+**Solution Implemented**:
+1. ✅ Unified both features to use single `AIChatView` component
+2. ✅ Deleted redundant components:
+   - `StreamingChatView.swift`
+   - `ConversationService.swift`
+   - `StreamingService.swift`
+3. ✅ Renamed `AIChatView_OLD.swift` → `AIChatView.swift`
+4. ✅ Added streaming support to unified component:
+   - Animated streaming indicator with dots
+   - Stop button during AI response
+   - Placeholder message pattern
+   - Proper async/await Task cancellation
+5. ✅ Updated references in:
+   - `ChatTabView.swift` - Uses unified AIChatView
+   - `EntryDetailView.swift` - Updated component reference
+
+**Test Results**: ✅ ALL PASSED (6/6 scenarios)
+- Context loading for selected date
+- Message input and sending
+- AI response generation via OpenRouter
+- Streaming UI features (indicator, stop button)
+- UI consistency between views
+- Build system validation (clean build success)
+
+**Test Documentation**: [`docs/03_testing/chat_ui_unification_test_results.md`](../03_testing/chat_ui_unification_test_results.md)
+
+**Files Changed**:
+- Modified: `AIChatView.swift` (renamed + streaming features)
+- Modified: `ChatTabView.swift` (use unified view)
+- Modified: `EntryDetailView.swift` (updated reference)
+- Deleted: 3 obsolete files
+
+**Impact**:
+- ✅ Consistent UX across all chat features
+- ✅ Reduced code duplication (~500 lines removed)
+- ✅ Single source of truth for chat UI
+- ✅ Simplified maintenance
+
+**Known Issue Documented**:
+- ~~Entity Extraction hitting API rate limits~~ ✅ **RESOLVED** (October 5, 2025)
+
+---
+
+## Post-Sprint Fix: Entity Extraction & Relationship Discovery Rate Limiting
+
+### Issue Resolution (October 5, 2025)
+
+**Problems Fixed**:
+1. ✅ Entity Extraction hitting rate limits with free tier model
+2. ✅ Relationship Discovery completely failing with rate limits
+3. ✅ CoreData aliases array parsing errors
+
+**Root Cause**:
+- Both services using `google/gemini-2.0-flash-exp:free` (FREE tier)
+- Free tier has very low rate limits (~20 requests/day)
+- Chat service using `openai/gpt-4o-mini` (PAID tier) worked fine
+- Different models = different rate limit pools
+
+**Solutions Implemented**:
+1. ✅ Changed `EntityExtractionService.extractionModel` → `openai/gpt-4o-mini`
+2. ✅ Changed `RelationshipDiscoveryService.discoveryModel` → `openai/gpt-4o-mini`
+3. ✅ Fixed aliases array parsing with robust `compactMap` approach
+4. ✅ All AI services now unified on same paid tier model
+
+**Test Results**: ✅ 100% Success
+- Entity Extraction: 10/10 entries processed
+- Relationship Discovery: 10/10 entries processed
+- Zero rate limit errors
+- Zero parsing errors
+
+**Documentation**: [`docs/03_testing/entity_extraction_rate_limit_fix.md`](../03_testing/entity_extraction_rate_limit_fix.md)
+
+**Files Changed**:
+- Modified: `EntityExtractionService.swift` (model + parsing fix)
+- Modified: `RelationshipDiscoveryService.swift` (model change)
+- Created: Fix documentation and test results
+
+**Impact**:
+- ✅ Knowledge Graph Epic fully unblocked
+- ✅ Production-ready backend services
+- ✅ Consistent AI quality across all features
+- ✅ Cost-effective with `gpt-4o-mini` pricing
+
+---
+
 ## Next Steps
 
 1. ✅ COMPLETE: US-S12-001 through US-S12-004
 2. ✅ COMPLETE: XcodeBuildMCP test scenarios executed
 3. ✅ COMPLETE: Security protection system implemented
-4. Ready for Sprint 13: Knowledge Graph Integration
+4. ✅ COMPLETE: Chat UI unification (post-sprint)
+5. ✅ COMPLETE: Entity Extraction & Relationship Discovery rate limit fix
+6. ✅ Ready for Sprint 13: Knowledge Graph Integration (fully unblocked)

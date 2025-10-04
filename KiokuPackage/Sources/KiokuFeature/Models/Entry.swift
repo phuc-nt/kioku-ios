@@ -18,6 +18,18 @@ public final class Entry: @unchecked Sendable {
     // MARK: - Relationships
     @Relationship(deleteRule: .cascade, inverse: \AIAnalysis.entry)
     public var analyses: [AIAnalysis] = []
+
+    // Knowledge Graph relationships
+    @Relationship(deleteRule: .cascade)
+    public var entities: [Entity] = []
+
+    @Relationship(deleteRule: .cascade)
+    public var relationships: [EntityRelationship] = []
+
+    // Entity extraction tracking
+    public var isEntitiesExtracted: Bool = false
+    public var entitiesExtractedAt: Date?
+    public var entitiesExtractionModel: String? // Track which model was used
     
     // Computed property for transparent encryption/decryption
     public var content: String {

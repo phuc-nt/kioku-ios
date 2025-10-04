@@ -1,18 +1,19 @@
 import SwiftUI
 import SwiftData
 
-struct AIChatView_OLD: View {
+struct AIChatView: View {
     @Environment(DataService.self) private var dataService
     @Environment(OpenRouterService.self) private var openRouterService
-    
+
     private let chatContextService: ChatContextService
     private let initialContext: ChatContext?
-    
+
     @State private var messages: [AIChatMessage] = []
     @State private var currentMessage = ""
-    @State private var isLoading = false
+    @State private var isStreaming = false
     @State private var currentContext: ChatContext?
-    
+    @State private var streamingTask: Task<Void, Never>?
+
     init(
         chatContextService: ChatContextService,
         initialContext: ChatContext? = nil
@@ -20,7 +21,7 @@ struct AIChatView_OLD: View {
         self.chatContextService = chatContextService
         self.initialContext = initialContext
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Context display
@@ -28,7 +29,7 @@ struct AIChatView_OLD: View {
                 ChatContextView(context: context)
                     .padding(.top)
             }
-            
+
             // Messages list
             ScrollViewReader { proxy in
                 ScrollView {
@@ -41,9 +42,9 @@ struct AIChatView_OLD: View {
                                     .id(message.id)
                             }
                         }
-                        
-                        if isLoading {
-                            loadingIndicator
+
+                        if isStreaming {
+                            streamingIndicator
                         }
                     }
                     .padding(.vertical)
@@ -56,7 +57,7 @@ struct AIChatView_OLD: View {
                     }
                 }
             }
-            
+
             // Message input
             messageInputView
         }
@@ -64,23 +65,23 @@ struct AIChatView_OLD: View {
             setupInitialContext()
         }
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 16) {
             Image(systemName: "brain.head.profile")
                 .font(.system(size: 48))
                 .foregroundColor(.accentColor.opacity(0.6))
-            
+
             Text("AI Assistant")
                 .font(.title2)
                 .fontWeight(.semibold)
-            
+
             Text("Ask me anything about your journal patterns, get insights, or just have a conversation about your thoughts.")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-            
+
             if let context = currentContext {
                 if context.currentNote != nil || !context.historicalNotes.isEmpty {
                     VStack(spacing: 8) {
@@ -88,7 +89,7 @@ struct AIChatView_OLD: View {
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundColor(.accentColor)
-                        
+
                         suggestedQuestions
                     }
                     .padding(.top, 8)
@@ -97,7 +98,7 @@ struct AIChatView_OLD: View {
         }
         .padding(.vertical, 32)
     }
-    
+
     private var suggestedQuestions: some View {
         VStack(spacing: 6) {
             ForEach(getSuggestedQuestions(), id: \.self) { question in
@@ -116,8 +117,8 @@ struct AIChatView_OLD: View {
             }
         }
     }
-    
-    private var loadingIndicator: some View {
+
+    private var streamingIndicator: some View {
         HStack {
             Circle()
                 .fill(Color.accentColor.opacity(0.2))
@@ -127,19 +128,19 @@ struct AIChatView_OLD: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.accentColor)
                 )
-            
+
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
                     ForEach(0..<3) { index in
                         Circle()
                             .fill(Color.accentColor.opacity(0.6))
                             .frame(width: 6, height: 6)
-                            .scaleEffect(isLoading ? 1.0 : 0.5)
+                            .scaleEffect(isStreaming ? 1.0 : 0.5)
                             .animation(
                                 Animation.easeInOut(duration: 0.6)
                                     .repeatForever()
                                     .delay(Double(index) * 0.2),
-                                value: isLoading
+                                value: isStreaming
                             )
                     }
                 }
@@ -147,58 +148,67 @@ struct AIChatView_OLD: View {
                 .padding(.vertical, 8)
                 .background(Color(.systemGray6))
                 .cornerRadius(18)
-                
+
                 Text("AI is thinking...")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 16)
             }
-            
+
             Spacer()
         }
         .padding(.horizontal)
         .padding(.vertical, 4)
     }
-    
+
     private var messageInputView: some View {
         VStack(spacing: 0) {
             Divider()
-            
+
             HStack(spacing: 12) {
                 TextField("Ask me anything...", text: $currentMessage, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                     .lineLimit(1...4)
-                
-                Button(action: sendMessage) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(currentMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .secondary : .accentColor)
+                    .disabled(isStreaming)
+
+                if isStreaming {
+                    Button(action: stopStreaming) {
+                        Image(systemName: "stop.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.red)
+                    }
+                } else {
+                    Button(action: sendMessage) {
+                        Image(systemName: "arrow.up.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(currentMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .secondary : .accentColor)
+                    }
+                    .disabled(currentMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
-                .disabled(currentMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
             }
             .padding()
         }
         .background(Color(.systemGroupedBackground))
     }
-    
+
     // MARK: - Methods
-    
+
     private func setupInitialContext() {
         if let initialContext = initialContext {
             currentContext = initialContext
         } else {
             currentContext = chatContextService.generateContext()
         }
-        
+
         // Add context as initial messages so user can see what AI has access to
         addContextAsMessages()
     }
-    
+
     private func addContextAsMessages() {
         guard let context = currentContext else { return }
-        
+
         var contextMessages: [AIChatMessage] = []
-        
+
         // Add current note context
         if let currentNote = context.currentNote {
             let noteMessage = AIChatMessage(
@@ -215,14 +225,14 @@ struct AIChatView_OLD: View {
             )
             contextMessages.append(noNoteMessage)
         }
-        
+
         // Add historical notes context
         if !context.historicalNotes.isEmpty {
             let historicalContent = context.historicalNotes.prefix(3).map { entry in
                 let dateStr = entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
                 return "• \(dateStr): \(entry.content)"
             }.joined(separator: "\n\n")
-            
+
             let historicalMessage = AIChatMessage(
                 content: "🕒 Historical Notes (same day in previous months):\n\n\(historicalContent)",
                 isFromUser: true,
@@ -230,14 +240,14 @@ struct AIChatView_OLD: View {
             )
             contextMessages.append(historicalMessage)
         }
-        
+
         // Add recent notes context
         if !context.recentNotes.isEmpty {
             let recentContent = context.recentNotes.prefix(2).map { entry in
                 let dateStr = entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
                 return "• \(dateStr): \(entry.content)"
             }.joined(separator: "\n\n")
-            
+
             let recentMessage = AIChatMessage(
                 content: "📅 Recent Notes (past week):\n\n\(recentContent)",
                 isFromUser: true,
@@ -245,10 +255,10 @@ struct AIChatView_OLD: View {
             )
             contextMessages.append(recentMessage)
         }
-        
+
         // Add all context messages to the chat
         messages.append(contentsOf: contextMessages)
-        
+
         // Add a helpful AI welcome message
         if !contextMessages.isEmpty {
             let welcomeMessage = AIChatMessage(
@@ -259,73 +269,101 @@ struct AIChatView_OLD: View {
             messages.append(welcomeMessage)
         }
     }
-    
+
     private func sendMessage() {
         let messageText = currentMessage.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !messageText.isEmpty, !isLoading else { return }
-        
+        guard !messageText.isEmpty, !isStreaming else { return }
+
         // Add user message
         let userMessage = AIChatMessage(content: messageText, isFromUser: true)
         messages.append(userMessage)
-        
+
         // Clear input
         currentMessage = ""
-        isLoading = true
-        
-        // Generate AI response
-        Task {
-            await generateAIResponse(for: messageText)
+        isStreaming = true
+
+        // Generate AI response with streaming
+        streamingTask = Task {
+            await generateStreamingAIResponse(for: messageText)
         }
     }
-    
-    private func generateAIResponse(for userMessage: String) async {
+
+    private func stopStreaming() {
+        streamingTask?.cancel()
+        isStreaming = false
+    }
+
+    private func generateStreamingAIResponse(for userMessage: String) async {
         guard let context = currentContext else {
             await handleAIError("No context available")
             return
         }
-        
+
         let prompt = chatContextService.createAIPrompt(userMessage: userMessage, context: context)
-        
+
+        // Create placeholder for AI response with streaming indicator
+        let placeholderMessage = AIChatMessage(
+            content: "",
+            isFromUser: false,
+            contextData: nil,
+            isStreaming: true
+        )
+
+        await MainActor.run {
+            messages.append(placeholderMessage)
+        }
+
+        let aiMessageId = placeholderMessage.id
+
+        var fullResponse = ""
+
         do {
+            // Use OpenRouter API
             let response = try await openRouterService.completeText(prompt: prompt)
-            
+            fullResponse = response
+
+            // Update the message with full response and stop streaming
             await MainActor.run {
-                let aiMessage = AIChatMessage(
-                    content: response,
-                    isFromUser: false,
-                    contextData: nil
-                )
-                messages.append(aiMessage)
-                isLoading = false
+                if let index = messages.firstIndex(where: { $0.id == aiMessageId }) {
+                    messages[index].content = fullResponse
+                    messages[index].isStreaming = false
+                }
+                isStreaming = false
             }
         } catch {
+            await MainActor.run {
+                // Remove placeholder message
+                if let index = messages.firstIndex(where: { $0.id == aiMessageId }) {
+                    messages.remove(at: index)
+                }
+            }
             await handleAIError("Sorry, I couldn't process your message right now. Please try again.")
         }
     }
-    
+
     private func handleAIError(_ errorMessage: String) async {
         await MainActor.run {
             let errorResponse = AIChatMessage(content: errorMessage, isFromUser: false)
             messages.append(errorResponse)
-            isLoading = false
+            isStreaming = false
         }
     }
-    
+
     private func getSuggestedQuestions() -> [String] {
         guard let context = currentContext else { return [] }
-        
+
         var suggestions: [String] = []
-        
+
         if context.currentNote != nil {
             suggestions.append("What patterns do you see in today's entry?")
             suggestions.append("How does today compare to previous entries?")
         }
-        
+
         if !context.historicalNotes.isEmpty {
             suggestions.append("What growth do you notice over time?")
             suggestions.append("What themes appear consistently?")
         }
-        
+
         if suggestions.isEmpty {
             suggestions = [
                 "Help me reflect on my recent thoughts",
@@ -333,19 +371,19 @@ struct AIChatView_OLD: View {
                 "How can I improve my journaling practice?"
             ]
         }
-        
+
         return Array(suggestions.prefix(3))
     }
 }
 
 #Preview {
     NavigationView {
-        AIChatView_OLD(
+        AIChatView(
             chatContextService: ChatContextService(
                 dateContextService: DateContextService(dataService: DataService.preview)
             )
         )
-        .navigationTitle("AI Chat OLD")
+        .navigationTitle("AI Chat")
         .navigationBarTitleDisplayMode(.inline)
     }
     .environment(DataService.preview)
