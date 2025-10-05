@@ -99,6 +99,13 @@ class ChatContextService {
 
         print("  📊 Total prompt length: \(prompt.count) chars")
 
+        // Log full prompt for debugging
+        print("\n" + String(repeating: "=", count: 80))
+        print("📤 FULL PROMPT SENT TO LLM:")
+        print(String(repeating: "=", count: 80))
+        print(prompt)
+        print(String(repeating: "=", count: 80) + "\n")
+
         return prompt
     }
 
