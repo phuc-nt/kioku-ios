@@ -77,9 +77,12 @@ struct ChatContextView: View {
             .cornerRadius(8)
 
             if isExpanded {
-                contextDetails
-                    .padding(.vertical, 8)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                ScrollView {
+                    contextDetails
+                        .padding(.vertical, 8)
+                }
+                .frame(maxHeight: 400)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
         .padding(.horizontal)
