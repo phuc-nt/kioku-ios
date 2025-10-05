@@ -22,19 +22,26 @@ public struct ContentView: View {
                 }
                 .tag(1)
 
+            InsightsView()
+                .tabItem {
+                    Image(systemName: "chart.line.uptrend.xyaxis")
+                    Text("Insights")
+                }
+                .tag(2)
+
             KnowledgeGraphView()
                 .tabItem {
                     Image(systemName: "network")
                     Text("Graph")
                 }
-                .tag(2)
+                .tag(3)
 
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape")
                     Text("Settings")
                 }
-                .tag(3)
+                .tag(4)
         }
     }
     

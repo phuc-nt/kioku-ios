@@ -100,6 +100,7 @@ public struct CalendarView: View {
     @State private var showingDatePicker = false
     @State private var datePickerSelection = Date()
     @State private var showingTemporalSearch = false
+    @State private var showingSearch = false
     @State private var searchText = ""
     @State private var searchResults: [Entry] = []
     @State private var selectedSearchPeriod: SearchPeriod = .allTime
@@ -146,9 +147,9 @@ public struct CalendarView: View {
         .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    // Temporal Search button
+                    // Search button
                     Button(action: {
-                        showingTemporalSearch = true
+                        showingSearch = true
                     }) {
                         Image(systemName: "magnifyingglass")
                             .font(.headline)
@@ -190,6 +191,9 @@ public struct CalendarView: View {
             }
             .sheet(isPresented: $showingTemporalSearch) {
                 temporalSearchView
+            }
+            .sheet(isPresented: $showingSearch) {
+                SearchView()
             }
             .sheet(isPresented: $showingTestDataInsertion) {
                 TestDataInsertionView()
