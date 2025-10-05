@@ -6,6 +6,7 @@ import SwiftData
 class ChatContextService {
     private let dateContextService: DateContextService
     private let dataService: DataService
+    private let relatedNotesService: RelatedNotesService
 
     init(
         dateContextService: DateContextService,
@@ -13,6 +14,7 @@ class ChatContextService {
     ) {
         self.dateContextService = dateContextService
         self.dataService = dataService
+        self.relatedNotesService = RelatedNotesService(modelContext: dataService.modelContext)
     }
 
     /// Generate comprehensive chat context for the current selected date
@@ -25,13 +27,17 @@ class ChatContextService {
         let entities = await fetchRelevantEntities(for: dateContextService.selectedDate)
         let insights = await fetchRelevantInsights(for: dateContextService.selectedDate)
 
+        // Sprint 16: Fetch KG-enhanced related entries
+        let relatedEntries = await fetchRelatedEntries(for: dateContextService.selectedDate)
+
         return ChatContext(
             selectedDate: dateContextService.selectedDate,
             currentNote: currentNote,
             historicalNotes: historicalNotes,
             recentNotes: recentNotes,
             entities: entities,
-            insights: insights
+            insights: insights,
+            relatedEntries: relatedEntries
         )
     }
     
@@ -51,13 +57,17 @@ class ChatContextService {
         let entities = await fetchRelevantEntities(for: entryDate)
         let insights = await fetchRelevantInsights(for: entryDate)
 
+        // Sprint 16: Fetch KG-enhanced related entries
+        let relatedEntries = await fetchRelatedEntries(for: entryDate)
+
         return ChatContext(
             selectedDate: entryDate,
             currentNote: entry,
             historicalNotes: historicalNotes,
             recentNotes: recentNotes,
             entities: entities,
-            insights: insights
+            insights: insights,
+            relatedEntries: relatedEntries
         )
     }
     
@@ -88,6 +98,7 @@ class ChatContextService {
         print("  🔖 Recent notes: \(context.recentNotes.count)")
         print("  🏷️ Entities: \(context.entities.count)")
         print("  💡 Insights: \(context.insights.count)")
+        print("  🔗 Related entries (Sprint 16): \(context.relatedEntries.count)")
 
         if !context.entities.isEmpty {
             let entityTypes = Dictionary(grouping: context.entities, by: { $0.type })
@@ -102,6 +113,14 @@ class ChatContextService {
             print("  💡 Insight details:")
             for (index, insight) in context.insights.prefix(5).enumerated() {
                 print("     [\(index+1)] \(insight.timeframe.displayName): \(insight.title) (\(String(format: "%.0f%%", insight.confidence * 100)))")
+            }
+        }
+
+        if !context.relatedEntries.isEmpty {
+            print("  🔗 Related entries details:")
+            for (index, related) in context.relatedEntries.enumerated() {
+                let dateStr = related.entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown"
+                print("     [\(index+1)] [\(dateStr)] Score: \(String(format: "%.2f", related.relevanceScore)) - \(related.reason)")
             }
         }
 
@@ -257,6 +276,23 @@ class ChatContextService {
                 return result
             } catch {
                 print("❌ Error fetching insights: \(error)")
+                return []
+            }
+        }
+    }
+
+    // MARK: - Sprint 16: Related Entries via KG
+
+    /// Fetch related entries using Knowledge Graph data (US-S16-001)
+    /// Returns up to 5 most relevant entries discovered via relationships and insights
+    nonisolated private func fetchRelatedEntries(for date: Date) async -> [RelatedEntry] {
+        return await MainActor.run {
+            do {
+                let relatedEntries = try await relatedNotesService.findRelatedEntries(for: date, limit: 5)
+                print("📊 fetchRelatedEntries returned \(relatedEntries.count) entries for \(date.formatted())")
+                return relatedEntries
+            } catch {
+                print("❌ Error fetching related entries: \(error)")
                 return []
             }
         }

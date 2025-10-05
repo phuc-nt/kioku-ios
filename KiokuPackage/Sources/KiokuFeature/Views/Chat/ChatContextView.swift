@@ -40,6 +40,7 @@ struct ChatContextView: View {
         if context.currentNote != nil { count += 1 }
         count += context.historicalNotes.count
         count += context.recentNotes.count
+        count += context.relatedEntries.count // Sprint 16
         return count
     }
 
@@ -105,6 +106,11 @@ struct ChatContextView: View {
                     )
                 }
 
+                // Sprint 16: KG-Enhanced Related Entries
+                if !context.relatedEntries.isEmpty {
+                    relatedEntriesSection
+                }
+
                 // Historical notes (same day in past)
                 ForEach(context.historicalNotes.prefix(5), id: \.id) { entry in
                     NoteContextCard(
@@ -149,6 +155,33 @@ struct ChatContextView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
+    }
+
+    // MARK: - Sprint 16: Related Entries Section
+
+    private var relatedEntriesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "link.circle.fill")
+                    .font(.caption)
+                    .foregroundColor(.indigo)
+                Text("Related Entries (via Knowledge Graph)")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            .padding(.bottom, 4)
+
+            ForEach(context.relatedEntries.prefix(5), id: \.id) { relatedEntry in
+                RelatedEntryCard(
+                    relatedEntry: relatedEntry,
+                    onTap: { selectedEntry = relatedEntry.entry }
+                )
+            }
+        }
+        .padding(12)
+        .background(Color.indigo.opacity(0.05))
+        .cornerRadius(8)
     }
 
     // MARK: - Sprint 15: Entities Section
@@ -335,6 +368,89 @@ struct NoteContextCard: View {
             .background(Color(.systemBackground))
             .cornerRadius(8)
             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Related Entry Card (Sprint 16)
+
+struct RelatedEntryCard: View {
+    let relatedEntry: RelatedEntry
+    let onTap: () -> Void
+
+    private var excerpt: String {
+        let maxLength = 100
+        if relatedEntry.entry.content.count <= maxLength {
+            return relatedEntry.entry.content
+        }
+        return String(relatedEntry.entry.content.prefix(maxLength)) + "..."
+    }
+
+    private var dateString: String {
+        if let date = relatedEntry.entry.date {
+            return date.formatted(date: .abbreviated, time: .omitted)
+        }
+        return relatedEntry.entry.createdAt.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    private var relevanceColor: Color {
+        if relatedEntry.relevanceScore >= 8.0 {
+            return .red
+        } else if relatedEntry.relevanceScore >= 4.0 {
+            return .orange
+        } else {
+            return .yellow
+        }
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    // Relevance badge
+                    HStack(spacing: 4) {
+                        Image(systemName: "link.circle.fill")
+                            .font(.caption2)
+                        Text(relatedEntry.relevanceLevel)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(relevanceColor)
+                    .cornerRadius(4)
+
+                    Spacer()
+
+                    Text(dateString)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+
+                // Reason for relevance
+                Text(relatedEntry.reason)
+                    .font(.caption2)
+                    .foregroundColor(.indigo)
+                    .fontWeight(.medium)
+
+                // Entry excerpt
+                Text(excerpt)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(12)
+            .background(Color(.systemBackground))
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.indigo.opacity(0.3), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }

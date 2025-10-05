@@ -11,13 +11,17 @@ struct ChatContext {
     let entities: [Entity]
     let insights: [Insight]
 
+    // Sprint 16: KG-Enhanced Related Entries
+    let relatedEntries: [RelatedEntry]
+
     init(
         selectedDate: Date,
         currentNote: Entry? = nil,
         historicalNotes: [Entry] = [],
         recentNotes: [Entry] = [],
         entities: [Entity] = [],
-        insights: [Insight] = []
+        insights: [Insight] = [],
+        relatedEntries: [RelatedEntry] = []
     ) {
         self.selectedDate = selectedDate
         self.currentNote = currentNote
@@ -25,6 +29,7 @@ struct ChatContext {
         self.recentNotes = recentNotes
         self.entities = entities
         self.insights = insights
+        self.relatedEntries = relatedEntries
     }
     
     /// Generate context summary for AI prompting
@@ -35,6 +40,18 @@ struct ChatContext {
             summary += "\(currentNote.content)\n\n"
         } else {
             summary += "(No journal entry for this date)\n\n"
+        }
+
+        // Sprint 16: KG-Enhanced Related Entries
+        if !relatedEntries.isEmpty {
+            summary += "--- Related Entries from Your Journal History ---\n"
+            summary += "(These entries are connected through people, events, or themes you've written about)\n\n"
+
+            for relatedEntry in relatedEntries.prefix(5) {
+                let dateStr = relatedEntry.entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
+                summary += "[\(dateStr)] (\(relatedEntry.relevanceLevel) Relevance - \(relatedEntry.reason))\n"
+                summary += "\(relatedEntry.entry.content)\n\n"
+            }
         }
 
         // Historical context from same day in previous months
