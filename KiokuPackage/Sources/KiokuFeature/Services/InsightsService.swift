@@ -135,6 +135,15 @@ public final class InsightsService: @unchecked Sendable {
         // Parse response
         let insights = try parseDailyInsightsResponse(response, entries: entries, entities: entities)
 
+        // Save insights to database
+        await MainActor.run {
+            for insight in insights {
+                dataService.modelContext.insert(insight)
+            }
+            try? dataService.modelContext.save()
+            print("💾 Saved \(insights.count) daily insights to database")
+        }
+
         // Cache
         cachedDailyInsights = (date: Date(), insights: insights)
 
@@ -218,6 +227,15 @@ public final class InsightsService: @unchecked Sendable {
 
         // Parse response
         let insights = try parseWeeklyInsightsResponse(response, entries: entries)
+
+        // Save insights to database
+        await MainActor.run {
+            for insight in insights {
+                dataService.modelContext.insert(insight)
+            }
+            try? dataService.modelContext.save()
+            print("💾 Saved \(insights.count) weekly insights to database")
+        }
 
         // Cache
         cachedWeeklyInsights = (date: Date(), insights: insights)

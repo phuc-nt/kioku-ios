@@ -154,55 +154,44 @@ class ChatContextService {
     }
 
     /// Fetch relevant insights for a specific date (US-S15-002)
-    /// Returns up to 5 most relevant insights (daily + weekly)
+    /// Returns up to 5 most recent insights (prioritize daily > weekly > monthly)
     nonisolated private func fetchRelevantInsights(for date: Date) async -> [Insight] {
-        let calendar = Calendar.current
-
         return await MainActor.run {
             do {
-                // Fetch all insights
+                // Fetch all insights sorted by generation time (most recent first)
                 let descriptor = FetchDescriptor<Insight>(
                     sortBy: [SortDescriptor(\.generatedAt, order: .reverse)]
                 )
 
                 let allInsights = try dataService.modelContext.fetch(descriptor)
+                print("📊 fetchRelevantInsights: Found \(allInsights.count) total insights")
 
-                // Filter relevant insights
-                var relevantInsights: [Insight] = []
+                // Prioritize: daily > weekly > monthly, then by confidence, then by recency
+                let sortedInsights = allInsights.sorted { a, b in
+                    // First sort by timeframe priority (daily = 0, weekly = 1, monthly = 2)
+                    let priorityA = a.timeframe == .daily ? 0 : (a.timeframe == .weekly ? 1 : 2)
+                    let priorityB = b.timeframe == .daily ? 0 : (b.timeframe == .weekly ? 1 : 2)
 
-                for insight in allInsights {
-                    let isRelevant: Bool
-
-                    switch insight.timeframe {
-                    case .daily:
-                        // Daily insights: same day
-                        isRelevant = calendar.isDate(insight.generatedAt, inSameDayAs: date)
-
-                    case .weekly:
-                        // Weekly insights: within 7 days
-                        let daysDiff = calendar.dateComponents([.day], from: insight.generatedAt, to: date).day ?? 999
-                        isRelevant = abs(daysDiff) <= 7
-
-                    case .monthly:
-                        // Monthly insights: same month
-                        isRelevant = calendar.isDate(insight.generatedAt, equalTo: date, toGranularity: .month)
+                    if priorityA != priorityB {
+                        return priorityA < priorityB
                     }
 
-                    if isRelevant {
-                        relevantInsights.append(insight)
+                    // Then by confidence
+                    if a.confidence != b.confidence {
+                        return a.confidence > b.confidence
                     }
+
+                    // Finally by recency
+                    return a.generatedAt > b.generatedAt
                 }
 
-                // Prioritize: daily > weekly > monthly
-                relevantInsights.sort { a, b in
-                    if a.timeframe != b.timeframe {
-                        return a.timeframe.rawValue < b.timeframe.rawValue
-                    }
-                    return a.confidence > b.confidence
+                // Return top 5 most relevant insights
+                let result = Array(sortedInsights.prefix(5))
+                print("📊 fetchRelevantInsights: Returning \(result.count) insights")
+                for (index, insight) in result.enumerated() {
+                    print("  [\(index+1)] \(insight.timeframe.displayName): \(insight.title) (conf: \(String(format: "%.0f%%", insight.confidence * 100)))")
                 }
-
-                // Return top 5
-                return Array(relevantInsights.prefix(5))
+                return result
 
             } catch {
                 print("❌ Error fetching insights: \(error)")
