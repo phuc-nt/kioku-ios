@@ -182,45 +182,64 @@ class ChatContextService {
     }
 
     /// Fetch relevant insights for a specific date (US-S15-002)
-    /// Returns up to 5 most recent insights (prioritize daily > weekly > monthly)
+    /// Returns up to 5 most relevant insights filtered by related entry IDs
     nonisolated private func fetchRelevantInsights(for date: Date) async -> [Insight] {
         return await MainActor.run {
             do {
-                // Fetch all insights sorted by generation time (most recent first)
+                // First, find entries for the target date
+                let calendar = Calendar.current
+                let startOfDay = calendar.startOfDay(for: date)
+                let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+
+                let entryDescriptor = FetchDescriptor<Entry>(
+                    predicate: #Predicate<Entry> { entry in
+                        entry.date ?? entry.createdAt >= startOfDay &&
+                        entry.date ?? entry.createdAt < endOfDay
+                    }
+                )
+                let dateEntries = try dataService.modelContext.fetch(entryDescriptor)
+                let entryIds = Set(dateEntries.map { $0.id })
+
+                print("📊 fetchRelevantInsights for \(date.formatted(date: .abbreviated, time: .omitted)):")
+                print("   Found \(dateEntries.count) entries for this date")
+                print("   Entry IDs: \(entryIds)")
+
+                // Fetch all insights
                 let descriptor = FetchDescriptor<Insight>(
                     sortBy: [SortDescriptor(\.generatedAt, order: .reverse)]
                 )
-
                 let allInsights = try dataService.modelContext.fetch(descriptor)
-                print("📊 fetchRelevantInsights: Found \(allInsights.count) total insights")
+                print("   Total insights in DB: \(allInsights.count)")
 
-                // Prioritize: daily > weekly > monthly, then by confidence, then by recency
-                let sortedInsights = allInsights.sorted { a, b in
-                    // First sort by timeframe priority (daily = 0, weekly = 1, monthly = 2)
+                // Filter insights that reference entries from this date
+                let relevantInsights = allInsights.filter { insight in
+                    let hasMatchingEntry = !Set(insight.relatedEntryIds).isDisjoint(with: entryIds)
+                    if hasMatchingEntry {
+                        print("   ✅ Insight '\(insight.title)' matches (relatedEntryIds: \(insight.relatedEntryIds))")
+                    }
+                    return hasMatchingEntry
+                }
+
+                print("   Filtered to \(relevantInsights.count) relevant insights")
+
+                // Prioritize: daily > weekly > monthly, then by confidence
+                let sortedInsights = relevantInsights.sorted { a, b in
                     let priorityA = a.timeframe == .daily ? 0 : (a.timeframe == .weekly ? 1 : 2)
                     let priorityB = b.timeframe == .daily ? 0 : (b.timeframe == .weekly ? 1 : 2)
 
                     if priorityA != priorityB {
                         return priorityA < priorityB
                     }
-
-                    // Then by confidence
-                    if a.confidence != b.confidence {
-                        return a.confidence > b.confidence
-                    }
-
-                    // Finally by recency
-                    return a.generatedAt > b.generatedAt
+                    return a.confidence > b.confidence
                 }
 
-                // Return top 5 most relevant insights
                 let result = Array(sortedInsights.prefix(5))
-                print("📊 fetchRelevantInsights: Returning \(result.count) insights")
+                print("   📊 Returning \(result.count) insights")
                 for (index, insight) in result.enumerated() {
-                    print("  [\(index+1)] \(insight.timeframe.displayName): \(insight.title) (conf: \(String(format: "%.0f%%", insight.confidence * 100)))")
+                    print("      [\(index+1)] \(insight.timeframe.displayName): \(insight.title) (\(String(format: "%.0f%%", insight.confidence * 100)))")
                 }
-                return result
 
+                return result
             } catch {
                 print("❌ Error fetching insights: \(error)")
                 return []
