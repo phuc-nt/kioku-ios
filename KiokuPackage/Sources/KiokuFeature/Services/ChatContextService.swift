@@ -63,7 +63,7 @@ class ChatContextService {
     
     /// Create AI prompt with context injection
     func createAIPrompt(userMessage: String, context: ChatContext) -> String {
-        return """
+        let prompt = """
         You are a personal AI assistant helping with journal reflection and insights.
 
         \(context.contextSummary)
@@ -72,6 +72,34 @@ class ChatContextService {
 
         Please provide thoughtful, personalized insights based on the journal context above. Be empathetic, supportive, and help the user reflect on patterns or connections in their writing.
         """
+
+        // Log context stats for debugging
+        print("💬 Creating AI prompt with context:")
+        print("  📝 Current note: \(context.currentNote != nil ? "✅" : "❌")")
+        print("  📚 Historical notes: \(context.historicalNotes.count)")
+        print("  🔖 Recent notes: \(context.recentNotes.count)")
+        print("  🏷️ Entities: \(context.entities.count)")
+        print("  💡 Insights: \(context.insights.count)")
+
+        if !context.entities.isEmpty {
+            let entityTypes = Dictionary(grouping: context.entities, by: { $0.type })
+            for type in EntityType.allCases {
+                if let count = entityTypes[type]?.count, count > 0 {
+                    print("     - \(type.displayName): \(count)")
+                }
+            }
+        }
+
+        if !context.insights.isEmpty {
+            print("  💡 Insight details:")
+            for (index, insight) in context.insights.prefix(5).enumerated() {
+                print("     [\(index+1)] \(insight.timeframe.displayName): \(insight.title) (\(String(format: "%.0f%%", insight.confidence * 100)))")
+            }
+        }
+
+        print("  📊 Total prompt length: \(prompt.count) chars")
+
+        return prompt
     }
 
     // MARK: - Sprint 15: Entity & Insight Fetching
