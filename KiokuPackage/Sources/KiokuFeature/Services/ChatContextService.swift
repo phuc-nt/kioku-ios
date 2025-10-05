@@ -6,16 +6,13 @@ import SwiftData
 class ChatContextService {
     private let dateContextService: DateContextService
     private let dataService: DataService
-    private let insightsService: InsightsService
 
     init(
         dateContextService: DateContextService,
-        dataService: DataService,
-        insightsService: InsightsService
+        dataService: DataService
     ) {
         self.dateContextService = dateContextService
         self.dataService = dataService
-        self.insightsService = insightsService
     }
 
     /// Generate comprehensive chat context for the current selected date

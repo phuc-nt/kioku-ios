@@ -89,7 +89,7 @@ struct ChatContextView: View {
     }
     
     private var contextDetails: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             if totalNotesCount == 0 {
                 emptyStateView
             } else {
@@ -120,6 +120,16 @@ struct ChatContextView: View {
                     )
                 }
             }
+
+            // Sprint 15: Entities & Relationships
+            if !context.entities.isEmpty {
+                entitiesSection
+            }
+
+            // Sprint 15: Insights
+            if !context.insights.isEmpty {
+                insightsSection
+            }
         }
         .padding(.horizontal, 16)
     }
@@ -136,6 +146,130 @@ struct ChatContextView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
+    }
+
+    // MARK: - Sprint 15: Entities Section
+
+    private var entitiesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "brain")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                Text("Entities & Relationships")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            .padding(.bottom, 4)
+
+            // Group entities by type
+            let groupedEntities = Dictionary(grouping: context.entities, by: { $0.type })
+
+            ForEach(EntityType.allCases, id: \.self) { type in
+                if let typeEntities = groupedEntities[type], !typeEntities.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(type.displayName)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+
+                        FlowLayout(spacing: 6) {
+                            ForEach(typeEntities.prefix(10), id: \.id) { entity in
+                                EntityBadge(entity: entity)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Show key relationships
+            let entitiesWithRelationships = context.entities.filter { $0.relationshipCount > 0 }
+            if !entitiesWithRelationships.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Key Relationships")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 4)
+
+                    ForEach(entitiesWithRelationships.prefix(3), id: \.id) { entity in
+                        let related = entity.relatedEntities.prefix(2).map { $0.value }
+                        if !related.isEmpty {
+                            HStack(spacing: 4) {
+                                Text("•")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text("\(entity.value)")
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                                Text("→")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Text(related.joined(separator: ", "))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(Color.orange.opacity(0.05))
+        .cornerRadius(8)
+    }
+
+    // MARK: - Sprint 15: Insights Section
+
+    private var insightsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .font(.caption)
+                    .foregroundColor(.yellow)
+                Text("Insights")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            .padding(.bottom, 4)
+
+            ForEach(context.insights.prefix(3), id: \.id) { insight in
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(insight.timeframe.displayName)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.yellow.opacity(0.8))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.yellow.opacity(0.2))
+                            .cornerRadius(4)
+
+                        Text(String(format: "%.0f%%", insight.confidence * 100))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Text(insight.title)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
+
+                    Text(insight.insightDescription)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(2)
+                }
+                .padding(8)
+                .background(Color(.systemBackground))
+                .cornerRadius(6)
+            }
+        }
+        .padding(12)
+        .background(Color.yellow.opacity(0.05))
+        .cornerRadius(8)
     }
 }
 
@@ -236,6 +370,75 @@ struct EntryDetailSheet: View {
                     }
                 }
             }
+        }
+    }
+}
+
+// MARK: - Entity Badge
+
+struct EntityBadge: View {
+    let entity: Entity
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Text(entity.value)
+                .font(.caption2)
+                .fontWeight(.medium)
+
+            Text(String(format: "%.0f%%", entity.confidence * 100))
+                .font(.system(size: 9))
+                .foregroundColor(.secondary)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(entity.type.color.opacity(0.15))
+        .cornerRadius(4)
+    }
+}
+
+// MARK: - Flow Layout
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let result = FlowResult(in: proposal.replacingUnspecifiedDimensions().width, subviews: subviews, spacing: spacing)
+        return result.size
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let result = FlowResult(in: bounds.width, subviews: subviews, spacing: spacing)
+        for (index, subview) in subviews.enumerated() {
+            subview.place(at: CGPoint(x: bounds.minX + result.frames[index].minX, y: bounds.minY + result.frames[index].minY), proposal: .unspecified)
+        }
+    }
+
+    struct FlowResult {
+        var size: CGSize
+        var frames: [CGRect]
+
+        init(in maxWidth: CGFloat, subviews: Subviews, spacing: CGFloat) {
+            var frames: [CGRect] = []
+            var currentX: CGFloat = 0
+            var currentY: CGFloat = 0
+            var lineHeight: CGFloat = 0
+
+            for subview in subviews {
+                let size = subview.sizeThatFits(.unspecified)
+
+                if currentX + size.width > maxWidth && currentX > 0 {
+                    currentX = 0
+                    currentY += lineHeight + spacing
+                    lineHeight = 0
+                }
+
+                frames.append(CGRect(x: currentX, y: currentY, width: size.width, height: size.height))
+                lineHeight = max(lineHeight, size.height)
+                currentX += size.width + spacing
+            }
+
+            self.frames = frames
+            self.size = CGSize(width: maxWidth, height: currentY + lineHeight)
         }
     }
 }

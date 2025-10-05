@@ -42,11 +42,9 @@ struct ChatTabView: View {
             let dateService = DateContextService(dataService: dataService)
             dateService.updateSelectedDate(selectedDate)
 
-            let insightsService = InsightsService(dataService: dataService)
             let chatService = ChatContextService(
                 dateContextService: dateService,
-                dataService: dataService,
-                insightsService: insightsService
+                dataService: dataService
             )
 
             self.dateContextService = dateService

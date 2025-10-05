@@ -1,5 +1,6 @@
 import SwiftData
 import Foundation
+import SwiftUI
 
 /// Represents an entity extracted from journal entries
 /// Entities can be People, Places, Events, Emotions, or Topics
@@ -117,6 +118,16 @@ public enum EntityType: String, Codable, CaseIterable {
         case .events: return "calendar"
         case .emotions: return "heart.fill"
         case .topics: return "tag.fill"
+        }
+    }
+
+    public var color: Color {
+        switch self {
+        case .people: return .blue
+        case .places: return .green
+        case .events: return .orange
+        case .emotions: return .pink
+        case .topics: return .purple
         }
     }
 }

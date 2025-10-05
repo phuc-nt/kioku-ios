@@ -382,8 +382,7 @@ struct AIChatView: View {
         AIChatView(
             chatContextService: ChatContextService(
                 dateContextService: DateContextService(dataService: DataService.preview),
-                dataService: DataService.preview,
-                insightsService: InsightsService(dataService: DataService.preview)
+                dataService: DataService.preview
             )
         )
         .navigationTitle("AI Chat")
