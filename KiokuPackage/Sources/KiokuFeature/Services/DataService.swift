@@ -14,7 +14,9 @@ public final class DataService: @unchecked Sendable {
                 Entry.self,
                 AIAnalysis.self,
                 Conversation.self,
-                ChatMessage.self
+                ChatMessage.self,
+                Entity.self,
+                Insight.self
             ])
             let modelConfiguration = ModelConfiguration(
                 schema: schema,
@@ -477,11 +479,41 @@ public final class DataService: @unchecked Sendable {
 extension DataService {
     static let preview: DataService = {
         let service = DataService()
-        
+
         // Add sample data for previews
         _ = service.createEntry(content: "This is a sample entry for previews")
         _ = service.createEntry(content: "Another sample entry with different content")
-        
+
+        // Add sample insights (Sprint 15)
+        let dailyInsight = Insight(
+            type: .emotional,
+            title: "Positive day with family",
+            description: "Your entries show gratitude and positive emotions when spending time with family members.",
+            confidence: 0.85,
+            timeframe: .daily
+        )
+        service.modelContext.insert(dailyInsight)
+
+        let weeklyInsight = Insight(
+            type: .frequency,
+            title: "Work-life balance focus",
+            description: "This week you mentioned 'work from home' and 'family time' frequently, showing good balance.",
+            confidence: 0.78,
+            timeframe: .weekly
+        )
+        service.modelContext.insert(weeklyInsight)
+
+        let suggestionInsight = Insight(
+            type: .suggestion,
+            title: "Health tracking opportunity",
+            description: "You wrote about health concerns. Consider tracking symptoms and doctor visits for better health management.",
+            confidence: 0.72,
+            timeframe: .daily
+        )
+        service.modelContext.insert(suggestionInsight)
+
+        try? service.modelContext.save()
+
         return service
     }()
 }

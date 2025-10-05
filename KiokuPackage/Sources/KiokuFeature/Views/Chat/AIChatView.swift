@@ -196,12 +196,13 @@ struct AIChatView: View {
     private func setupInitialContext() {
         if let initialContext = initialContext {
             currentContext = initialContext
+            addContextAsMessages()
         } else {
-            currentContext = chatContextService.generateContext()
+            Task { @MainActor in
+                currentContext = await chatContextService.generateContext()
+                addContextAsMessages()
+            }
         }
-
-        // Add context as initial messages so user can see what AI has access to
-        addContextAsMessages()
     }
 
     private func addContextAsMessages() {
@@ -301,20 +302,6 @@ struct AIChatView: View {
 
         let prompt = chatContextService.createAIPrompt(userMessage: userMessage, context: context)
 
-        // Create placeholder for AI response with streaming indicator
-        let placeholderMessage = AIChatMessage(
-            content: "",
-            isFromUser: false,
-            contextData: nil,
-            isStreaming: true
-        )
-
-        await MainActor.run {
-            messages.append(placeholderMessage)
-        }
-
-        let aiMessageId = placeholderMessage.id
-
         var fullResponse = ""
 
         do {
@@ -322,21 +309,16 @@ struct AIChatView: View {
             let response = try await openRouterService.completeText(prompt: prompt)
             fullResponse = response
 
-            // Update the message with full response and stop streaming
+            // Add AI response message and stop streaming
             await MainActor.run {
-                if let index = messages.firstIndex(where: { $0.id == aiMessageId }) {
-                    messages[index].content = fullResponse
-                    messages[index].isStreaming = false
-                }
+                let aiMessage = AIChatMessage(
+                    content: fullResponse,
+                    isFromUser: false
+                )
+                messages.append(aiMessage)
                 isStreaming = false
             }
         } catch {
-            await MainActor.run {
-                // Remove placeholder message
-                if let index = messages.firstIndex(where: { $0.id == aiMessageId }) {
-                    messages.remove(at: index)
-                }
-            }
             await handleAIError("Sorry, I couldn't process your message right now. Please try again.")
         }
     }
@@ -380,7 +362,8 @@ struct AIChatView: View {
     NavigationView {
         AIChatView(
             chatContextService: ChatContextService(
-                dateContextService: DateContextService(dataService: DataService.preview)
+                dateContextService: DateContextService(dataService: DataService.preview),
+                dataService: DataService.preview
             )
         )
         .navigationTitle("AI Chat")

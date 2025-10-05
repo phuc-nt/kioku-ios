@@ -41,24 +41,31 @@ struct ChatTabView: View {
         if dateContextService == nil || chatContextService == nil {
             let dateService = DateContextService(dataService: dataService)
             dateService.updateSelectedDate(selectedDate)
-            
-            let chatService = ChatContextService(dateContextService: dateService)
-            
+
+            let chatService = ChatContextService(
+                dateContextService: dateService,
+                dataService: dataService
+            )
+
             self.dateContextService = dateService
             self.chatContextService = chatService
-            
-            // Generate initial context for the selected date
-            self.initialContext = chatService.generateContext()
-            self.lastLoadedDate = selectedDate
+
+            // Generate initial context for the selected date (async)
+            Task {
+                self.initialContext = await chatService.generateContext()
+                self.lastLoadedDate = selectedDate
+            }
         } else if !Calendar.current.isDate(selectedDate, inSameDayAs: lastLoadedDate ?? Date.distantPast) {
             // Date changed while chat is visible - update context
             dateContextService?.updateSelectedDate(selectedDate)
             if let chatContextService = chatContextService {
-                self.initialContext = chatContextService.generateContext()
-                self.lastLoadedDate = selectedDate
-                
-                // Force recreate AIChatView with new date context
-                chatViewID = UUID()
+                Task {
+                    self.initialContext = await chatContextService.generateContext()
+                    self.lastLoadedDate = selectedDate
+
+                    // Force recreate AIChatView with new date context
+                    chatViewID = UUID()
+                }
             }
         }
     }
@@ -68,16 +75,18 @@ struct ChatTabView: View {
         guard !Calendar.current.isDate(selectedDate, inSameDayAs: lastLoadedDate ?? Date.distantPast) else {
             return
         }
-        
+
         dateContextService?.updateSelectedDate(selectedDate)
-        
-        // Regenerate context when date changes
+
+        // Regenerate context when date changes (async)
         if let chatContextService = chatContextService {
-            self.initialContext = chatContextService.generateContext()
-            self.lastLoadedDate = selectedDate
-            
-            // Force recreate AIChatView with new context
-            chatViewID = UUID()
+            Task {
+                self.initialContext = await chatContextService.generateContext()
+                self.lastLoadedDate = selectedDate
+
+                // Force recreate AIChatView with new context
+                chatViewID = UUID()
+            }
         }
     }
 }

@@ -330,7 +330,10 @@ public struct EntryDetailView: View {
     private func createChatContextService(for date: Date) -> ChatContextService {
         let dateContextService = DateContextService(dataService: dataService)
         dateContextService.updateSelectedDate(date)
-        return ChatContextService(dateContextService: dateContextService)
+        return ChatContextService(
+            dateContextService: dateContextService,
+            dataService: dataService
+        )
     }
     
     // MARK: - Historical Notes Logic
