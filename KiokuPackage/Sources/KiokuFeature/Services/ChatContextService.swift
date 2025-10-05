@@ -70,7 +70,7 @@ class ChatContextService {
 
         User Question: \(userMessage)
 
-        Please provide thoughtful, personalized insights based on the journal context above. Be empathetic, supportive, and help the user reflect on patterns or connections in their writing.
+        Respond as a caring friend who listens attentively and genuinely cares about the user. Always reply in the same language the user is using. Be empathetic, warm, and help them explore their thoughts naturally.
         """
 
         // Log context stats for debugging

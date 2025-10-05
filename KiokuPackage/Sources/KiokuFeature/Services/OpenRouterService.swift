@@ -41,7 +41,7 @@ public final class OpenRouterService: @unchecked Sendable {
         let topP: Double?
         
         public init(
-            model: String = "openai/gpt-4o-mini", // Default cost-effective model
+            model: String = "openai/gpt-5-mini", // GPT-5 Mini model
             messages: [ChatMessage],
             maxTokens: Int? = 500,
             temperature: Double? = 0.7,
@@ -106,7 +106,7 @@ public final class OpenRouterService: @unchecked Sendable {
     private let keychainAccount = "api-key"
     
     // API configuration
-    public var currentModel = "openai/gpt-4o-mini" // Default cost-effective model
+    public var currentModel = "openai/gpt-5-mini" // GPT-5 Mini model
     public var requestTimeout: TimeInterval = 30.0
     public var maxRetries = 3
     
