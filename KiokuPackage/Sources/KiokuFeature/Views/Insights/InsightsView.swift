@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct InsightsView: View {
     @Environment(DataService.self) private var dataService
@@ -84,20 +85,34 @@ struct InsightsView: View {
     private func loadInsights() async {
         guard let service = insightsService else { return }
 
-        // Check for API key
-        guard OpenRouterService.shared.hasAPIKey else {
-            await MainActor.run {
-                showAPIKeyAlert = true
-            }
-            return
-        }
-
         await MainActor.run {
             isGenerating = true
             error = nil
         }
 
         do {
+            // Try loading from database first
+            let existingInsights = try await loadInsightsFromDatabase()
+
+            if !existingInsights.isEmpty {
+                // Use cached insights if available
+                await MainActor.run {
+                    insights = existingInsights
+                    isGenerating = false
+                }
+                return
+            }
+
+            // No cached insights - check for API key before generating
+            guard OpenRouterService.shared.hasAPIKey else {
+                await MainActor.run {
+                    showAPIKeyAlert = true
+                    isGenerating = false
+                }
+                return
+            }
+
+            // Generate new insights
             let result: [Insight]
             switch selectedTimeframe {
             case .daily:
@@ -116,6 +131,36 @@ struct InsightsView: View {
             await MainActor.run {
                 self.error = error
                 isGenerating = false
+            }
+        }
+    }
+
+    private func loadInsightsFromDatabase() async throws -> [Insight] {
+        return await MainActor.run {
+            let calendar = Calendar.current
+            let descriptor = FetchDescriptor<Insight>(
+                sortBy: [SortDescriptor(\.generatedAt, order: .reverse)]
+            )
+
+            do {
+                let allInsights = try dataService.modelContext.fetch(descriptor)
+
+                // Filter by timeframe and date
+                return allInsights.filter { insight in
+                    guard insight.timeframe == selectedTimeframe else { return false }
+
+                    switch selectedTimeframe {
+                    case .daily:
+                        return calendar.isDate(insight.generatedAt, inSameDayAs: selectedDate)
+                    case .weekly:
+                        let weekDiff = calendar.dateComponents([.weekOfYear], from: insight.generatedAt, to: selectedDate).weekOfYear ?? 999
+                        return abs(weekDiff) == 0
+                    case .monthly:
+                        return calendar.isDate(insight.generatedAt, equalTo: selectedDate, toGranularity: .month)
+                    }
+                }
+            } catch {
+                return []
             }
         }
     }
