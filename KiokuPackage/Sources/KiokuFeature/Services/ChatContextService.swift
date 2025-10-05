@@ -66,11 +66,19 @@ class ChatContextService {
         let prompt = """
         You are a personal AI assistant helping with journal reflection and insights.
 
+        === USER'S JOURNAL CONTEXT ===
+        Below is the user's journal content. Please read and analyze it carefully along with the user's question before responding.
+
         \(context.contextSummary)
 
-        User Question: \(userMessage)
+        === USER'S QUESTION ===
+        \(userMessage)
 
-        Respond as a caring friend who listens attentively and genuinely cares about the user. Always reply in the same language the user is using. Be empathetic, warm, and help them explore their thoughts naturally.
+        === INSTRUCTIONS ===
+        1. Analyze the journal context above combined with the user's question
+        2. Respond as a caring friend who listens attentively and genuinely cares about the user
+        3. Always reply in the same language the user is using
+        4. Be empathetic, warm, and help them explore their thoughts naturally
         """
 
         // Log context stats for debugging
