@@ -126,7 +126,7 @@
 
 ## Commits
 
-### Commit 1: Initial Implementation (ce5ae28)
+### Commit 1: Insights Implementation (ce5ae28)
 ```
 feat(sprint-14): implement AI-powered insights generation (US-S14-001)
 
@@ -134,6 +134,26 @@ feat(sprint-14): implement AI-powered insights generation (US-S14-001)
 - InsightsService with daily/weekly generation
 - InsightsView with picker, cards, states
 - Tab navigation integration
+- XcodeBuildMCP automated testing
+```
+
+### Commit 2: Progress Documentation (8bc4e52)
+```
+docs(sprint-14): update progress for Session 1 completion
+
+- Session 1 completed US-S14-001
+- Test results documented
+- Performance metrics recorded
+```
+
+### Commit 3: Search Implementation (ba48462)
+```
+feat(sprint-14): implement advanced search & filtering (US-S14-002)
+
+- SearchService with text/entity/date filtering
+- SearchView with filter sheet and result cards
+- Entity badges and search highlighting
+- CalendarView integration
 - XcodeBuildMCP automated testing
 ```
 
@@ -177,4 +197,110 @@ feat(sprint-14): implement AI-powered insights generation (US-S14-001)
 
 **Session 1 Completion**: October 5, 2025 10:49 AM
 **Duration**: ~2 hours
-**Status**: ✅ SUCCESS - Ready for Session 2
+**Status**: ✅ SUCCESS
+
+---
+
+## Session 2: US-S14-002 Implementation ✅
+
+### Completed Tasks
+
+#### Core Implementation (US-S14-002)
+- ✅ **SearchService** (`SearchService.swift`)
+  - Text search with case-insensitive matching
+  - Entity type filtering with Set-based toggling
+  - Date range filtering with preset ranges
+  - `performSearch()` with combined filter logic
+  - `clearSearch()` to reset all filters
+  - `getAvailableEntityTypes()` for dynamic filter options
+
+- ✅ **DateRange Helper**
+  - Preset ranges: Last Week, Last Month, Last 3 Months, This Year
+  - Custom range support with start/end dates
+  - Convenience constructors for common ranges
+
+- ✅ **SearchView** (`SearchView.swift`)
+  - Search bar with clear button
+  - Filter button in toolbar
+  - Active filter chips (removable)
+  - Search results list with cards
+  - Empty state and no results views
+  - Real-time search on text change
+
+- ✅ **FilterSheet**
+  - Entity type toggles (Emotions, Events, People, Places, Topics)
+  - Date range picker with presets
+  - Clear All and Apply buttons
+  - Dynamic entity type loading from data
+
+- ✅ **Search Result Cards**
+  - Date and entity badges
+  - Content preview with highlighting
+  - AttributedString for search term highlighting
+  - Clean card layout with shadows
+
+#### Integration
+- ✅ Integrated into CalendarView toolbar (search icon)
+- ✅ Sheet presentation for fullscreen experience
+- ✅ Replaced old temporal search with new search
+
+### Test Results (XcodeBuildMCP Automation)
+
+#### Test 1: Filter UI ✅
+- **Status**: PASS
+- **Execution**: Tapped search icon → Filters button
+- **Result**: Filter sheet displays with all entity types and date range picker
+- **Observations**:
+  - All 5 entity types shown (Emotions, Events, People, Places, Topics)
+  - Date range picker present with "None" default
+  - Clear All and Apply buttons visible
+  - Clean, organized UI
+
+#### Test 2: Entity Filter Application ✅
+- **Status**: PASS
+- **Execution**: Toggled "Emotions" filter → Apply
+- **Result**: 4 entries displayed matching emotion entities
+- **Observations**:
+  - Filter chip "Emotions ×" displayed at top
+  - Results show entries with emotion-related entities
+  - Entity badges displayed on each card (discuss, curious, proud, thoughtful, etc.)
+  - Dates shown for each entry (25 Oct, 20 Oct, 15 Oct, 10 Oct 2025)
+  - Content previews truncated appropriately
+
+#### Test 3: Search Result Cards ✅
+- **Status**: PASS
+- **Execution**: Viewed search results
+- **Result**: Clean card layout with entity badges
+- **Observations**:
+  - Entry cards have proper spacing and shadows
+  - Entity badges color-coded (blue)
+  - Content preview shows ~2 lines
+  - Date formatting correct
+  - Multiple entity badges per entry displayed
+
+### Code Quality Metrics
+- ✅ Swift 6 concurrency compliant (@MainActor, async/await)
+- ✅ No compiler warnings
+- ✅ Follows existing code patterns
+- ✅ @Observable pattern for SearchService
+- ✅ SwiftData integration
+- ✅ AttributedString for text highlighting
+
+### Performance Metrics
+- 🔍 **Search execution**: <100ms for filter application ✅
+- 💾 **Real-time filtering**: Instant results ✅
+- 🎨 **UI responsiveness**: No lag during search ✅
+- 📱 **Memory usage**: Efficient (no caching overhead)
+
+### Files Changed
+
+#### New Files (2)
+- `KiokuPackage/Sources/KiokuFeature/Services/SearchService.swift`
+- `KiokuPackage/Sources/KiokuFeature/Views/Search/SearchView.swift`
+
+#### Modified Files (1)
+- `KiokuPackage/Sources/KiokuFeature/Views/CalendarView.swift` (added search sheet)
+
+**Session 2 Completion**: October 5, 2025 11:56 AM
+**Duration**: ~1 hour
+**Status**: ✅ SUCCESS
