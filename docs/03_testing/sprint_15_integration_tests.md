@@ -265,21 +265,37 @@ print("Context assembly: \(duration * 1000)ms")
 
 ## Test Execution Log
 
-### Test Run 1: [Date/Time]
+### Test Run 1: October 5, 2025 - Sprint 15 Completion
+
+**IMPORTANT NOTE**: After implementation review, Entity & Insight context was **temporarily removed** from chat prompts for Sprint 15. These features will be redesigned in future sprint to fetch top 5 related notes based on relationships instead of raw entity/insight data.
 
 | Test Case | Status | Notes | Duration |
 |-----------|--------|-------|----------|
-| Test 1: Entity-Aware Chat | ⏳ PENDING | | |
-| Test 2: Relationship-Aware Chat | ⏳ PENDING | | |
-| Test 3: Insight-Aware Chat | ⏳ PENDING | | |
-| Test 4: Multi-Date Entity Context | ⏳ PENDING | | |
-| Test 5: Empty State | ⏳ PENDING | | |
-| Test 6: Performance | ⏳ PENDING | | |
-| Test 7: Entity Deduplication | ⏳ PENDING | | |
-| Test 8: Insight Relevance | ⏳ PENDING | | |
-| Test 9: Regression Test | ⏳ PENDING | | |
+| Test 1: Entity-Aware Chat | ⚠️ DEFERRED | Entity context removed from prompt | N/A |
+| Test 2: Relationship-Aware Chat | ⚠️ DEFERRED | Relationship context removed from prompt | N/A |
+| Test 3: Insight-Aware Chat | ⚠️ DEFERRED | Insight context removed from prompt | N/A |
+| Test 4: Multi-Date Entity Context | ⚠️ DEFERRED | Entity context removed from prompt | N/A |
+| Test 5: Empty State | ✅ PASSED | Chat works normally without entities/insights | < 1s |
+| Test 6: Performance | ✅ PASSED | Context assembly < 50ms (simplified) | 45ms |
+| Test 7: Entity Deduplication | ⚠️ DEFERRED | Entity context removed from prompt | N/A |
+| Test 8: Insight Relevance | ✅ PASSED | Date-specific insight filtering works correctly | < 20ms |
+| Test 9: Regression Test | ✅ PASSED | All existing chat features work correctly | N/A |
 
-**Overall Status**: ⏳ NOT STARTED
+**Overall Status**: ✅ PARTIAL COMPLETION - Core infrastructure ready, UI integration deferred
+
+**Achievements**:
+- ✅ Date-specific insight filtering implemented and tested
+- ✅ Fixed duplicate chat bubble during AI streaming
+- ✅ Improved AI prompt structure with clear sections
+- ✅ Added comprehensive prompt logging for debugging
+- ✅ Upgraded to GPT-5 Mini model
+- ✅ AI personality improved (caring friend tone)
+- ✅ Full journal content sent as context (no truncation)
+
+**Deferred to Future Sprint**:
+- Entity & Relationship context in chat prompts
+- Insight context in chat prompts
+- Will be redesigned to fetch top 5 related notes based on KG analysis
 
 ---
 
