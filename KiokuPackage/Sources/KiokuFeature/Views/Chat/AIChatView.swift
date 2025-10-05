@@ -196,12 +196,13 @@ struct AIChatView: View {
     private func setupInitialContext() {
         if let initialContext = initialContext {
             currentContext = initialContext
+            addContextAsMessages()
         } else {
-            currentContext = chatContextService.generateContext()
+            Task { @MainActor in
+                currentContext = await chatContextService.generateContext()
+                addContextAsMessages()
+            }
         }
-
-        // Add context as initial messages so user can see what AI has access to
-        addContextAsMessages()
     }
 
     private func addContextAsMessages() {
@@ -380,7 +381,9 @@ struct AIChatView: View {
     NavigationView {
         AIChatView(
             chatContextService: ChatContextService(
-                dateContextService: DateContextService(dataService: DataService.preview)
+                dateContextService: DateContextService(dataService: DataService.preview),
+                dataService: DataService.preview,
+                insightsService: InsightsService(dataService: DataService.preview)
             )
         )
         .navigationTitle("AI Chat")
