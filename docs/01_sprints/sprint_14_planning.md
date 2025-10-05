@@ -50,28 +50,28 @@ Leverage the knowledge graph foundation to deliver intelligent insights and powe
   - Topic trends (emerging themes)
 
 **Acceptance Criteria**:
-- [ ] InsightsService generates insights from knowledge graph data
-- [ ] Daily insights: 3-5 observations about today's entry
-- [ ] Weekly insights: 5-7 patterns across past 7 days
-- [ ] Insights UI accessible from main navigation (tab or menu)
-- [ ] Each insight shows: type, description, evidence (linked entities)
-- [ ] Tap insight → navigate to related entries
-- [ ] Refresh button to regenerate insights
-- [ ] Loading state during AI generation
-- [ ] Empty state: "Write more to see patterns"
-- [ ] Insights cached for performance (24h cache)
+- [x] InsightsService generates insights from knowledge graph data
+- [x] Daily insights: 3-5 observations about today's entry
+- [x] Weekly insights: 5-7 patterns across past 7 days
+- [x] Insights UI accessible from main navigation (tab or menu)
+- [x] Each insight shows: type, description, evidence (linked entities)
+- [ ] Tap insight → navigate to related entries (not yet implemented)
+- [x] Refresh button to regenerate insights
+- [x] Loading state during AI generation
+- [x] Empty state: "Write more to see patterns"
+- [x] Insights cached for performance (24h cache)
 
 **Technical Tasks**:
-- [ ] Create InsightsService with OpenRouter integration
-- [ ] Design AI prompts for different insight types
-- [ ] Fetch entities and relationships from knowledge graph
-- [ ] Create Insight model: type, title, description, confidence, relatedEntries
-- [ ] Build InsightsView UI with list of insights
-- [ ] Add insight detail view with evidence
-- [ ] Implement caching logic (UserDefaults or SwiftData)
-- [ ] Add refresh/regenerate functionality
-- [ ] Handle edge cases (no data, API errors)
-- [ ] Write automated tests
+- [x] Create InsightsService with OpenRouter integration
+- [x] Design AI prompts for different insight types
+- [x] Fetch entities and relationships from knowledge graph
+- [x] Create Insight model: type, title, description, confidence, relatedEntries
+- [x] Build InsightsView UI with list of insights
+- [ ] Add insight detail view with evidence (not yet implemented)
+- [x] Implement caching logic (in-memory cache with 24h expiry)
+- [x] Add refresh/regenerate functionality
+- [x] Handle edge cases (no data, API errors)
+- [x] Automated tests via XcodeBuildMCP simulator testing
 
 **UI/UX Design**:
 
@@ -603,3 +603,4 @@ Insight.swift
 **Sprint End**: TBD (Target: October 12, 2025)
 **Sprint Review**: TBD
 **Test Report**: [`docs/03_testing/sprint_14_acceptance_tests.md`](../03_testing/sprint_14_acceptance_tests.md)
+
