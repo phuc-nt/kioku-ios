@@ -285,16 +285,14 @@ class ChatContextService {
 
     /// Fetch related entries using Knowledge Graph data (US-S16-001)
     /// Returns up to 5 most relevant entries discovered via relationships and insights
-    nonisolated private func fetchRelatedEntries(for date: Date) async -> [RelatedEntry] {
-        return await MainActor.run {
-            do {
-                let relatedEntries = try await relatedNotesService.findRelatedEntries(for: date, limit: 5)
-                print("📊 fetchRelatedEntries returned \(relatedEntries.count) entries for \(date.formatted())")
-                return relatedEntries
-            } catch {
-                print("❌ Error fetching related entries: \(error)")
-                return []
-            }
+    private func fetchRelatedEntries(for date: Date) async -> [RelatedEntry] {
+        do {
+            let relatedEntries = try await relatedNotesService.findRelatedEntries(for: date, limit: 5)
+            print("📊 fetchRelatedEntries returned \(relatedEntries.count) entries for \(date.formatted())")
+            return relatedEntries
+        } catch {
+            print("❌ Error fetching related entries: \(error)")
+            return []
         }
     }
 }

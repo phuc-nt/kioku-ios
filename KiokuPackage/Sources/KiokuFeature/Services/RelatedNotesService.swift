@@ -29,76 +29,89 @@ public final class RelatedNotesService {
         print("📊 Finding related entries for date: \(date.formatted()) (Entry IDs: \(currentEntryIds.count))")
 
         // 2. Fetch all entities for current date's entries
-        let currentEntities = try await fetchEntities(for: currentEntryIds)
+        let currentEntities = currentEntries.flatMap { $0.entities }
         let currentEntityIds = Set(currentEntities.map { $0.id })
         print("   → Found \(currentEntityIds.count) entities in current entries")
 
-        // 3. Fetch relationships involving current entities
-        let relationships = try await fetchRelationships(involving: currentEntityIds)
-        print("   → Found \(relationships.count) relationships")
-
-        // 4. Fetch insights related to current date
-        let insights = try await fetchInsights(for: currentEntryIds)
-        print("   → Found \(insights.count) insights")
-
-        // 5. Collect all related entry IDs from relationships and insights
+        // 3. Collect all related entry IDs from relationships
         var relatedEntryIds = Set<UUID>()
+        var relationshipScores: [UUID: Double] = [:]
 
-        // From relationships: get entries of connected entities
-        for relationship in relationships {
-            let connectedEntityIds = Set(relationship.entityIds).subtracting(currentEntityIds)
-            if !connectedEntityIds.isEmpty {
-                let connectedEntities = try await fetchEntitiesByIds(connectedEntityIds)
-                for entity in connectedEntities {
-                    relatedEntryIds.formUnion(entity.sourceEntryIds)
+        for entity in currentEntities {
+            // Get entities connected via outgoing relationships
+            for relationship in entity.outgoingRelationships {
+                let connectedEntity = relationship.toEntity
+                let weight = relationshipTypeWeight(relationship.type) * relationship.confidence
+
+                // Add all entries containing the connected entity
+                for entry in connectedEntity.entries where !currentEntryIds.contains(entry.id) {
+                    relatedEntryIds.insert(entry.id)
+                    relationshipScores[entry.id, default: 0] += weight
+                }
+            }
+
+            // Get entities connected via incoming relationships
+            for relationship in entity.incomingRelationships {
+                let connectedEntity = relationship.fromEntity
+                let weight = relationshipTypeWeight(relationship.type) * relationship.confidence
+
+                // Add all entries containing the connected entity
+                for entry in connectedEntity.entries where !currentEntryIds.contains(entry.id) {
+                    relatedEntryIds.insert(entry.id)
+                    relationshipScores[entry.id, default: 0] += weight
                 }
             }
         }
 
-        // From insights: get related entry IDs
+        print("   → Found \(relatedEntryIds.count) related entry IDs via relationships")
+
+        // 4. Fetch insights related to current entries
+        let insights = try await fetchInsights(for: currentEntryIds)
+        print("   → Found \(insights.count) insights")
+
+        // Add entry IDs from insights
+        var insightScores: [UUID: Double] = [:]
         for insight in insights {
-            relatedEntryIds.formUnion(insight.relatedEntryIds)
+            let score = insight.confidence * 5.0 // Scale to 0-5
+            for entryId in insight.relatedEntryIds where !currentEntryIds.contains(entryId) {
+                relatedEntryIds.insert(entryId)
+                insightScores[entryId, default: 0] = max(insightScores[entryId, default: 0], score)
+            }
         }
 
-        // Exclude current entries
-        relatedEntryIds.subtract(currentEntryIds)
-        print("   → Collected \(relatedEntryIds.count) potential related entry IDs")
+        print("   → Total collected \(relatedEntryIds.count) related entry IDs")
 
         guard !relatedEntryIds.isEmpty else {
             print("   → No related entries found")
             return []
         }
 
-        // 6. Fetch all related entries
+        // 5. Fetch all related entries
         let relatedEntriesData = try await fetchEntriesByIds(relatedEntryIds)
         print("   → Fetched \(relatedEntriesData.count) related entries")
 
-        // 7. Calculate relevance scores
+        // 6. Calculate relevance scores
         var scoredEntries: [RelatedEntry] = []
         for entry in relatedEntriesData {
-            let score = calculateRelevanceScore(
-                entry: entry,
-                currentDate: date,
-                currentEntityIds: currentEntityIds,
-                relationships: relationships,
-                insights: insights
-            )
+            let relationshipScore = relationshipScores[entry.id, default: 0]
+            let insightScore = insightScores[entry.id, default: 0]
+            let recencyFactor = calculateRecencyFactor(entry: entry, currentDate: date)
 
-            let reason = determineRelevanceReason(
-                entry: entry,
-                relationships: relationships,
-                insights: insights,
-                currentEntityIds: currentEntityIds
+            let finalScore = (relationshipScore + insightScore) * recencyFactor
+            let reason = generateReason(
+                relationshipScore: relationshipScore,
+                insightScore: insightScore,
+                recency: recencyFactor
             )
 
             scoredEntries.append(RelatedEntry(
                 entry: entry,
-                relevanceScore: score,
+                relevanceScore: finalScore,
                 reason: reason
             ))
         }
 
-        // 8. Sort by relevance and return top N
+        // 7. Sort by relevance and return top N
         let topEntries = scoredEntries
             .sorted { $0.relevanceScore > $1.relevanceScore }
             .prefix(limit)
@@ -106,116 +119,72 @@ public final class RelatedNotesService {
 
         print("   → Top \(topEntries.count) related entries:")
         for (index, relatedEntry) in topEntries.enumerated() {
-            print("      \(index + 1). Score: \(String(format: "%.2f", relatedEntry.relevanceScore)) - \(relatedEntry.reason)")
+            let dateStr = relatedEntry.entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown"
+            print("      \(index + 1). [\(dateStr)] Score: \(String(format: "%.2f", relatedEntry.relevanceScore)) - \(relatedEntry.reason)")
         }
 
         return topEntries
     }
 
-    // MARK: - Relevance Scoring
+    // MARK: - Scoring & Reasoning
 
-    private func calculateRelevanceScore(
-        entry: Entry,
-        currentDate: Date,
-        currentEntityIds: Set<UUID>,
-        relationships: [Relationship],
-        insights: [Insight]
-    ) -> Double {
-        var score = 0.0
-
-        // 1. Relationship strength (0-10 points)
-        let relationshipWeights: [RelationshipType: Double] = [
-            .causal: 5.0,
-            .temporal: 4.0,
-            .emotional: 3.0,
-            .topical: 2.0
-        ]
-
-        let relScore = relationships
-            .filter { relationship in
-                // Check if this relationship connects to entities in this entry
-                let relationshipEntityIds = Set(relationship.entityIds)
-                let connectedToCurrentEntities = !relationshipEntityIds.isDisjoint(with: currentEntityIds)
-
-                // Check if any entities from this entry are in the relationship
-                // We need to fetch this entry's entities to verify
-                // For now, we'll use a simpler heuristic: check if relationship's related entries include this entry
-                return connectedToCurrentEntities && relationship.relatedEntryIds.contains(entry.id)
-            }
-            .reduce(0.0) { sum, relationship in
-                sum + (relationshipWeights[relationship.type] ?? 0.0)
-            }
-
-        score += min(relScore, 10.0)
-
-        // 2. Insight confidence (0-5 points)
-        let insightScore = insights
-            .filter { $0.relatedEntryIds.contains(entry.id) }
-            .map { $0.confidence }
-            .max() ?? 0.0
-
-        score += insightScore * 5.0
-
-        // 3. Recency factor (0.5-1.0 multiplier)
+    /// Calculate recency factor (0.5-1.0)
+    private func calculateRecencyFactor(entry: Entry, currentDate: Date) -> Double {
         let entryDate = entry.date ?? entry.createdAt
         let daysDiff = abs(Calendar.current.dateComponents([.day], from: entryDate, to: currentDate).day ?? 0)
-        let recencyFactor: Double
+
         if daysDiff <= 7 {
-            recencyFactor = 1.0
+            return 1.0
         } else if daysDiff <= 30 {
-            recencyFactor = 0.8
+            return 0.8
         } else {
-            recencyFactor = 0.5
+            return 0.5
         }
-
-        score *= recencyFactor
-
-        return score
     }
 
-    private func determineRelevanceReason(
-        entry: Entry,
-        relationships: [Relationship],
-        insights: [Insight],
-        currentEntityIds: Set<UUID>
-    ) -> String {
-        // Check for relationship connections
-        let connectedRelationships = relationships.filter { relationship in
-            relationship.relatedEntryIds.contains(entry.id) &&
-            !Set(relationship.entityIds).isDisjoint(with: currentEntityIds)
+    /// Get weight for relationship type
+    private func relationshipTypeWeight(_ type: RelationshipType) -> Double {
+        switch type {
+        case .causal:
+            return 5.0
+        case .temporal:
+            return 4.0
+        case .emotional:
+            return 3.0
+        case .topical:
+            return 2.0
         }
+    }
 
-        if let firstRelationship = connectedRelationships.first {
-            let typeDescription: String
-            switch firstRelationship.type {
-            case .causal:
-                typeDescription = "causal relationship"
-            case .temporal:
-                typeDescription = "temporal connection"
-            case .emotional:
-                typeDescription = "similar emotions"
-            case .topical:
-                typeDescription = "related topic"
+    /// Generate human-readable reason for relevance
+    private func generateReason(relationshipScore: Double, insightScore: Double, recency: Double) -> String {
+        var reasons: [String] = []
+
+        if relationshipScore > 0 {
+            if relationshipScore >= 8 {
+                reasons.append("Strongly connected via relationships")
+            } else if relationshipScore >= 4 {
+                reasons.append("Connected via relationships")
+            } else {
+                reasons.append("Weakly connected")
             }
-            return "Connected via \(typeDescription)"
         }
 
-        // Check for insight mentions
-        let relatedInsights = insights.filter { $0.relatedEntryIds.contains(entry.id) }
-        if let insight = relatedInsights.first {
-            let timeframeDescription: String
-            switch insight.timeframe {
-            case .daily:
-                timeframeDescription = "daily insight"
-            case .weekly:
-                timeframeDescription = "weekly insight"
-            case .monthly:
-                timeframeDescription = "monthly insight"
+        if insightScore > 0 {
+            if insightScore >= 4 {
+                reasons.append("High-confidence insight connection")
+            } else if insightScore >= 2 {
+                reasons.append("Mentioned in insights")
             }
-            return "Mentioned in \(timeframeDescription)"
         }
 
-        return "Related entry"
+        if recency == 1.0 {
+            reasons.append("Recent (last 7 days)")
+        } else if recency == 0.8 {
+            reasons.append("Recent (last 30 days)")
+        }
+
+        return reasons.isEmpty ? "Related entry" : reasons.joined(separator: ", ")
     }
 
     // MARK: - Data Fetching
@@ -233,31 +202,6 @@ public final class RelatedNotesService {
         )
 
         return try modelContext.fetch(descriptor)
-    }
-
-    private func fetchEntities(for entryIds: Set<UUID>) async throws -> [Entity] {
-        let descriptor = FetchDescriptor<Entity>()
-        let allEntities = try modelContext.fetch(descriptor)
-
-        return allEntities.filter { entity in
-            !Set(entity.sourceEntryIds).isDisjoint(with: entryIds)
-        }
-    }
-
-    private func fetchEntitiesByIds(_ entityIds: Set<UUID>) async throws -> [Entity] {
-        let descriptor = FetchDescriptor<Entity>()
-        let allEntities = try modelContext.fetch(descriptor)
-
-        return allEntities.filter { entityIds.contains($0.id) }
-    }
-
-    private func fetchRelationships(involving entityIds: Set<UUID>) async throws -> [Relationship] {
-        let descriptor = FetchDescriptor<Relationship>()
-        let allRelationships = try modelContext.fetch(descriptor)
-
-        return allRelationships.filter { relationship in
-            !Set(relationship.entityIds).isDisjoint(with: entityIds)
-        }
     }
 
     private func fetchInsights(for entryIds: Set<UUID>) async throws -> [Insight] {
@@ -280,7 +224,7 @@ public final class RelatedNotesService {
 // MARK: - Supporting Types
 
 /// Represents a related journal entry with relevance information
-public struct RelatedEntry: Identifiable {
+public struct RelatedEntry: Identifiable, Sendable {
     public let id: UUID
     public let entry: Entry
     public let relevanceScore: Double
