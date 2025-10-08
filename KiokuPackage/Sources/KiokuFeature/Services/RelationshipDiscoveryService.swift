@@ -55,6 +55,12 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
         self.dataService = dataService
     }
 
+    // MARK: - Cancellation
+
+    public func cancelDiscovery() {
+        isDiscovering = false
+    }
+
     // MARK: - Discovery Methods
 
     /// Discovers relationships for entities in a single entry
@@ -130,7 +136,9 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
         }
     }
 
-    /// Discovers relationships from multiple entries in batch
+    /// Discovers relationships from multiple entries in batch with tracking support
+    /// Skips entries that have already been processed (isRelationshipsDiscovered = true)
+    /// Can be cancelled and resumed without re-processing completed entries
     public func discoverRelationshipsFromBatch(
         entries: [Entry],
         onProgress: @escaping @MainActor @Sendable (Double, String) -> Void
@@ -152,9 +160,32 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
         var processedCount = 0
 
         for entry in entries {
+            // Check if discovery was cancelled
+            guard await MainActor.run(body: { isDiscovering }) else {
+                print("⚠️ Discovery cancelled by user")
+                await MainActor.run {
+                    onProgress(progress, "Cancelled")
+                }
+                return
+            }
+
+            // Skip if already discovered (KEY FEATURE: Incremental processing)
+            if entry.isRelationshipsDiscovered {
+                processedCount += 1
+                await MainActor.run {
+                    progress = Double(processedCount) / Double(totalEntries)
+                    onProgress(progress, "Skipped (already discovered)")
+                }
+                continue
+            }
+
             // Skip entries without enough entities
             guard entry.entities.count >= 2 else {
                 processedCount += 1
+                await MainActor.run {
+                    progress = Double(processedCount) / Double(totalEntries)
+                    onProgress(progress, "Skipped (< 2 entities)")
+                }
                 continue
             }
 
@@ -169,9 +200,15 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
                 // Discover relationships for entry
                 let relationships = try await discoverRelationships(for: entry)
 
-                // Link relationships to entry
+                // Link relationships to entry and mark as discovered
                 await MainActor.run {
                     entry.relationships.append(contentsOf: relationships)
+                    entry.isRelationshipsDiscovered = true
+                    entry.relationshipsDiscoveredAt = Date()
+                    entry.relationshipsDiscoveryModel = discoveryModel
+
+                    // Explicitly save the context
+                    try? dataService.modelContext.save()
                 }
 
                 processedCount += 1
@@ -179,10 +216,34 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
                 // Small delay to avoid rate limiting
                 try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
 
+            } catch let error as OpenRouterService.OpenRouterError {
+                print("❌ DISCOVERY ERROR for entry \(entry.id): \(error)")
+
+                // Check if it's a rate limit error
+                if case .rateLimitExceeded = error {
+                    print("⚠️ Rate limit exceeded - stopping discovery")
+                    await MainActor.run {
+                        isDiscovering = false
+                        onProgress(progress, "Rate limit exceeded - you can resume later")
+                    }
+                    throw DiscoveryError.networkError(error)
+                }
+
+                // For other errors, continue with next entry
+                processedCount += 1
+                await MainActor.run {
+                    progress = Double(processedCount) / Double(totalEntries)
+                    onProgress(progress, "Error: \(error.localizedDescription)")
+                }
+
             } catch {
                 print("Failed to discover relationships for entry \(entry.id): \(error)")
                 // Continue with next entry
                 processedCount += 1
+                await MainActor.run {
+                    progress = Double(processedCount) / Double(totalEntries)
+                    onProgress(progress, "Error")
+                }
             }
         }
 
@@ -221,21 +282,27 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
 
             var relationships: [EntityRelationship] = []
 
-            for relDict in jsonArray {
-                guard let fromEntityValue = relDict["fromEntity"] as? String,
-                      let toEntityValue = relDict["toEntity"] as? String,
-                      let typeString = relDict["type"] as? String,
-                      let type = RelationshipType(rawValue: typeString.lowercased()),
-                      let confidence = relDict["confidence"] as? Double,
-                      let evidence = relDict["evidence"] as? String else {
-                    print("Skipping invalid relationship: \(relDict)")
+            for relationshipDict in jsonArray {
+                guard let fromEntityValue = relationshipDict["fromEntity"] as? String,
+                      let toEntityValue = relationshipDict["toEntity"] as? String,
+                      let typeString = relationshipDict["type"] as? String,
+                      let confidence = relationshipDict["confidence"] as? Double,
+                      let evidence = relationshipDict["evidence"] as? String else {
+                    print("⚠️ Skipping malformed relationship: \(relationshipDict)")
                     continue
                 }
 
-                // Find matching entities in entry
-                guard let fromEntity = sourceEntry.entities.first(where: { $0.value == fromEntityValue }),
-                      let toEntity = sourceEntry.entities.first(where: { $0.value == toEntityValue }) else {
-                    print("Entities not found for relationship: \(fromEntityValue) -> \(toEntityValue)")
+                // Parse relationship type
+                guard let type = RelationshipType(rawValue: typeString.lowercased()) else {
+                    print("⚠️ Unknown relationship type: \(typeString)")
+                    continue
+                }
+
+                // Find entities from source entry (temporary placeholders)
+                // These will be linked to actual database entities later
+                guard let fromEntity = sourceEntry.entities.first(where: { $0.value.lowercased() == fromEntityValue.lowercased() }),
+                      let toEntity = sourceEntry.entities.first(where: { $0.value.lowercased() == toEntityValue.lowercased() }) else {
+                    print("⚠️ Entity not found in entry: \(fromEntityValue) → \(toEntityValue)")
                     continue
                 }
 
@@ -254,59 +321,19 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
             return relationships
 
         } catch {
-            throw DiscoveryError.parsingError(error.localizedDescription)
+            throw DiscoveryError.parsingError("JSON parsing failed: \(error.localizedDescription)")
         }
     }
 
     private func linkToDatabaseEntities(_ relationships: [EntityRelationship], sourceEntry: Entry) async throws -> [EntityRelationship] {
-        var linkedRelationships: [EntityRelationship] = []
-
-        for relationship in relationships {
-            // Insert into database
-            await MainActor.run {
+        // The relationships are already linked to the database entities from the entry
+        // Just need to insert them into the context
+        await MainActor.run {
+            for relationship in relationships {
                 dataService.modelContext.insert(relationship)
             }
-
-            linkedRelationships.append(relationship)
         }
 
-        return linkedRelationships
+        return relationships
     }
-
-    // MARK: - Utility Methods
-
-    /// Gets relationship discovery statistics
-    public func getDiscoveryStats() -> (totalRelationships: Int, byType: [RelationshipType: Int]) {
-        let allRelationships = getAllRelationships()
-        var byType: [RelationshipType: Int] = [:]
-
-        for type in RelationshipType.allCases {
-            byType[type] = allRelationships.filter { $0.type == type }.count
-        }
-
-        return (allRelationships.count, byType)
-    }
-
-    private func getAllRelationships() -> [EntityRelationship] {
-        let descriptor = FetchDescriptor<EntityRelationship>(
-            sortBy: [SortDescriptor(\.confidence, order: .reverse)]
-        )
-        return (try? dataService.modelContext.fetch(descriptor)) ?? []
-    }
-
-    /// Cancels current discovery batch
-    public func cancelDiscovery() {
-        isDiscovering = false
-        progress = 0.0
-        currentEntry = nil
-    }
-}
-
-// MARK: - Preview Support
-
-extension RelationshipDiscoveryService {
-    public static let preview: RelationshipDiscoveryService = {
-        let service = RelationshipDiscoveryService(dataService: DataService.preview)
-        return service
-    }()
 }
