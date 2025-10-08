@@ -383,6 +383,13 @@ public final class DataService: @unchecked Sendable {
         return relationships.sorted { $0.confidence > $1.confidence }
     }
 
+    public func fetchAllRelationships() -> [EntityRelationship] {
+        let descriptor = FetchDescriptor<EntityRelationship>(
+            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+        )
+        return (try? modelContext.fetch(descriptor)) ?? []
+    }
+
     public func fetchRelationships(type: RelationshipType) -> [EntityRelationship] {
         let descriptor = FetchDescriptor<EntityRelationship>(
             predicate: #Predicate<EntityRelationship> { relationship in

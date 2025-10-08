@@ -205,7 +205,7 @@ public struct SettingsView: View {
 
     private var knowledgeGraphSection: some View {
         NavigationLink {
-            EntityExtractionView(dataService: dataService)
+            EntityExtractionView()
         } label: {
             HStack {
                 Image(systemName: "brain.head.profile")

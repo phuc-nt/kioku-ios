@@ -336,4 +336,18 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
 
         return relationships
     }
+
+    // MARK: - Utility Methods
+
+    /// Gets relationship discovery statistics
+    public func getDiscoveryStats() -> (totalRelationships: Int, byType: [RelationshipType: Int]) {
+        let allRelationships = dataService.fetchAllRelationships()
+        var byType: [RelationshipType: Int] = [:]
+
+        for type in RelationshipType.allCases {
+            byType[type] = allRelationships.filter { $0.type == type }.count
+        }
+
+        return (allRelationships.count, byType)
+    }
 }

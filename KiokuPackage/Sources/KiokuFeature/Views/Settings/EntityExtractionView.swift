@@ -1,11 +1,16 @@
 import SwiftUI
 
+// Wrapper class to hold service references for cancellation
+@Observable
+private final class ServiceHolder: @unchecked Sendable {
+    var extractionService: EntityExtractionService?
+    var relationshipService: RelationshipDiscoveryService?
+}
+
 struct EntityExtractionView: View {
     @Environment(DataService.self) private var dataService
     @Environment(\.dismiss) private var dismiss
 
-    @State private var extractionService: EntityExtractionService
-    @State private var relationshipService: RelationshipDiscoveryService
     @State private var isProcessing = false
     @State private var progress: Double = 0.0
     @State private var currentEntryText: String = ""
@@ -16,11 +21,7 @@ struct EntityExtractionView: View {
     @State private var isDiscoveringRelationships = false
     @State private var discoveryProgress: Double = 0.0
     @State private var showRelationshipSuccess = false
-
-    init(dataService: DataService) {
-        self._extractionService = State(initialValue: EntityExtractionService(dataService: dataService))
-        self._relationshipService = State(initialValue: RelationshipDiscoveryService(dataService: dataService))
-    }
+    @State private var serviceHolder = ServiceHolder()
 
     var body: some View {
         NavigationStack {
@@ -325,9 +326,11 @@ struct EntityExtractionView: View {
     }
 
     private func loadStats() {
+        let extractionService = EntityExtractionService(dataService: dataService)
         let stats = extractionService.getExtractionStats()
         extractionStats = (total: stats.totalEntities, byType: stats.byType)
 
+        let relationshipService = RelationshipDiscoveryService(dataService: dataService)
         let relStats = relationshipService.getDiscoveryStats()
         relationshipStats = (total: relStats.totalRelationships, byType: relStats.byType)
     }
@@ -335,7 +338,7 @@ struct EntityExtractionView: View {
     private func startExtraction() {
         if isProcessing {
             // Stop extraction
-            extractionService.cancelExtraction()
+            serviceHolder.extractionService?.cancelExtraction()
             isProcessing = false
             progress = 0.0
             currentEntryText = ""
@@ -355,6 +358,10 @@ struct EntityExtractionView: View {
         progress = 0.0
         currentEntryText = ""
 
+        // Create and store service for cancellation
+        let extractionService = EntityExtractionService(dataService: dataService)
+        serviceHolder.extractionService = extractionService
+
         Task {
             do {
                 try await extractionService.extractEntitiesFromBatch(
@@ -370,6 +377,7 @@ struct EntityExtractionView: View {
                     progress = 1.0
                     currentEntryText = ""
                     showSuccess = true
+                    serviceHolder.extractionService = nil
                 }
 
             } catch {
@@ -378,6 +386,7 @@ struct EntityExtractionView: View {
                     progress = 0.0
                     currentEntryText = ""
                     showError = error.localizedDescription
+                    serviceHolder.extractionService = nil
                 }
             }
         }
@@ -386,7 +395,7 @@ struct EntityExtractionView: View {
     private func startRelationshipDiscovery() {
         if isDiscoveringRelationships {
             // Stop discovery
-            relationshipService.cancelDiscovery()
+            serviceHolder.relationshipService?.cancelDiscovery()
             isDiscoveringRelationships = false
             discoveryProgress = 0.0
             currentEntryText = ""
@@ -405,6 +414,10 @@ struct EntityExtractionView: View {
         discoveryProgress = 0.0
         currentEntryText = ""
 
+        // Create and store service for cancellation
+        let relationshipService = RelationshipDiscoveryService(dataService: dataService)
+        serviceHolder.relationshipService = relationshipService
+
         Task {
             do {
                 try await relationshipService.discoverRelationshipsFromBatch(
@@ -420,6 +433,7 @@ struct EntityExtractionView: View {
                     discoveryProgress = 1.0
                     currentEntryText = ""
                     showRelationshipSuccess = true
+                    serviceHolder.relationshipService = nil
                 }
 
             } catch {
@@ -428,6 +442,7 @@ struct EntityExtractionView: View {
                     discoveryProgress = 0.0
                     currentEntryText = ""
                     showError = error.localizedDescription
+                    serviceHolder.relationshipService = nil
                 }
             }
         }
@@ -435,6 +450,6 @@ struct EntityExtractionView: View {
 }
 
 #Preview {
-    EntityExtractionView(dataService: DataService.preview)
+    EntityExtractionView()
         .environment(DataService.preview)
 }
