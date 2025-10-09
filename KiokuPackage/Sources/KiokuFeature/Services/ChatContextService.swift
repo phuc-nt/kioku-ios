@@ -6,6 +6,7 @@ import SwiftData
 class ChatContextService {
     private let dateContextService: DateContextService
     private let dataService: DataService
+    private let relatedNotesService: RelatedNotesService
 
     init(
         dateContextService: DateContextService,
@@ -13,6 +14,7 @@ class ChatContextService {
     ) {
         self.dateContextService = dateContextService
         self.dataService = dataService
+        self.relatedNotesService = RelatedNotesService(dataService: dataService)
     }
 
     /// Generate comprehensive chat context for the current selected date
@@ -51,13 +53,19 @@ class ChatContextService {
         let entities = await fetchRelevantEntities(for: entryDate)
         let insights = await fetchRelevantInsights(for: entryDate)
 
+        // Sprint 16: Fetch related notes via Knowledge Graph
+        let relatedNotes = await MainActor.run {
+            relatedNotesService.findRelatedNotes(for: entry, limit: 5, minRelevance: 0.3)
+        }
+
         return ChatContext(
             selectedDate: entryDate,
             currentNote: entry,
             historicalNotes: historicalNotes,
             recentNotes: recentNotes,
             entities: entities,
-            insights: insights
+            insights: insights,
+            relatedNotes: relatedNotes
         )
     }
     

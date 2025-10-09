@@ -11,13 +11,17 @@ struct ChatContext {
     let entities: [Entity]
     let insights: [Insight]
 
+    // Related Notes via Knowledge Graph (Sprint 16)
+    let relatedNotes: [RelatedNotesService.RelatedNote]
+
     init(
         selectedDate: Date,
         currentNote: Entry? = nil,
         historicalNotes: [Entry] = [],
         recentNotes: [Entry] = [],
         entities: [Entity] = [],
-        insights: [Insight] = []
+        insights: [Insight] = [],
+        relatedNotes: [RelatedNotesService.RelatedNote] = []
     ) {
         self.selectedDate = selectedDate
         self.currentNote = currentNote
@@ -25,6 +29,7 @@ struct ChatContext {
         self.recentNotes = recentNotes
         self.entities = entities
         self.insights = insights
+        self.relatedNotes = relatedNotes
     }
     
     /// Generate context summary for AI prompting
@@ -35,6 +40,21 @@ struct ChatContext {
             summary += "\(currentNote.content)\n\n"
         } else {
             summary += "(No journal entry for this date)\n\n"
+        }
+
+        // Sprint 16: Related entries via Knowledge Graph (highest priority)
+        if !relatedNotes.isEmpty {
+            summary += "--- Related Journal Entries (via Knowledge Graph) ---\n"
+            for relatedNote in relatedNotes {
+                let entry = relatedNote.entry
+                let dateStr = entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
+                let relevanceBadge = relevanceBadge(for: relatedNote.relevanceScore)
+
+                summary += "\n[\(dateStr)] - Relevance: \(relevanceBadge)\n"
+                summary += "Reason: \(relatedNote.reason)\n"
+                summary += "\(entry.content)\n"
+            }
+            summary += "\n"
         }
 
         // Historical context from same day in previous months
@@ -57,5 +77,16 @@ struct ChatContext {
         }
 
         return summary
+    }
+
+    /// Convert relevance score to badge (High/Medium/Low)
+    private func relevanceBadge(for score: Double) -> String {
+        if score >= 0.7 {
+            return "High"
+        } else if score >= 0.4 {
+            return "Medium"
+        } else {
+            return "Low"
+        }
     }
 }
