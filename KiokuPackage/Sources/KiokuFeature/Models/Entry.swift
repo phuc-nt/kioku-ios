@@ -30,7 +30,12 @@ public final class Entry: @unchecked Sendable {
     public var isEntitiesExtracted: Bool = false
     public var entitiesExtractedAt: Date?
     public var entitiesExtractionModel: String? // Track which model was used
-    
+
+    // Relationship discovery tracking
+    public var isRelationshipsDiscovered: Bool = false
+    public var relationshipsDiscoveredAt: Date?
+    public var relationshipsDiscoveryModel: String? // Track which model was used
+
     // Computed property for transparent encryption/decryption
     public var content: String {
         get {

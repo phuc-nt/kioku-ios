@@ -148,16 +148,25 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
             progress = 0.0
         }
 
-        let totalEntries = entries.count
+        // Filter to entries that:
+        // 1. Have entities extracted
+        // 2. Have NOT yet discovered relationships
+        // 3. Have at least 2 entities
+        let eligibleEntries = entries.filter { entry in
+            entry.isEntitiesExtracted &&
+            !entry.isRelationshipsDiscovered &&
+            entry.entities.count >= 2
+        }
+
+        let totalEntries = eligibleEntries.count
         var processedCount = 0
 
-        for entry in entries {
-            // Skip entries without enough entities
-            guard entry.entities.count >= 2 else {
-                processedCount += 1
-                continue
-            }
+        print("📊 Relationship Discovery Batch:")
+        print("  Total entries: \(entries.count)")
+        print("  Eligible entries: \(eligibleEntries.count)")
+        print("  Already processed: \(entries.count - eligibleEntries.count)")
 
+        for entry in eligibleEntries {
             // Update progress
             await MainActor.run {
                 currentEntry = String(entry.content.prefix(50))
@@ -169,28 +178,41 @@ public final class RelationshipDiscoveryService: @unchecked Sendable {
                 // Discover relationships for entry
                 let relationships = try await discoverRelationships(for: entry)
 
-                // Link relationships to entry
+                // Link relationships to entry and mark as complete
                 await MainActor.run {
                     entry.relationships.append(contentsOf: relationships)
+                    entry.isRelationshipsDiscovered = true
+                    entry.relationshipsDiscoveredAt = Date()
+                    entry.relationshipsDiscoveryModel = discoveryModel
                 }
 
                 processedCount += 1
+
+                print("✅ Discovered \(relationships.count) relationships for entry \(entry.id)")
 
                 // Small delay to avoid rate limiting
                 try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
 
             } catch {
-                print("Failed to discover relationships for entry \(entry.id): \(error)")
+                print("❌ Failed to discover relationships for entry \(entry.id): \(error)")
                 // Continue with next entry
                 processedCount += 1
             }
         }
 
+        // Save all changes
         await MainActor.run {
+            do {
+                try dataService.modelContext.save()
+                print("💾 Saved relationship discovery progress")
+            } catch {
+                print("❌ Failed to save context: \(error)")
+            }
+
             isDiscovering = false
             progress = 1.0
             currentEntry = nil
-            onProgress(1.0, "Completed")
+            onProgress(1.0, "Completed (\(processedCount)/\(totalEntries) processed)")
         }
     }
 

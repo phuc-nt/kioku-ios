@@ -23,19 +23,38 @@ public final class TestDataService: @unchecked Sendable {
         try? dataService.modelContext.save()
     }
 
-    /// Clear all data from the database
+    /// Clear all data from the database with orphan detection
     public func clearAllData() {
-        // SwiftData will cascade delete related entities automatically
-        // Only need to delete top-level objects: entries and conversations
+        print("🗑️ Starting Clear All Data operation...")
 
-        // Delete all conversations
+        // Phase 1: Delete Conversations (with cascade to messages)
         let conversations = dataService.fetchAllConversations()
+        print("  📋 Deleting \(conversations.count) conversations...")
         for conversation in conversations {
             dataService.modelContext.delete(conversation)
         }
 
-        // Delete all entries (will cascade delete entities and relationships)
+        // Phase 2: Delete Insights (standalone)
+        let insightDescriptor = FetchDescriptor<Insight>()
+        if let insights = try? dataService.modelContext.fetch(insightDescriptor) {
+            print("  💡 Deleting \(insights.count) insights...")
+            for insight in insights {
+                dataService.modelContext.delete(insight)
+            }
+        }
+
+        // Phase 3: Delete AIAnalysis (standalone)
+        let analysisDescriptor = FetchDescriptor<AIAnalysis>()
+        if let analyses = try? dataService.modelContext.fetch(analysisDescriptor) {
+            print("  🤖 Deleting \(analyses.count) AI analyses...")
+            for analysis in analyses {
+                dataService.modelContext.delete(analysis)
+            }
+        }
+
+        // Phase 4: Delete Entries (cascade to entities and relationships)
         let entries = dataService.fetchAllEntries()
+        print("  📝 Deleting \(entries.count) entries (will cascade to entities and relationships)...")
         for entry in entries {
             dataService.modelContext.delete(entry)
         }
@@ -43,9 +62,44 @@ public final class TestDataService: @unchecked Sendable {
         // Save changes
         do {
             try dataService.modelContext.save()
+            print("  💾 Saved deletion changes")
         } catch {
-            print("Error clearing data: \(error.localizedDescription)")
+            print("  ❌ Error during deletion: \(error.localizedDescription)")
+            return
         }
+
+        // Phase 5: Verify no orphaned objects (safety check)
+        print("  🔍 Checking for orphaned objects...")
+
+        let remainingEntities = (try? dataService.modelContext.fetch(FetchDescriptor<Entity>())) ?? []
+        let remainingRelationships = (try? dataService.modelContext.fetch(FetchDescriptor<EntityRelationship>())) ?? []
+
+        if !remainingEntities.isEmpty || !remainingRelationships.isEmpty {
+            print("  ⚠️  Warning: Found orphaned objects after clear:")
+            print("     - Entities: \(remainingEntities.count)")
+            print("     - Relationships: \(remainingRelationships.count)")
+
+            // Force delete orphaned objects
+            print("  🧹 Force deleting orphaned objects...")
+            for entity in remainingEntities {
+                dataService.modelContext.delete(entity)
+            }
+            for relationship in remainingRelationships {
+                dataService.modelContext.delete(relationship)
+            }
+
+            // Save again
+            do {
+                try dataService.modelContext.save()
+                print("  ✅ Orphaned objects cleaned up successfully")
+            } catch {
+                print("  ❌ Error cleaning up orphans: \(error.localizedDescription)")
+            }
+        } else {
+            print("  ✅ No orphaned objects found - clean deletion!")
+        }
+
+        print("🎉 Clear All Data completed successfully")
     }
 
     // MARK: - Test Data Generation

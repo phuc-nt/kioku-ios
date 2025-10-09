@@ -16,6 +16,7 @@ public final class DataService: @unchecked Sendable {
                 Conversation.self,
                 ChatMessage.self,
                 Entity.self,
+                EntityRelationship.self,
                 Insight.self
             ])
             let modelConfiguration = ModelConfiguration(
