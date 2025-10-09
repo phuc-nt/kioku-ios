@@ -52,21 +52,28 @@ public final class TestDataService: @unchecked Sendable {
             }
         }
 
-        // Phase 4: Delete Entries (cascade to entities and relationships)
+        // Phase 4: Delete Entries one by one with save after each (avoid batch delete issues)
         let entries = dataService.fetchAllEntries()
-        print("  📝 Deleting \(entries.count) entries (will cascade to entities and relationships)...")
+        print("  📝 Deleting \(entries.count) entries one by one (will cascade to entities and relationships)...")
+
+        var deletedCount = 0
         for entry in entries {
             dataService.modelContext.delete(entry)
+
+            // Save after each entry to avoid batch delete issues
+            do {
+                try dataService.modelContext.save()
+                deletedCount += 1
+                if deletedCount % 10 == 0 {
+                    print("    ✓ Deleted \(deletedCount)/\(entries.count) entries...")
+                }
+            } catch {
+                print("    ❌ Error deleting entry \(entry.id): \(error.localizedDescription)")
+                // Continue with next entry
+            }
         }
 
-        // Save changes
-        do {
-            try dataService.modelContext.save()
-            print("  💾 Saved deletion changes")
-        } catch {
-            print("  ❌ Error during deletion: \(error.localizedDescription)")
-            return
-        }
+        print("  💾 Completed deleting \(deletedCount)/\(entries.count) entries")
 
         // Phase 5: Verify no orphaned objects (safety check)
         print("  🔍 Checking for orphaned objects...")
