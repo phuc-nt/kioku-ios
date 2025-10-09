@@ -132,17 +132,21 @@ public struct EntryDetailView: View {
         .sheet(isPresented: $showingAIChat) {
             NavigationView {
                 if let entryDate = entry.date {
-                    AIChatView(chatContextService: createChatContextService(for: entryDate))
-                        .navigationTitle("Chat with AI")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Done") {
-                                    showingAIChat = false
-                                }
+                    // Sprint 16: Pass entry to AIChatView for related notes discovery
+                    AIChatView(
+                        chatContextService: createChatContextService(for: entryDate),
+                        entry: entry
+                    )
+                    .navigationTitle("Chat with AI")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showingAIChat = false
                             }
                         }
-                        .environment(OpenRouterService.shared)
+                    }
+                    .environment(OpenRouterService.shared)
                 } else {
                     Text("Unable to load chat context")
                         .foregroundColor(.secondary)

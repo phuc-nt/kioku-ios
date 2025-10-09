@@ -7,6 +7,7 @@ struct AIChatView: View {
 
     private let chatContextService: ChatContextService
     private let initialContext: ChatContext?
+    private let entry: Entry? // Sprint 16: Entry for generating context with related notes
 
     @State private var messages: [AIChatMessage] = []
     @State private var currentMessage = ""
@@ -16,10 +17,12 @@ struct AIChatView: View {
 
     init(
         chatContextService: ChatContextService,
-        initialContext: ChatContext? = nil
+        initialContext: ChatContext? = nil,
+        entry: Entry? = nil
     ) {
         self.chatContextService = chatContextService
         self.initialContext = initialContext
+        self.entry = entry
     }
 
     var body: some View {
@@ -199,7 +202,12 @@ struct AIChatView: View {
             addContextAsMessages()
         } else {
             Task { @MainActor in
-                currentContext = await chatContextService.generateContext()
+                // Sprint 16: Use generateContextForNote() when entry is provided to get related notes
+                if let entry = entry {
+                    currentContext = await chatContextService.generateContextForNote(entry)
+                } else {
+                    currentContext = await chatContextService.generateContext()
+                }
                 addContextAsMessages()
             }
         }
