@@ -1,6 +1,13 @@
 import Foundation
 import SwiftData
 
+/// A note related to another note via Knowledge Graph connections
+struct RelatedNoteInfo: Sendable {
+    let entry: Entry
+    let relevanceScore: Double
+    let reason: String
+}
+
 struct ChatContext {
     let selectedDate: Date
     let currentNote: Entry?
@@ -12,7 +19,7 @@ struct ChatContext {
     let insights: [Insight]
 
     // Related Notes via Knowledge Graph (Sprint 16)
-    let relatedNotes: [RelatedNote]
+    let relatedNotes: [RelatedNoteInfo]
 
     init(
         selectedDate: Date,
@@ -21,7 +28,7 @@ struct ChatContext {
         recentNotes: [Entry] = [],
         entities: [Entity] = [],
         insights: [Insight] = [],
-        relatedNotes: [RelatedNote] = []
+        relatedNotes: [RelatedNoteInfo] = []
     ) {
         self.selectedDate = selectedDate
         self.currentNote = currentNote

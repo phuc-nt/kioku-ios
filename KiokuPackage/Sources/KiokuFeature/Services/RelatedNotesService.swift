@@ -18,7 +18,7 @@ public final class RelatedNotesService: @unchecked Sendable {
     ///   - limit: Maximum number of related notes to return (default: 5)
     ///   - minRelevance: Minimum relevance score (0.0-1.0) to include (default: 0.3)
     /// - Returns: Array of related notes sorted by relevance (highest first)
-    public func findRelatedNotes(for entry: Entry, limit: Int = 5, minRelevance: Double = 0.3) -> [RelatedNote] {
+    public func findRelatedNotes(for entry: Entry, limit: Int = 5, minRelevance: Double = 0.3) -> [RelatedNoteInfo] {
         print("\n🔍 Finding related notes for entry: \(entry.id)")
         print("   Entry has \(entry.entities.count) entities")
 
@@ -70,7 +70,7 @@ public final class RelatedNotesService: @unchecked Sendable {
             .filter { $0.score >= minRelevance }
             .sorted { $0.score > $1.score }
             .prefix(limit)
-            .map { RelatedNote(entry: $0.entry, relevanceScore: $0.score, reason: $0.reasons.joined(separator: "; ")) }
+            .map { RelatedNoteInfo(entry: $0.entry, relevanceScore: $0.score, reason: $0.reasons.joined(separator: "; ")) }
 
         print("   Final: \(relatedNotes.count) related notes (after filtering minRelevance=\(minRelevance))")
         for (index, note) in relatedNotes.enumerated() {
