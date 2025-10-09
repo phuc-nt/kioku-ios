@@ -23,6 +23,38 @@ public final class TestDataService: @unchecked Sendable {
         try? dataService.modelContext.save()
     }
 
+    /// Drop and recreate the entire database (nuclear option)
+    /// This is the cleanest way to clear all data - completely removes the database file
+    @MainActor
+    public func dropDatabase() throws {
+        print("🗑️ Dropping database (nuclear option)...")
+
+        // Get the database URL
+        let fileManager = FileManager.default
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dbURL = appSupport.appendingPathComponent("default.store")
+
+        print("  📂 Database location: \(dbURL.path)")
+
+        // Check if database exists
+        if fileManager.fileExists(atPath: dbURL.path) {
+            // Delete the database file
+            try fileManager.removeItem(at: dbURL)
+            print("  ✅ Database file deleted successfully")
+        } else {
+            print("  ℹ️  Database file doesn't exist (already clean)")
+        }
+
+        // Also delete any .store-shm and .store-wal files (SQLite temporary files)
+        let shmURL = appSupport.appendingPathComponent("default.store-shm")
+        let walURL = appSupport.appendingPathComponent("default.store-wal")
+
+        try? fileManager.removeItem(at: shmURL)
+        try? fileManager.removeItem(at: walURL)
+
+        print("  🎉 Database dropped! App needs to be restarted to recreate.")
+    }
+
     /// Clear all data from the database with orphan detection
     public func clearAllData() {
         print("🗑️ Starting Clear All Data operation...")
@@ -52,30 +84,41 @@ public final class TestDataService: @unchecked Sendable {
             }
         }
 
-        // Phase 4: Delete Entries one by one with save after each (avoid batch delete issues)
-        let entries = dataService.fetchAllEntries()
-        print("  📝 Deleting \(entries.count) entries one by one (will cascade to entities and relationships)...")
-
-        var deletedCount = 0
-        for entry in entries {
-            dataService.modelContext.delete(entry)
-
-            // Save after each entry to avoid batch delete issues
-            do {
-                try dataService.modelContext.save()
-                deletedCount += 1
-                if deletedCount % 10 == 0 {
-                    print("    ✓ Deleted \(deletedCount)/\(entries.count) entries...")
-                }
-            } catch {
-                print("    ❌ Error deleting entry \(entry.id): \(error.localizedDescription)")
-                // Continue with next entry
+        // Phase 4: Delete EntityRelationships first (to avoid cascade issues)
+        let relationshipDescriptor = FetchDescriptor<EntityRelationship>()
+        if let relationships = try? dataService.modelContext.fetch(relationshipDescriptor) {
+            print("  🔗 Deleting \(relationships.count) relationships...")
+            for relationship in relationships {
+                dataService.modelContext.delete(relationship)
             }
         }
 
-        print("  💾 Completed deleting \(deletedCount)/\(entries.count) entries")
+        // Phase 5: Delete Entities (now safe to delete without relationships)
+        let entityDescriptor = FetchDescriptor<Entity>()
+        if let entities = try? dataService.modelContext.fetch(entityDescriptor) {
+            print("  🏷️  Deleting \(entities.count) entities...")
+            for entity in entities {
+                dataService.modelContext.delete(entity)
+            }
+        }
 
-        // Phase 5: Verify no orphaned objects (safety check)
+        // Phase 6: Delete Entries (now safe to delete without entities/relationships)
+        let entries = dataService.fetchAllEntries()
+        print("  📝 Deleting \(entries.count) entries...")
+        for entry in entries {
+            dataService.modelContext.delete(entry)
+        }
+
+        // Save all changes at once
+        do {
+            try dataService.modelContext.save()
+            print("  💾 Saved all deletion changes")
+        } catch {
+            print("  ❌ Error during deletion: \(error.localizedDescription)")
+            return
+        }
+
+        // Phase 7: Verify no orphaned objects (safety check)
         print("  🔍 Checking for orphaned objects...")
 
         let remainingEntities = (try? dataService.modelContext.fetch(FetchDescriptor<Entity>())) ?? []
