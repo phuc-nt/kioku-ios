@@ -12,7 +12,7 @@ struct ChatContext {
     let insights: [Insight]
 
     // Related Notes via Knowledge Graph (Sprint 16)
-    let relatedNotes: [RelatedNotesService.RelatedNote]
+    let relatedNotes: [RelatedNote]
 
     init(
         selectedDate: Date,
@@ -21,7 +21,7 @@ struct ChatContext {
         recentNotes: [Entry] = [],
         entities: [Entity] = [],
         insights: [Insight] = [],
-        relatedNotes: [RelatedNotesService.RelatedNote] = []
+        relatedNotes: [RelatedNote] = []
     ) {
         self.selectedDate = selectedDate
         self.currentNote = currentNote

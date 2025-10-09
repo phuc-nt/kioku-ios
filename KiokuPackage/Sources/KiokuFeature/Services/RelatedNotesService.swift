@@ -12,19 +12,6 @@ public final class RelatedNotesService: @unchecked Sendable {
         self.dataService = dataService
     }
 
-    /// Result of related notes discovery
-    public struct RelatedNote: Sendable {
-        public let entry: Entry
-        public let relevanceScore: Double
-        public let reason: String
-
-        public init(entry: Entry, relevanceScore: Double, reason: String) {
-            self.entry = entry
-            self.relevanceScore = relevanceScore
-            self.reason = reason
-        }
-    }
-
     /// Find up to N most relevant entries related to the given entry via Knowledge Graph
     /// - Parameters:
     ///   - entry: The current entry to find related notes for
