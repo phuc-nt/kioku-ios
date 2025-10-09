@@ -94,6 +94,7 @@ class ChatContextService {
         print("  📝 Current note: \(context.currentNote != nil ? "✅" : "❌")")
         print("  📚 Historical notes: \(context.historicalNotes.count)")
         print("  🔖 Recent notes: \(context.recentNotes.count)")
+        print("  🔗 Related notes (KG): \(context.relatedNotes.count)")
         print("  🏷️ Entities: \(context.entities.count)")
         print("  💡 Insights: \(context.insights.count)")
 

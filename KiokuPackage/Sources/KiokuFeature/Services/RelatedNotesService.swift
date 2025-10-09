@@ -32,10 +32,14 @@ public final class RelatedNotesService: @unchecked Sendable {
     ///   - minRelevance: Minimum relevance score (0.0-1.0) to include (default: 0.3)
     /// - Returns: Array of related notes sorted by relevance (highest first)
     public func findRelatedNotes(for entry: Entry, limit: Int = 5, minRelevance: Double = 0.3) -> [RelatedNote] {
+        print("\n🔍 Finding related notes for entry: \(entry.id)")
+        print("   Entry has \(entry.entities.count) entities")
+
         var scoredEntries: [UUID: (entry: Entry, score: Double, reasons: [String])] = [:]
 
         // Phase 1: Score via Entity Relationships
         let entityRelationshipScores = scoreViaEntityRelationships(for: entry)
+        print("   Phase 1: Found \(entityRelationshipScores.count) scores via entity relationships")
         for (entryId, score, reason) in entityRelationshipScores {
             if let relatedEntry = try? dataService.fetchEntry(by: entryId) {
                 if var existing = scoredEntries[entryId] {
@@ -50,6 +54,7 @@ public final class RelatedNotesService: @unchecked Sendable {
 
         // Phase 2: Score via Insights (if available)
         let insightScores = scoreViaInsights(for: entry)
+        print("   Phase 2: Found \(insightScores.count) scores via insights")
         for (entryId, score, reason) in insightScores {
             if let relatedEntry = try? dataService.fetchEntry(by: entryId) {
                 if var existing = scoredEntries[entryId] {
@@ -61,6 +66,8 @@ public final class RelatedNotesService: @unchecked Sendable {
                 }
             }
         }
+
+        print("   Combined: \(scoredEntries.count) unique entries scored")
 
         // Phase 3: Apply recency decay
         let now = Date()
@@ -78,6 +85,11 @@ public final class RelatedNotesService: @unchecked Sendable {
             .prefix(limit)
             .map { RelatedNote(entry: $0.entry, relevanceScore: $0.score, reason: $0.reasons.joined(separator: "; ")) }
 
+        print("   Final: \(relatedNotes.count) related notes (after filtering minRelevance=\(minRelevance))")
+        for (index, note) in relatedNotes.enumerated() {
+            print("     [\(index+1)] Score: \(String(format: "%.2f", note.relevanceScore)) - \(note.reason)")
+        }
+
         return Array(relatedNotes)
     }
 
@@ -90,14 +102,19 @@ public final class RelatedNotesService: @unchecked Sendable {
 
         // Get all entities from the current entry
         let currentEntities = entry.entities
+        print("      → Checking \(currentEntities.count) entities for relationships")
 
         for entity in currentEntities {
             // Get all relationships involving this entity (both outgoing and incoming)
             let relationships = dataService.fetchRelationships(for: entity)
+            print("         Entity '\(entity.value)' (\(entity.type.rawValue)) has \(relationships.count) relationships")
 
             for relationship in relationships {
                 // Determine the connected entity (other end of relationship)
                 let connectedEntity = relationship.fromEntity.id == entity.id ? relationship.toEntity : relationship.fromEntity
+
+                print("            → Relationship: \(relationship.fromEntity.value) --[\(relationship.type.rawValue)]--> \(relationship.toEntity.value)")
+                print("            → Connected entity '\(connectedEntity.value)' appears in \(connectedEntity.entries.count) entries")
 
                 // Find all entries containing the connected entity
                 for relatedEntry in connectedEntity.entries {
