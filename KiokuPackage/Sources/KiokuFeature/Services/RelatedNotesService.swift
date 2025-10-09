@@ -13,7 +13,7 @@ public final class RelatedNotesService: @unchecked Sendable {
     }
 
     /// Result of related notes discovery
-    public struct RelatedNote {
+    public struct RelatedNote: Sendable {
         public let entry: Entry
         public let relevanceScore: Double
         public let reason: String
