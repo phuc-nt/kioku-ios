@@ -118,11 +118,11 @@ Use knowledge graph to intelligently discover related entries:
 - [x] Chat context includes top 5 related full entries
 - [x] Entity deduplication working (entities reused across entries)
 - [x] Integration test: Related notes discovered via KG (4 entries with scores 0.70-6.17)
+- [x] Context transparency: UI shows related notes with relevance badges and reasons
+- [x] Database utilities documented for future debugging
 - [x] All changes committed and pushed
-- [ ] Context transparency: UI shows which notes are being used (deferred)
+- [x] Sprint planning document updated
 - [ ] Performance validated: < 200ms discovery time (needs large dataset)
-- [ ] Test documentation updated (deferred)
-- [ ] Sprint planning document updated (in progress)
 - [ ] Branch merged to master (pending)
 
 ---
@@ -258,13 +258,13 @@ How is my work with Sarah progressing?
   - Root cause: SwiftData context sync delays prevented newly inserted entities from being visible
   - Solution: In-memory cache bypasses database sync issues during batch extraction
 - ⚠️ Performance testing deferred due to lack of large test dataset
-- ⚠️ UI transparency feature (showing related notes in UI) deferred to future sprint
+- ⚠️ UI transparency feature was implemented as bonus work (not originally planned)
 
 **Action Items**:
+- ✅ Created database utilities document ([`docs/00_context/04_database_utilities.md`](../00_context/04_database_utilities.md))
+- ✅ Documented entity deduplication cache pattern in sprint retrospective
 - Create larger test dataset (100+ entries) for performance validation
 - Add unit tests for relevance scoring algorithm
-- Consider implementing UI feature to show which related notes are being used as context
-- Document entity deduplication cache pattern for future reference
 - Monitor performance in production with real user data
 
 **Key Learnings**:
@@ -279,3 +279,12 @@ How is my work with Sarah progressing?
 - Related notes found: 4 entries ✅
 - Top score: 6.17 (connected via 6 relationships + 5 insights) ✅
 - Deduplication logs: "✅ FOUND IN CACHE, appears in X entries" ✅
+- UI: Related notes section displayed with relevance badges (High/Medium/Low) ✅
+- UI: Relevance reasons shown in orange italic text ✅
+- UI: Full entry excerpts displayed in context cards ✅
+
+**Files Modified**:
+- [`KiokuPackage/Sources/KiokuFeature/Models/Entity.swift`](../../KiokuPackage/Sources/KiokuFeature/Models/Entity.swift) - Fixed matches() for exact comparison
+- [`KiokuPackage/Sources/KiokuFeature/Services/DataService.swift`](../../KiokuPackage/Sources/KiokuFeature/Services/DataService.swift) - Updated fetchEntities() with exact matching
+- [`KiokuPackage/Sources/KiokuFeature/Services/EntityExtractionService.swift`](../../KiokuPackage/Sources/KiokuFeature/Services/EntityExtractionService.swift) - Added in-memory entity cache
+- [`KiokuPackage/Sources/KiokuFeature/Views/Chat/ChatContextView.swift`](../../KiokuPackage/Sources/KiokuFeature/Views/Chat/ChatContextView.swift) - Added KG related notes UI
