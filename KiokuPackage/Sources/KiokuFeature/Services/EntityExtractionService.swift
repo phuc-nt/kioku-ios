@@ -42,6 +42,10 @@ public final class EntityExtractionService: @unchecked Sendable {
     public private(set) var progress: Double = 0.0
     public private(set) var currentEntry: String?
 
+    // In-memory cache of entities created during current extraction batch
+    // Key: "type:value" (e.g., "people:Minh")
+    private var entityCache: [String: Entity] = [:]
+
     // MARK: - Init
 
     public init(
@@ -129,6 +133,10 @@ public final class EntityExtractionService: @unchecked Sendable {
             isExtracting = true
             progress = 0.0
         }
+
+        // Clear entity cache at start of batch extraction
+        entityCache.removeAll()
+        print("🧹 Cleared entity cache for new batch extraction")
 
         let totalEntries = entries.count
         var processedCount = 0
@@ -280,14 +288,49 @@ public final class EntityExtractionService: @unchecked Sendable {
     private func deduplicateAndMerge(_ newEntities: [Entity], sourceEntry: Entry) async throws -> [Entity] {
         var mergedEntities: [Entity] = []
 
+        print("🔄 Deduplicating \(newEntities.count) entities for entry \(sourceEntry.id)")
+
         for newEntity in newEntities {
-            // Search for existing entity with same value or alias
+            let cacheKey = "\(newEntity.type.rawValue):\(newEntity.value)"
+
+            // First check in-memory cache
+            if let cached = entityCache[cacheKey] {
+                print("   Checking '\(newEntity.value)' (\(newEntity.type.rawValue)): ✅ FOUND IN CACHE, appears in \(cached.entries.count) entries")
+
+                // Update confidence if higher
+                if newEntity.confidence > cached.confidence {
+                    await MainActor.run {
+                        cached.confidence = newEntity.confidence
+                    }
+                }
+
+                // Add new aliases
+                let newAliases = newEntity.aliases.filter { !cached.aliases.contains($0) }
+                if !newAliases.isEmpty {
+                    await MainActor.run {
+                        cached.aliases.append(contentsOf: newAliases)
+                    }
+                }
+
+                await MainActor.run {
+                    cached.updatedAt = Date()
+                }
+
+                mergedEntities.append(cached)
+                continue
+            }
+
+            // Then check database
             let existingEntities = dataService.fetchEntities(
                 type: newEntity.type,
                 searchText: newEntity.value
             )
 
+            print("   Checking '\(newEntity.value)' (\(newEntity.type.rawValue)): found \(existingEntities.count) candidates in DB")
+
             if let existing = existingEntities.first(where: { $0.matches(query: newEntity.value) }) {
+                print("      ✅ REUSING from DB, ID=\(existing.id), appears in \(existing.entries.count) entries")
+
                 // Merge: update confidence if higher, add new aliases
                 if newEntity.confidence > existing.confidence {
                     await MainActor.run {
@@ -308,16 +351,26 @@ public final class EntityExtractionService: @unchecked Sendable {
                     existing.updatedAt = Date()
                 }
 
+                // Add to cache
+                entityCache[cacheKey] = existing
                 mergedEntities.append(existing)
             } else {
-                // New entity - insert into database
+                print("      ➕ CREATING new entity")
+
+                // New entity - insert into database and add to cache
                 await MainActor.run {
                     dataService.modelContext.insert(newEntity)
+                    // Save immediately to make entity visible for subsequent queries
+                    try? dataService.modelContext.save()
                 }
+
+                // Add to cache
+                entityCache[cacheKey] = newEntity
                 mergedEntities.append(newEntity)
             }
         }
 
+        print("   Result: \(mergedEntities.count) entities (cache size: \(entityCache.count))")
         return mergedEntities
     }
 

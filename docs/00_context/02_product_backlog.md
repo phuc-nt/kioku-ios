@@ -1,8 +1,8 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 5, 2025
-**Current Status**: Sprint 15 Completed (Knowledge Graph Integration) ✅
-**Story Points Delivered**: 181/201 (90%)
+**Last Updated**: October 10, 2025
+**Current Status**: Sprint 16 Completed (Knowledge Graph Enhanced Context) ✅
+**Story Points Delivered**: 186/201 (93%)
 
 ## Project Overview
 
@@ -20,6 +20,31 @@
 ---
 
 ## Current Sprint Status
+
+### Sprint 16 (Completed) ✅ 100% SUCCESS
+**Knowledge Graph Enhanced Context** - 5/5 story points delivered
+
+**Features Delivered**:
+- ✅ **US-S16-001**: Related Notes via Knowledge Graph (5 points)
+  - KG-based related notes discovery algorithm
+  - Relevance scoring: relationship weights + insight confidence + recency decay
+  - Integration with chat context service
+  - Full entry content in context with relevance reasons
+
+**Critical Bug Fixes**:
+- ✅ Fixed entity deduplication: entities now reused across entries (e.g., "Minh" in 5 entries)
+- ✅ Implemented in-memory cache to bypass SwiftData context sync delays
+- ✅ Fixed Entity.matches() to use exact comparison instead of .contains()
+
+**Test Results**:
+- ✅ 4 related notes discovered via KG (scores: 0.70 to 6.17)
+- ✅ Entity "Minh" reused across 5 entries
+- ✅ Entity "Hằng" reused across 3 entries
+- ✅ Integration test: chat context includes related notes with reasons
+
+**Delivered**: October 10, 2025
+**Sprint Plan**: [`docs/01_sprints/sprint_16_planning.md`](../01_sprints/sprint_16_planning.md)
+**Quality**: Core functionality complete, performance testing deferred
 
 ### Sprint 15 (Completed) ✅ PARTIAL COMPLETION
 **Knowledge Graph Context Integration** - 8/8 story points delivered

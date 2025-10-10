@@ -23,29 +23,133 @@ public final class TestDataService: @unchecked Sendable {
         try? dataService.modelContext.save()
     }
 
-    /// Clear all data from the database
-    public func clearAllData() {
-        // SwiftData will cascade delete related entities automatically
-        // Only need to delete top-level objects: entries and conversations
+    /// Drop and recreate the entire database (nuclear option)
+    /// This is the cleanest way to clear all data - completely removes the database file
+    @MainActor
+    public func dropDatabase() throws {
+        print("🗑️ Dropping database (nuclear option)...")
 
-        // Delete all conversations
+        // Get the database URL
+        let fileManager = FileManager.default
+        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let dbURL = appSupport.appendingPathComponent("default.store")
+
+        print("  📂 Database location: \(dbURL.path)")
+
+        // Check if database exists
+        if fileManager.fileExists(atPath: dbURL.path) {
+            // Delete the database file
+            try fileManager.removeItem(at: dbURL)
+            print("  ✅ Database file deleted successfully")
+        } else {
+            print("  ℹ️  Database file doesn't exist (already clean)")
+        }
+
+        // Also delete any .store-shm and .store-wal files (SQLite temporary files)
+        let shmURL = appSupport.appendingPathComponent("default.store-shm")
+        let walURL = appSupport.appendingPathComponent("default.store-wal")
+
+        try? fileManager.removeItem(at: shmURL)
+        try? fileManager.removeItem(at: walURL)
+
+        print("  🎉 Database dropped! App needs to be restarted to recreate.")
+    }
+
+    /// Clear all data from the database with orphan detection
+    public func clearAllData() {
+        print("🗑️ Starting Clear All Data operation...")
+
+        // Phase 1: Delete Conversations (with cascade to messages)
         let conversations = dataService.fetchAllConversations()
+        print("  📋 Deleting \(conversations.count) conversations...")
         for conversation in conversations {
             dataService.modelContext.delete(conversation)
         }
 
-        // Delete all entries (will cascade delete entities and relationships)
+        // Phase 2: Delete Insights (standalone)
+        let insightDescriptor = FetchDescriptor<Insight>()
+        if let insights = try? dataService.modelContext.fetch(insightDescriptor) {
+            print("  💡 Deleting \(insights.count) insights...")
+            for insight in insights {
+                dataService.modelContext.delete(insight)
+            }
+        }
+
+        // Phase 3: Delete AIAnalysis (standalone)
+        let analysisDescriptor = FetchDescriptor<AIAnalysis>()
+        if let analyses = try? dataService.modelContext.fetch(analysisDescriptor) {
+            print("  🤖 Deleting \(analyses.count) AI analyses...")
+            for analysis in analyses {
+                dataService.modelContext.delete(analysis)
+            }
+        }
+
+        // Phase 4: Delete EntityRelationships first (to avoid cascade issues)
+        let relationshipDescriptor = FetchDescriptor<EntityRelationship>()
+        if let relationships = try? dataService.modelContext.fetch(relationshipDescriptor) {
+            print("  🔗 Deleting \(relationships.count) relationships...")
+            for relationship in relationships {
+                dataService.modelContext.delete(relationship)
+            }
+        }
+
+        // Phase 5: Delete Entities (now safe to delete without relationships)
+        let entityDescriptor = FetchDescriptor<Entity>()
+        if let entities = try? dataService.modelContext.fetch(entityDescriptor) {
+            print("  🏷️  Deleting \(entities.count) entities...")
+            for entity in entities {
+                dataService.modelContext.delete(entity)
+            }
+        }
+
+        // Phase 6: Delete Entries (now safe to delete without entities/relationships)
         let entries = dataService.fetchAllEntries()
+        print("  📝 Deleting \(entries.count) entries...")
         for entry in entries {
             dataService.modelContext.delete(entry)
         }
 
-        // Save changes
+        // Save all changes at once
         do {
             try dataService.modelContext.save()
+            print("  💾 Saved all deletion changes")
         } catch {
-            print("Error clearing data: \(error.localizedDescription)")
+            print("  ❌ Error during deletion: \(error.localizedDescription)")
+            return
         }
+
+        // Phase 7: Verify no orphaned objects (safety check)
+        print("  🔍 Checking for orphaned objects...")
+
+        let remainingEntities = (try? dataService.modelContext.fetch(FetchDescriptor<Entity>())) ?? []
+        let remainingRelationships = (try? dataService.modelContext.fetch(FetchDescriptor<EntityRelationship>())) ?? []
+
+        if !remainingEntities.isEmpty || !remainingRelationships.isEmpty {
+            print("  ⚠️  Warning: Found orphaned objects after clear:")
+            print("     - Entities: \(remainingEntities.count)")
+            print("     - Relationships: \(remainingRelationships.count)")
+
+            // Force delete orphaned objects
+            print("  🧹 Force deleting orphaned objects...")
+            for entity in remainingEntities {
+                dataService.modelContext.delete(entity)
+            }
+            for relationship in remainingRelationships {
+                dataService.modelContext.delete(relationship)
+            }
+
+            // Save again
+            do {
+                try dataService.modelContext.save()
+                print("  ✅ Orphaned objects cleaned up successfully")
+            } catch {
+                print("  ❌ Error cleaning up orphans: \(error.localizedDescription)")
+            }
+        } else {
+            print("  ✅ No orphaned objects found - clean deletion!")
+        }
+
+        print("🎉 Clear All Data completed successfully")
     }
 
     // MARK: - Test Data Generation

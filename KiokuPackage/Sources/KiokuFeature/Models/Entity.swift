@@ -49,13 +49,20 @@ public final class Entity: @unchecked Sendable {
 
     // MARK: - Convenience Methods
 
-    /// Check if this entity matches a search query (case-insensitive)
+    /// Check if this entity matches a search query (exact match, case-insensitive)
     public func matches(query: String) -> Bool {
-        let lowercaseQuery = query.lowercased()
-        if value.lowercased().contains(lowercaseQuery) {
+        let lowercaseQuery = query.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let lowercaseValue = value.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Exact match for value
+        if lowercaseValue == lowercaseQuery {
             return true
         }
-        return aliases.contains { $0.lowercased().contains(lowercaseQuery) }
+
+        // Exact match for aliases
+        return aliases.contains {
+            $0.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == lowercaseQuery
+        }
     }
 
     /// Get all related entities through relationships

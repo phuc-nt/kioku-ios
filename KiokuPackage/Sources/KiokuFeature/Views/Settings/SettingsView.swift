@@ -9,8 +9,10 @@ public struct SettingsView: View {
     @State private var isSaving: Bool = false
     @State private var showingHelp: Bool = false
     @State private var showClearDataAlert: Bool = false
+    @State private var showDropDatabaseAlert: Bool = false
     @State private var isImportingTestData: Bool = false
     @State private var isClearingData: Bool = false
+    @State private var isDroppingDatabase: Bool = false
     @State private var showError: String?
     @State private var showSuccess: Bool = false
 
@@ -230,7 +232,7 @@ public struct SettingsView: View {
                     Spacer()
                 }
             }
-            .disabled(isImportingTestData || isClearingData)
+            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
 
             // Clear All Data
             Button(role: .destructive, action: { showClearDataAlert = true }) {
@@ -245,12 +247,33 @@ public struct SettingsView: View {
                     Spacer()
                 }
             }
-            .disabled(isImportingTestData || isClearingData)
+            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
             .alert("Clear All Data?", isPresented: $showClearDataAlert) {
                 Button("Cancel", role: .cancel) {}
                 Button("Clear", role: .destructive, action: clearAllData)
             } message: {
                 Text("This will permanently delete all journal entries, conversations, and knowledge graph data. This action cannot be undone.")
+            }
+
+            // Drop Database (Nuclear Option)
+            Button(role: .destructive, action: { showDropDatabaseAlert = true }) {
+                HStack {
+                    if isDroppingDatabase {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                    }
+                    Text("Drop Database (Nuclear)")
+                    Spacer()
+                }
+            }
+            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
+            .alert("Drop Entire Database?", isPresented: $showDropDatabaseAlert) {
+                Button("Cancel", role: .cancel) {}
+                Button("Drop & Restart App", role: .destructive, action: dropDatabase)
+            } message: {
+                Text("This will delete the entire database file and requires app restart. This is the cleanest way to clear all data. The app will close after dropping the database.")
             }
         }
     }
@@ -480,6 +503,30 @@ public struct SettingsView: View {
 
             await MainActor.run {
                 isClearingData = false
+            }
+        }
+    }
+
+    private func dropDatabase() {
+        isDroppingDatabase = true
+
+        Task {
+            do {
+                let testDataService = TestDataService(dataService: dataService)
+                try await testDataService.dropDatabase()
+
+                // Give user time to see the success message
+                try? await Task.sleep(for: .seconds(1))
+
+                // Exit the app so user can restart with clean database
+                await MainActor.run {
+                    exit(0)
+                }
+            } catch {
+                await MainActor.run {
+                    isDroppingDatabase = false
+                    showError = "Failed to drop database: \(error.localizedDescription)"
+                }
             }
         }
     }

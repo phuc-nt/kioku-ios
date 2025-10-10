@@ -16,6 +16,7 @@ public final class DataService: @unchecked Sendable {
                 Conversation.self,
                 ChatMessage.self,
                 Entity.self,
+                EntityRelationship.self,
                 Insight.self
             ])
             let modelConfiguration = ModelConfiguration(
@@ -349,15 +350,26 @@ public final class DataService: @unchecked Sendable {
     }
 
     public func fetchEntities(type: EntityType, searchText: String) -> [Entity] {
-        let lowercasedSearch = searchText.lowercased()
+        // Fetch all entities of this type first, then filter with exact match
+        // This ensures proper deduplication during entity extraction
         let descriptor = FetchDescriptor<Entity>(
             predicate: #Predicate<Entity> { entity in
-                entity.type == type &&
-                (entity.value.localizedStandardContains(lowercasedSearch))
+                entity.type == type
             },
             sortBy: [SortDescriptor(\.confidence, order: .reverse)]
         )
-        return (try? modelContext.fetch(descriptor)) ?? []
+
+        let allEntities = (try? modelContext.fetch(descriptor)) ?? []
+
+        print("      🔎 fetchEntities: type=\(type.rawValue), search='\(searchText)', total in DB=\(allEntities.count)")
+        if !allEntities.isEmpty {
+            print("         Entities in DB: \(allEntities.map { $0.value }.joined(separator: ", "))")
+        }
+
+        // Filter using the entity's matches() method which does exact matching
+        let matches = allEntities.filter { $0.matches(query: searchText) }
+        print("         Matches: \(matches.count)")
+        return matches
     }
 
     public func fetchEntity(by id: UUID) -> Entity? {
