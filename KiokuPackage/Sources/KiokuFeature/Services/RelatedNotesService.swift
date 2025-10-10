@@ -103,8 +103,8 @@ public final class RelatedNotesService: @unchecked Sendable {
                 print("            → Relationship: \(relationship.fromEntity.value) --[\(relationship.type.rawValue)]--> \(relationship.toEntity.value)")
                 print("            → Connected entity '\(connectedEntity.value)' appears in \(connectedEntity.entries.count) entries")
 
-                // Find all entries containing the connected entity
-                for relatedEntry in connectedEntity.entries {
+                // Find all entries containing the connected entity (excluding current entry)
+                for relatedEntry in connectedEntity.entries where relatedEntry.id != entry.id {
                     let weight = relationshipWeight(relationship.type)
                     let reason = "Connected via \(relationship.type.rawValue) relationship through \(entity.value)"
                     scores.append((relatedEntry.id, weight, reason))

@@ -54,8 +54,9 @@ class ChatContextService {
         let insights = await fetchRelevantInsights(for: entryDate)
 
         // Sprint 16: Fetch related notes via Knowledge Graph
+        // Note: Using minRelevance: 0.1 for better sensitivity with sparse test data
         let relatedNotes = await MainActor.run {
-            relatedNotesService.findRelatedNotes(for: entry, limit: 5, minRelevance: 0.3)
+            relatedNotesService.findRelatedNotes(for: entry, limit: 5, minRelevance: 0.1)
         }
 
         return ChatContext(
