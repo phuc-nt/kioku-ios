@@ -4,12 +4,14 @@ enum DiscoveryMethod {
     case today
     case sameDay
     case recent
+    case knowledgeGraph(relevance: String) // Sprint 16: KG-based discovery
 
     var label: String {
         switch self {
         case .today: return "Today"
         case .sameDay: return "Same day"
         case .recent: return "Related"
+        case .knowledgeGraph(let relevance): return "KG: \(relevance)"
         }
     }
 
@@ -18,6 +20,7 @@ enum DiscoveryMethod {
         case .today: return "calendar.badge.clock"
         case .sameDay: return "arrow.clockwise"
         case .recent: return "link"
+        case .knowledgeGraph: return "brain.head.profile"
         }
     }
 
@@ -26,6 +29,7 @@ enum DiscoveryMethod {
         case .today: return .blue
         case .sameDay: return .green
         case .recent: return .purple
+        case .knowledgeGraph: return .orange
         }
     }
 }
@@ -38,6 +42,7 @@ struct ChatContextView: View {
     private var totalNotesCount: Int {
         var count = 0
         if context.currentNote != nil { count += 1 }
+        count += context.relatedNotes.count // Sprint 16: Include KG-related notes
         count += context.historicalNotes.count
         count += context.recentNotes.count
         return count
@@ -103,6 +108,32 @@ struct ChatContextView: View {
                         discoveryMethod: .today,
                         onTap: { selectedEntry = currentNote }
                     )
+                }
+
+                // Sprint 16: Related notes via Knowledge Graph (highest priority)
+                if !context.relatedNotes.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "brain.head.profile")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                            Text("Related via Knowledge Graph")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                        }
+                        .padding(.bottom, 4)
+
+                        ForEach(context.relatedNotes.prefix(5), id: \.entry.id) { relatedNote in
+                            KGRelatedNoteCard(
+                                relatedNote: relatedNote,
+                                onTap: { selectedEntry = relatedNote.entry }
+                            )
+                        }
+                    }
+                    .padding(12)
+                    .background(Color.orange.opacity(0.05))
+                    .cornerRadius(8)
                 }
 
                 // Historical notes (same day in past)
@@ -273,6 +304,99 @@ struct ChatContextView: View {
         .padding(12)
         .background(Color.yellow.opacity(0.05))
         .cornerRadius(8)
+    }
+}
+
+// MARK: - Sprint 16: KG Related Note Card
+
+struct KGRelatedNoteCard: View {
+    let relatedNote: RelatedNoteInfo
+    let onTap: () -> Void
+
+    private var excerpt: String {
+        let maxLength = 100
+        if relatedNote.entry.content.count <= maxLength {
+            return relatedNote.entry.content
+        }
+        return String(relatedNote.entry.content.prefix(maxLength)) + "..."
+    }
+
+    private var dateString: String {
+        if let date = relatedNote.entry.date {
+            return date.formatted(date: .abbreviated, time: .omitted)
+        }
+        return relatedNote.entry.createdAt.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    private var relevanceBadge: String {
+        if relatedNote.relevanceScore >= 3.0 {
+            return "High"
+        } else if relatedNote.relevanceScore >= 1.0 {
+            return "Medium"
+        } else {
+            return "Low"
+        }
+    }
+
+    private var relevanceColor: Color {
+        if relatedNote.relevanceScore >= 3.0 {
+            return .green
+        } else if relatedNote.relevanceScore >= 1.0 {
+            return .orange
+        } else {
+            return .gray
+        }
+    }
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    // Relevance badge
+                    HStack(spacing: 4) {
+                        Image(systemName: "star.fill")
+                            .font(.caption2)
+                        Text(relevanceBadge)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(relevanceColor)
+                    .cornerRadius(4)
+
+                    Spacer()
+
+                    Text(dateString)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+
+                // Relevance reason
+                Text(relatedNote.reason)
+                    .font(.caption2)
+                    .foregroundColor(.orange)
+                    .lineLimit(2)
+                    .italic()
+
+                // Entry excerpt
+                Text(excerpt)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(12)
+            .background(Color(.systemBackground))
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }
 
