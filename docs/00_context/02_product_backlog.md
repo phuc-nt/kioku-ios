@@ -1,7 +1,7 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 10, 2025
-**Current Status**: Sprint 16 Completed (Knowledge Graph Enhanced Context) ✅
+**Last Updated**: October 11, 2025
+**Current Status**: Sprint 17 In Progress (Flexible Model Configuration & Export System) 🔄
 **Story Points Delivered**: 186/201 (93%)
 
 ## Project Overview
@@ -20,6 +20,25 @@
 ---
 
 ## Current Sprint Status
+
+### Sprint 17 (In Progress) 🔄
+**Flexible Model Configuration & Export System** - 9 story points
+
+**Features In Progress**:
+- 🔄 **US-S16-002**: Flexible Model Configuration (3 points)
+  - Per-conversation AI model selection
+  - OpenRouter model validation
+  - Popular models + custom model ID support
+  - Entity extraction/relationship discovery remain on fixed models
+- 🔄 **US-046**: Export & Backup (6 points)
+  - Export to JSON (complete metadata)
+  - Export to Markdown (human-readable)
+  - Import from JSON with conflict resolution
+  - Files app integration
+
+**Started**: October 11, 2025
+**Sprint Plan**: [`docs/01_sprints/sprint_17_planning.md`](../01_sprints/sprint_17_planning.md)
+**Expected Completion**: October 13, 2025
 
 ### Sprint 16 (Completed) ✅ 100% SUCCESS
 **Knowledge Graph Enhanced Context** - 5/5 story points delivered
@@ -180,11 +199,11 @@
 - **Priority**: HIGH | **Complexity**: Medium
 - **Dependencies**: Sprint 13-15 KG infrastructure
 
-**US-S16-002: Flexible Model Configuration (3 points)**
-- Allow users to configure any OpenRouter model
-- Remove hardcoded model list restrictions
+**US-S16-002: Flexible Model Configuration (3 points)** 🔄 IN PROGRESS (Sprint 17)
+- Allow users to configure any OpenRouter model for chat conversations
 - Model validation and error handling
-- **Priority**: Medium | **Complexity**: Low
+- Entity extraction/relationship discovery remain on fixed models
+- **Priority**: High | **Complexity**: Low
 
 ### Epic 7: Advanced AI Features (In Progress)
 **Status**: Partial completion (Sprint 14-15)
@@ -213,11 +232,13 @@
 - 🔲 Search result ranking by relevance
 - **Priority**: Medium | **Complexity**: Medium (5 points remaining)
 
-**US-046: Export & Backup**
-- Export journal entries (JSON, PDF, Markdown)
-- Google Drive/iCloud integration
-- Encrypted backup and restore
-- **Priority**: High | **Complexity**: Medium (6 points)
+**US-046: Export & Backup (6 points)** 🔄 IN PROGRESS (Sprint 17)
+- Export journal entries (JSON, Markdown)
+- Import from JSON with conflict resolution
+- Files app integration
+- Encrypted backup option
+- **Priority**: High | **Complexity**: Medium
+- **Note**: Cloud integration (Google Drive/iCloud) deferred to future sprint
 
 **US-047: UI/UX Polish**
 - Enhanced animations and transitions
@@ -229,16 +250,16 @@
 
 ## Backlog Health
 
-**Ready for Development**: Sprint 16 stories defined
+**Ready for Development**: Sprint 17 in progress
 **Architecture Foundation**: Solid (SwiftUI + SwiftData + OpenRouter + Knowledge Graph)
 **Test Coverage**: XcodeBuildMCP automation in place
-**Technical Debt**: Minimal (KG context UI integration deferred)
+**Technical Debt**: Minimal (performance testing with large dataset needed)
 
 **Completion Status**:
-- ✅ Sprints 1-12: Core journaling + AI chat
-- ✅ Sprints 13-15: Knowledge Graph infrastructure
-- 🔄 Sprint 16: KG context refinement (planned)
-- 🔲 Future: Voice, advanced search, export
+- ✅ Sprints 1-12: Core journaling + AI chat (100%)
+- ✅ Sprints 13-16: Knowledge Graph complete (100%)
+- 🔄 Sprint 17: Model configuration + Export system (in progress)
+- 🔲 Future: Voice, enhanced insights, advanced search polish
 
 ---
 
@@ -246,12 +267,12 @@
 
 **Team Velocity**: 8-12 points per sprint
 **Sprint Duration**: 1-2 days (fast iteration)
-**Next Sprint Target**: Sprint 16 - Related notes via KG, flexible model config
+**Current Sprint**: Sprint 17 - Flexible model config + Export system
 
 **Current Focus**:
-- Improve KG-based context quality in chat
-- User flexibility for model selection
-- Prepare for voice and advanced search features
+- Flexible AI model selection for chat conversations
+- Comprehensive data export/import capabilities
+- User empowerment through data portability
 
 **Dependencies**:
 - OpenRouter API stability ✅
@@ -261,19 +282,26 @@
 
 ---
 
-## Recent Achievements (Sprint 13-15)
+## Recent Achievements (Sprint 13-16)
 
-**Knowledge Graph Epic Completed**:
-- 28 story points delivered across 3 sprints
+**Knowledge Graph Epic Completed** (Sprint 13-16):
+- 33 story points delivered across 4 sprints
 - Entity extraction, relationship mapping, insights, context integration
-- Critical bugs fixed: Rate limiting, date filtering, streaming UI
+- KG-based related notes discovery with relevance scoring
+- Critical bugs fixed: Entity deduplication, rate limiting, streaming UI
 - Infrastructure ready for advanced AI features
+
+**Sprint 16 Highlights**:
+- ✅ Related notes via KG with relevance scoring (0.70-6.17 scores)
+- ✅ Entity deduplication fixed with in-memory cache pattern
+- ✅ UI transparency: Related notes cards with High/Medium/Low badges
+- ✅ Database utilities documentation created
 
 **Quality Metrics**:
 - 100% automated test coverage for core features
 - Zero critical bugs in production
-- Sub-100ms context assembly performance
-- Successful model upgrade (GPT-5 Mini)
+- Knowledge Graph operational with real test data
+- Successful model upgrade (GPT-4o-mini)
 
 ---
 
