@@ -8,6 +8,7 @@ struct AIChatView: View {
     private let chatContextService: ChatContextService
     private let initialContext: ChatContext?
     private let entry: Entry? // Sprint 16: Entry for generating context with related notes
+    private let modelIdentifier: String? // Sprint 17: Optional model override
 
     @State private var messages: [AIChatMessage] = []
     @State private var currentMessage = ""
@@ -18,15 +19,24 @@ struct AIChatView: View {
     init(
         chatContextService: ChatContextService,
         initialContext: ChatContext? = nil,
-        entry: Entry? = nil
+        entry: Entry? = nil,
+        modelIdentifier: String? = nil
     ) {
         self.chatContextService = chatContextService
         self.initialContext = initialContext
         self.entry = entry
+        self.modelIdentifier = modelIdentifier
     }
 
     var body: some View {
         VStack(spacing: 0) {
+            // Sprint 17: Model badge
+            if let model = modelIdentifier {
+                modelBadgeView(model: model)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+            }
+
             // Context display
             if let context = currentContext {
                 ChatContextView(context: context)
@@ -313,8 +323,12 @@ struct AIChatView: View {
         var fullResponse = ""
 
         do {
-            // Use OpenRouter API
-            let response = try await openRouterService.completeText(prompt: prompt)
+            // Sprint 17: Use conversation-specific model if provided, otherwise use default
+            let modelToUse = modelIdentifier ?? ModelValidationService.defaultModel
+            let response = try await openRouterService.completeText(
+                prompt: prompt,
+                model: modelToUse
+            )
             fullResponse = response
 
             // Add AI response message and stop streaming
@@ -363,6 +377,29 @@ struct AIChatView: View {
         }
 
         return Array(suggestions.prefix(3))
+    }
+
+    // Sprint 17: Model badge view
+    private func modelBadgeView(model: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "cpu")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if let modelInfo = ModelValidationService.getModelInfo(model) {
+                Text(modelInfo.name)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                Text(model)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color.secondary.opacity(0.1))
+        .cornerRadius(12)
     }
 }
 

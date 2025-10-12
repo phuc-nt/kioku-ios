@@ -11,6 +11,9 @@ public class Conversation: @unchecked Sendable {
     public var associatedDate: Date?
     public var contextNoteIds: String? // JSON array of note IDs
 
+    // Sprint 17: Flexible model configuration for chat
+    public var modelIdentifier: String? // OpenRouter model ID (e.g., "openai/gpt-4o-mini")
+
     @Relationship(deleteRule: .cascade)
     public var messages: [ChatMessage] = []
 
