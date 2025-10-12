@@ -8,24 +8,53 @@ struct ChatTabView: View {
     @State private var initialContext: ChatContext?
     @State private var chatViewID = UUID()
     @State private var lastLoadedDate: Date?
+    @State private var showModelConfig = false // Sprint 17: Model configuration sheet
+    @State private var currentConversation: Conversation? // Sprint 17: Track current conversation
 
     @Binding var selectedDate: Date
-    
+
     init(selectedDate: Binding<Date>) {
         self._selectedDate = selectedDate
     }
-    
+
     var body: some View {
-        Group {
-            if let chatContextService = chatContextService {
-                AIChatView(
-                    chatContextService: chatContextService,
-                    initialContext: initialContext
-                )
-                .id(chatViewID)
-                .environment(OpenRouterService.shared)
-            } else {
-                ProgressView("Loading chat...")
+        NavigationStack {
+            Group {
+                if let chatContextService = chatContextService {
+                    AIChatView(
+                        chatContextService: chatContextService,
+                        initialContext: initialContext,
+                        modelIdentifier: currentConversation?.modelIdentifier
+                    )
+                    .id(chatViewID)
+                    .environment(OpenRouterService.shared)
+                    .onAppear {
+                        // Sprint 17: Periodically check for conversation creation
+                        startConversationPolling()
+                    }
+                    .onDisappear {
+                        stopConversationPolling()
+                    }
+                } else {
+                    ProgressView("Loading chat...")
+                }
+            }
+            .navigationTitle("Chat")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showModelConfig = true
+                    } label: {
+                        Image(systemName: "cpu")
+                    }
+                    .disabled(currentConversation == nil)
+                }
+            }
+            .sheet(isPresented: $showModelConfig) {
+                if let conversation = currentConversation {
+                    ModelConfigurationView(conversation: conversation)
+                }
             }
         }
         .onAppear {
@@ -54,6 +83,9 @@ struct ChatTabView: View {
             Task {
                 self.initialContext = await chatService.generateContext()
                 self.lastLoadedDate = selectedDate
+
+                // Sprint 17: Load conversation for model configuration
+                self.currentConversation = await dataService.fetchConversation(forDate: selectedDate)
             }
         } else if !Calendar.current.isDate(selectedDate, inSameDayAs: lastLoadedDate ?? Date.distantPast) {
             // Date changed while chat is visible - update context
@@ -62,6 +94,9 @@ struct ChatTabView: View {
                 Task {
                     self.initialContext = await chatContextService.generateContext()
                     self.lastLoadedDate = selectedDate
+
+                    // Sprint 17: Reload conversation for new date
+                    self.currentConversation = await dataService.fetchConversation(forDate: selectedDate)
 
                     // Force recreate AIChatView with new date context
                     chatViewID = UUID()
@@ -84,10 +119,37 @@ struct ChatTabView: View {
                 self.initialContext = await chatContextService.generateContext()
                 self.lastLoadedDate = selectedDate
 
+                // Sprint 17: Reload conversation for new date
+                self.currentConversation = await dataService.fetchConversation(forDate: selectedDate)
+
                 // Force recreate AIChatView with new context
                 chatViewID = UUID()
             }
         }
+    }
+
+    // Sprint 17: Polling for conversation creation
+    @State private var conversationPollTimer: Timer?
+
+    private func startConversationPolling() {
+        // Poll every 2 seconds to check if conversation was created
+        conversationPollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            Task { @MainActor in
+                let conversation = await self.dataService.fetchConversation(forDate: self.selectedDate)
+                if conversation != nil && self.currentConversation == nil {
+                    // Conversation was just created
+                    self.currentConversation = conversation
+                } else if conversation != nil {
+                    // Update existing conversation reference
+                    self.currentConversation = conversation
+                }
+            }
+        }
+    }
+
+    private func stopConversationPolling() {
+        conversationPollTimer?.invalidate()
+        conversationPollTimer = nil
     }
 }
 
