@@ -103,7 +103,8 @@ Empower users with flexible AI model selection for chat conversations and compre
 **Files Modified**:
 - ✅ `KiokuPackage/Sources/KiokuFeature/Models/Conversation.swift` - Added modelIdentifier field
 - ✅ `KiokuPackage/Sources/KiokuFeature/Views/Chat/AIChatView.swift` - Model parameter, badge UI, conversation persistence
-- ✅ `KiokuPackage/Sources/KiokuFeature/Views/Chat/ChatTabView.swift` - CPU button, polling, model config sheet
+- ✅ `KiokuPackage/Sources/KiokuFeature/Views/Chat/ChatTabView.swift` - CPU button, lazy conversation creation, model config sheet
+- ✅ `KiokuPackage/Sources/KiokuFeature/Views/EntryDetailView.swift` - CPU button in note detail chat, conversation management
 - ✅ `KiokuPackage/Sources/KiokuFeature/Services/DataService.swift` - Fixed fetchConversation predicate error
 
 **Implementation Summary**:
@@ -112,7 +113,8 @@ Empower users with flexible AI model selection for chat conversations and compre
 - ✅ Model badge displays in chat UI (CPU icon + model name)
 - ✅ Per-conversation model persistence
 - ✅ Default model: openai/gpt-4o-mini
-- ✅ CPU button enables when conversation exists (polling mechanism)
+- ✅ CPU button always enabled with lazy conversation creation
+- ✅ CPU button available in both Calendar tab and Note Detail chat
 - ✅ Conversation/message persistence added to AIChatView
 - ✅ SwiftData predicate fixed with in-memory filtering
 - ✅ Full end-to-end integration test passed with XcodeBuildMCP
@@ -121,8 +123,6 @@ Empower users with flexible AI model selection for chat conversations and compre
 - No real-time API availability check (format validation only)
 - No model-specific error parsing from OpenRouter
 - No per-message model override (conversation-level only)
-- CPU button requires conversation to exist (lazy creation on first message)
-- Polling adds 2-second delay to button enable (trade-off for simplicity)
 
 **Dependencies**:
 - Sprint 10: AI Chat Integration ✅
@@ -463,28 +463,31 @@ screenshot() // Verify entries visible
 
 **What Could Be Improved**:
 - ⚠️ No unit tests created (validation logic should have tests)
-- ⚠️ Polling mechanism adds 2-second delay (could be optimized with SwiftData observers)
 - ⚠️ Debug logging left in code (should be removed or made conditional)
 
 **Bugs Fixed During Testing**:
 1. **Conversation persistence missing in AIChatView** - Added ensureConversationExists() and message persistence
 2. **SwiftData predicate error with captured variables** - Switched to in-memory filtering
 3. **CPU button disabled state** - Implemented polling mechanism to detect conversation creation
+4. **CPU button always disabled for new dates** - Removed `.disabled(currentConversation == nil)`, added ensureConversationExists() on button tap
+5. **CPU button missing from Note Detail chat** - Added CPU button to EntryDetailView sheet toolbar with conversation management
 
 **Key Learnings**:
 1. **SwiftUI @Bindable**: Works well for conversation model binding in configuration view
 2. **SwiftData Predicates**: Cannot use captured variables in comparisons - use in-memory filtering instead
-3. **Polling Pattern**: Simple timer-based polling (2s) works for non-critical state updates
-4. **Lazy Conversation Creation**: Only create when first message sent - keeps database clean
-5. **XcodeBuildMCP Testing**: Full UI automation possible - caught bugs that manual testing might miss
+3. **Lazy Conversation Creation**: Create on demand (button tap) rather than first message - better UX
+4. **Button State Management**: Always-enabled buttons with lazy resource creation work better than disabled states
+5. **Consistent UX**: Ensure feature parity across all entry points (Calendar tab and Note Detail)
+6. **XcodeBuildMCP Testing**: Full UI automation possible - caught bugs that manual testing might miss
 
 **Technical Decisions**:
 - ✅ Store modelIdentifier as optional String in Conversation
 - ✅ Validate format only (no API availability check for MVP)
 - ✅ Display model badge when conversation has custom model
 - ✅ Use ModelValidationService.popularModels for presets
-- ✅ Polling with Timer for conversation detection (simple, works well)
+- ✅ Lazy conversation creation on CPU button tap (better than polling)
 - ✅ In-memory filtering for date-based queries (SwiftData predicate limitation)
+- ✅ Consistent CPU button implementation across all chat entry points
 
 ---
 

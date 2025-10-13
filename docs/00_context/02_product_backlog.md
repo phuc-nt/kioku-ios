@@ -1,8 +1,8 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 11, 2025
-**Current Status**: Sprint 17 In Progress (Flexible Model Configuration & Export System) 🔄
-**Story Points Delivered**: 186/201 (93%)
+**Last Updated**: October 14, 2025
+**Current Status**: Sprint 17 Part 1 Complete (Flexible Model Configuration ✅), Part 2 In Progress (Export & Backup 🔄)
+**Story Points Delivered**: 189/201 (94%)
 
 ## Project Overview
 
@@ -22,14 +22,18 @@
 ## Current Sprint Status
 
 ### Sprint 17 (In Progress) 🔄
-**Flexible Model Configuration & Export System** - 9 story points
+**Flexible Model Configuration & Export System** - 9 story points (Part 1 Complete)
 
-**Features In Progress**:
-- 🔄 **US-S16-002**: Flexible Model Configuration (3 points)
+**Features Completed**:
+- ✅ **US-S16-002**: Flexible Model Configuration (3 points)
   - Per-conversation AI model selection
   - OpenRouter model validation
   - Popular models + custom model ID support
+  - CPU button with lazy conversation creation
+  - Model configuration available in both Calendar tab and Note Detail chat
   - Entity extraction/relationship discovery remain on fixed models
+
+**Features In Progress**:
 - 🔄 **US-046**: Export & Backup (6 points)
   - Export to JSON (complete metadata)
   - Export to Markdown (human-readable)

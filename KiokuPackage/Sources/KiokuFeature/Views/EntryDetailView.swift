@@ -13,6 +13,8 @@ public struct EntryDetailView: View {
     @State private var showingHistoricalDetail = false
     @State private var showingAIChat = false
     @State private var allEntries: [Entry] = []
+    @State private var showModelConfig = false // Sprint 17: Model configuration sheet
+    @State private var chatConversation: Conversation? // Sprint 17: Track conversation for model config
     
     public var body: some View {
         ZStack {
@@ -135,11 +137,24 @@ public struct EntryDetailView: View {
                     // Sprint 16: Pass entry to AIChatView for related notes discovery
                     AIChatView(
                         chatContextService: createChatContextService(for: entryDate),
-                        entry: entry
+                        entry: entry,
+                        modelIdentifier: chatConversation?.modelIdentifier
                     )
                     .navigationTitle("Chat with AI")
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
+                        // Sprint 17: CPU button for model configuration
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                Task {
+                                    await ensureChatConversationExists(for: entryDate)
+                                    showModelConfig = true
+                                }
+                            } label: {
+                                Image(systemName: "cpu")
+                            }
+                        }
+
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button("Done") {
                                 showingAIChat = false
@@ -147,9 +162,19 @@ public struct EntryDetailView: View {
                         }
                     }
                     .environment(OpenRouterService.shared)
+                    .onAppear {
+                        Task {
+                            chatConversation = await dataService.fetchConversation(forDate: entryDate)
+                        }
+                    }
                 } else {
                     Text("Unable to load chat context")
                         .foregroundColor(.secondary)
+                }
+            }
+            .sheet(isPresented: $showModelConfig) {
+                if let conversation = chatConversation {
+                    ModelConfigurationView(conversation: conversation)
                 }
             }
         }
@@ -338,6 +363,24 @@ public struct EntryDetailView: View {
             dateContextService: dateContextService,
             dataService: dataService
         )
+    }
+
+    // Sprint 17: Ensure conversation exists for model configuration
+    @MainActor
+    private func ensureChatConversationExists(for date: Date) async {
+        if chatConversation == nil {
+            // Create new conversation with default model
+            let newConversation = Conversation(
+                title: "Chat for \(date.formatted(date: .abbreviated, time: .omitted))",
+                associatedDate: date
+            )
+            newConversation.modelIdentifier = ModelValidationService.defaultModel
+
+            dataService.modelContext.insert(newConversation)
+            try? dataService.modelContext.save()
+
+            chatConversation = newConversation
+        }
     }
     
     // MARK: - Historical Notes Logic

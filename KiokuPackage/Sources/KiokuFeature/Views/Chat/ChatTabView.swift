@@ -44,11 +44,14 @@ struct ChatTabView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showModelConfig = true
+                        // Sprint 17: Create conversation if doesn't exist
+                        Task {
+                            await ensureConversationExists()
+                            showModelConfig = true
+                        }
                     } label: {
                         Image(systemName: "cpu")
                     }
-                    .disabled(currentConversation == nil)
                 }
             }
             .sheet(isPresented: $showModelConfig) {
@@ -125,6 +128,25 @@ struct ChatTabView: View {
                 // Force recreate AIChatView with new context
                 chatViewID = UUID()
             }
+        }
+    }
+
+    // Sprint 17: Ensure conversation exists before showing model config
+    @MainActor
+    private func ensureConversationExists() async {
+        if currentConversation == nil {
+            // Create new conversation with default model
+            let newConversation = Conversation(
+                title: "Chat for \(selectedDate.formatted(date: .abbreviated, time: .omitted))",
+                associatedDate: selectedDate
+            )
+            newConversation.modelIdentifier = ModelValidationService.defaultModel
+
+            dataService.modelContext.insert(newConversation)
+            try? dataService.modelContext.save()
+
+            // Update current conversation reference
+            currentConversation = newConversation
         }
     }
 
