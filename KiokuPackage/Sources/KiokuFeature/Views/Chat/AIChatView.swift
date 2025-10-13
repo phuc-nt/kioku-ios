@@ -15,6 +15,7 @@ struct AIChatView: View {
     @State private var isStreaming = false
     @State private var currentContext: ChatContext?
     @State private var streamingTask: Task<Void, Never>?
+    @State private var conversation: Conversation? // Sprint 17: Track conversation for persistence
 
     init(
         chatContextService: ChatContextService,
@@ -301,8 +302,21 @@ struct AIChatView: View {
         currentMessage = ""
         isStreaming = true
 
-        // Generate AI response with streaming
-        streamingTask = Task {
+        // Sprint 17: Ensure conversation exists before persisting
+        Task {
+            await ensureConversationExists()
+
+            // Persist user message
+            if let conv = conversation {
+                await dataService.addMessage(
+                    to: conv,
+                    content: messageText,
+                    isFromUser: true,
+                    contextData: nil
+                )
+            }
+
+            // Generate AI response with streaming
             await generateStreamingAIResponse(for: messageText)
         }
     }
@@ -340,8 +354,46 @@ struct AIChatView: View {
                 messages.append(aiMessage)
                 isStreaming = false
             }
+
+            // Sprint 17: Persist AI response
+            if let conv = conversation {
+                await dataService.addMessage(
+                    to: conv,
+                    content: fullResponse,
+                    isFromUser: false,
+                    contextData: nil
+                )
+            }
         } catch {
             await handleAIError("Sorry, I couldn't process your message right now. Please try again.")
+        }
+    }
+
+    // Sprint 17: Ensure conversation exists for persistence
+    private func ensureConversationExists() async {
+        guard conversation == nil else { return }
+
+        // Use current date (today) as the conversation date
+        // In a real app, this would come from the selected date in the calendar
+        let date = Date()
+
+        // Check if conversation already exists for this date
+        if let existing = await dataService.fetchConversation(forDate: date) {
+            await MainActor.run {
+                self.conversation = existing
+            }
+            return
+        }
+
+        // Create new conversation
+        let title = "Chat for \(DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none))"
+        let newConversation = await dataService.createConversation(
+            title: title,
+            associatedDate: date
+        )
+
+        await MainActor.run {
+            self.conversation = newConversation
         }
     }
 

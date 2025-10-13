@@ -265,21 +265,23 @@ public final class DataService: @unchecked Sendable {
         guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else {
             return nil
         }
-        
-        let predicate = #Predicate<Conversation> { conversation in
-            conversation.associatedDate != nil &&
-            conversation.associatedDate! >= startOfDay &&
-            conversation.associatedDate! < endOfDay
-        }
-        
+
+        // Fetch all conversations with associatedDate, then filter in-memory
+        // SwiftData predicates don't support captured variable comparisons well
         let descriptor = FetchDescriptor<Conversation>(
-            predicate: predicate,
             sortBy: [SortDescriptor(\.updatedAt, order: .reverse)]
         )
-        
+
         do {
-            let results = try modelContext.fetch(descriptor)
-            return results.first
+            let allConversations = try modelContext.fetch(descriptor)
+
+            // Filter to conversations with associatedDate in the target day
+            let matchingConversations = allConversations.filter { conversation in
+                guard let assocDate = conversation.associatedDate else { return false }
+                return assocDate >= startOfDay && assocDate < endOfDay
+            }
+
+            return matchingConversations.first
         } catch {
             print("Failed to fetch conversation for date: \(error)")
             return nil
