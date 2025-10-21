@@ -66,6 +66,14 @@ public struct SettingsView: View {
                 }
 
                 Section {
+                    DataManagementView()
+                } header: {
+                    Text("Data Management")
+                } footer: {
+                    Text("Export your journal data as JSON for backup or Markdown for reading.")
+                }
+
+                Section {
                     developerToolsSection
                 } header: {
                     Text("Developer Tools")

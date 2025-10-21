@@ -1,8 +1,8 @@
 # Product Backlog - Kioku AI Journal
 
-**Last Updated**: October 14, 2025
-**Current Status**: Sprint 17 Part 1 Complete (Flexible Model Configuration ✅), Part 2 In Progress (Export & Backup 🔄)
-**Story Points Delivered**: 189/201 (94%)
+**Last Updated**: October 21, 2025
+**Current Status**: Sprint 17 Complete (Flexible Model Configuration & Export System ✅)
+**Story Points Delivered**: 195/201 (97%)
 
 ## Project Overview
 
@@ -16,15 +16,17 @@
 - Local data storage with encryption
 - **Knowledge Graph**: Entity extraction, relationship mapping, AI insights
 - **Context-aware Chat**: Entity/relationship context, insight-driven responses
+- **Flexible Model Configuration**: Per-conversation AI model selection
+- **Export & Backup**: JSON/Markdown export, Import with conflict resolution
 
 ---
 
 ## Current Sprint Status
 
-### Sprint 17 (In Progress) 🔄
-**Flexible Model Configuration & Export System** - 9 story points (Part 1 Complete)
+### Sprint 17 (Completed) ✅ 100% SUCCESS
+**Flexible Model Configuration & Export System** - 9/9 story points delivered
 
-**Features Completed**:
+**Features Delivered**:
 - ✅ **US-S16-002**: Flexible Model Configuration (3 points)
   - Per-conversation AI model selection
   - OpenRouter model validation
@@ -33,16 +35,22 @@
   - Model configuration available in both Calendar tab and Note Detail chat
   - Entity extraction/relationship discovery remain on fixed models
 
-**Features In Progress**:
-- 🔄 **US-046**: Export & Backup (6 points)
-  - Export to JSON (complete metadata)
-  - Export to Markdown (human-readable)
-  - Import from JSON with conflict resolution
-  - Files app integration
+- ✅ **US-046**: Export & Backup (6 points)
+  - Export to JSON with complete metadata (entries, entities, relationships, insights, conversations)
+  - Export to Markdown (human-readable format)
+  - Import from JSON with validation and conflict resolution (.merge strategy)
+  - Files app integration via FileExporter/FileImporter
+  - Progress indicators for long operations
+  - Data Management section in Settings
 
-**Started**: October 11, 2025
+**Implementation Notes**:
+- Created separate DataManagementView component to avoid SwiftUI complexity issues
+- JSON exported with `.plainText` contentType for iOS Simulator compatibility
+- FileImporter accepts both `.json` and `.plainText` to handle exported files
+
+**Delivered**: October 21, 2025
 **Sprint Plan**: [`docs/01_sprints/sprint_17_planning.md`](../01_sprints/sprint_17_planning.md)
-**Expected Completion**: October 13, 2025
+**Quality**: All acceptance criteria met, manual testing verified
 
 ### Sprint 16 (Completed) ✅ 100% SUCCESS
 **Knowledge Graph Enhanced Context** - 5/5 story points delivered

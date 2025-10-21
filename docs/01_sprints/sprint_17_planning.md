@@ -149,7 +149,7 @@ Empower users with flexible AI model selection for chat conversations and compre
 **So that** I can backup my data and have peace of mind about data portability
 
 **Priority**: HIGH
-**Status**: 🔄 IN PROGRESS
+**Status**: ✅ COMPLETED (2025-10-21)
 
 **Problem Statement**:
 - Users have no way to backup their journal data
@@ -165,15 +165,15 @@ Empower users with flexible AI model selection for chat conversations and compre
 5. Import from JSON for data restoration
 
 **Acceptance Criteria**:
-- [ ] Export all entries to JSON format with complete metadata
-- [ ] Export to Markdown format (human-readable)
-- [ ] JSON includes: entries, entities, relationships, insights, conversations
-- [ ] Markdown organized by date with sections for each entry
-- [ ] Export triggers iOS file save dialog (Files app integration)
-- [ ] Import from JSON validates and restores data
-- [ ] Import handles conflicts gracefully (skip duplicates or merge)
-- [ ] Progress indicator during export/import for large datasets
-- [ ] Export/import accessible from Settings
+- [x] Export all entries to JSON format with complete metadata
+- [x] Export to Markdown format (human-readable)
+- [x] JSON includes: entries, entities, relationships, insights, conversations
+- [x] Markdown organized by date with sections for each entry
+- [x] Export triggers iOS file save dialog (Files app integration)
+- [x] Import from JSON validates and restores data
+- [x] Import handles conflicts gracefully (skip duplicates or merge)
+- [x] Progress indicator during export/import for large datasets
+- [x] Export/import accessible from Settings
 
 **Technical Requirements**:
 
@@ -272,14 +272,14 @@ Today I met with Minh to discuss the project...
 - Show storage usage stats
 
 **Technical Tasks**:
-- [ ] Create `ExportService` with JSON/Markdown formatters
-- [ ] Create `ImportService` with validation and conflict resolution
-- [ ] Add SwiftUI `FileExporter` for save dialog
-- [ ] Add SwiftUI `FileImporter` for open dialog
-- [ ] Update Settings view with Data Management section
-- [ ] Add progress indicator UI for long exports
-- [ ] Handle encryption: export plain or encrypted based on user choice
-- [ ] Integration test: Export → Import → Verify data integrity
+- [x] Create `ExportService` with JSON/Markdown formatters
+- [x] Create `ImportService` with validation and conflict resolution
+- [x] Add SwiftUI `FileExporter` for save dialog
+- [x] Add SwiftUI `FileImporter` for open dialog
+- [x] Update Settings view with Data Management section
+- [x] Add progress indicator UI for long exports
+- [x] Handle encryption: export plain or encrypted based on user choice
+- [x] Integration test: Export → Import → Verify data integrity
 
 **Files to Create**:
 - `KiokuPackage/Sources/KiokuFeature/Services/ExportService.swift`
@@ -294,13 +294,13 @@ Today I met with Minh to discuss the project...
 - FileExporter/FileImporter available in iOS 17+
 
 **Definition of Done**:
-- [ ] Export to JSON includes all data with complete metadata
-- [ ] Export to Markdown is human-readable
-- [ ] Import validates JSON schema
-- [ ] Import handles duplicates gracefully
-- [ ] Progress indicators work for large datasets
-- [ ] File save/open dialogs work correctly
-- [ ] XcodeBuildMCP integration test: Export → Delete all → Import → Verify
+- [x] Export to JSON includes all data with complete metadata
+- [x] Export to Markdown is human-readable
+- [x] Import validates JSON schema
+- [x] Import handles duplicates gracefully
+- [x] Progress indicators work for large datasets
+- [x] File save/open dialogs work correctly
+- [x] XcodeBuildMCP integration test: Export → Delete all → Import → Verify
 - [ ] All changes committed and pushed
 - [ ] Sprint planning document updated
 
