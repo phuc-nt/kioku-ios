@@ -1,166 +1,146 @@
-# Kioku - AI-Powered Personal Journal
+# Kioku - Nhật ký cá nhân với trợ lý AI
 
-A modern iOS journaling app with AI chat integration, built using SwiftUI and SwiftData. Kioku helps users reflect on their thoughts through intelligent conversations with AI that understands their journal history.
+**Kioku** (記憶 - tiếng Nhật nghĩa là "ký ức") là ứng dụng ghi nhật ký kết hợp trí tuệ nhân tạo, giúp bạn phản chiếu suy nghĩ và khám phá các mối liên hệ trong cuộc sống.
 
-## Features
+## 🎯 Tại sao cần Kioku?
 
-- **📅 Calendar-based Journaling**: Write and organize entries by date
-- **🤖 AI Chat Integration**: Context-aware AI conversations about your journal patterns
-- **📖 Historical Context**: AI accesses current and historical entries for deeper insights
-- **🧠 Knowledge Graph**: Entity extraction, relationship mapping, and AI-powered insights
-- **⚙️ Flexible AI Models**: Choose from popular models or use custom OpenRouter models per conversation
-- **💾 Export & Backup**: Export journal data to JSON or Markdown, import from JSON with conflict resolution
-- **🔒 Privacy-First**: All data stored locally with encryption support
-- **🎨 Clean Design**: Native SwiftUI interface with tab-based navigation
+Bạn có bao giờ:
+- Viết nhật ký nhưng **quên mất những gì đã viết** trước đây?
+- Muốn **nhìn lại quá khứ** để hiểu rõ hơn về bản thân?
+- Cần **AI trò chuyện thông minh** về cuộc sống của chính bạn, không phải câu hỏi chung chung?
+- Lo lắng về **quyền riêng tư** khi sử dụng ứng dụng nhật ký online?
 
-## Current Status (Sprint 17 Complete)
+Kioku giải quyết những vấn đề này bằng cách:
+- ✅ Lưu trữ **100% dữ liệu trên máy** của bạn (không cloud, không server)
+- ✅ AI **đọc và hiểu toàn bộ nhật ký** để trò chuyện có ngữ cảnh
+- ✅ **Tự động phát hiện** người, địa điểm, sự kiện quan trọng trong cuộc sống bạn
+- ✅ **Xuất/nhập dữ liệu** dễ dàng - bạn luôn sở hữu 100% dữ liệu của mình
 
-✅ **Core journaling functionality**
-✅ **Tab-based navigation** (Calendar ↔ Chat)
-✅ **AI chat with OpenRouter API integration**
-✅ **Context-aware AI** (current + historical notes)
-✅ **Context transparency** (users see what AI accesses)
-✅ **Historical notes discovery** (same day across months)
-✅ **Knowledge Graph** (entities, relationships, insights, semantic search)
-✅ **Flexible model configuration** (per-conversation AI model selection)
-✅ **Export/Import system** (JSON backup, Markdown export, conflict resolution)
+## ✨ Tính năng
 
-## AI Assistant Rules Files
+### 📝 Ghi nhật ký thông minh
+- Lịch trực quan theo ngày/tháng/năm
+- Ghi chú nhanh với giao diện đơn giản
+- Tự động lưu, không lo mất dữ liệu
 
-This template includes **opinionated rules files** for popular AI coding assistants. These files establish coding standards, architectural patterns, and best practices for modern iOS development using the latest APIs and Swift features.
+### 🤖 Trò chuyện với AI về cuộc sống bạn
+- AI đọc nhật ký và **trả lời câu hỏi cá nhân hóa**
+- "Em có nhớ lần trước tôi gặp Minh không?" → AI trích dẫn đúng ngày, đúng ngữ cảnh
+- AI phát hiện **xu hướng, mối liên hệ** trong cuộc sống bạn
+- **Minh bạch**: Bạn thấy rõ AI đọc những nhật ký nào để trả lời
 
-### Included Rules Files
-- **Claude Code**: `CLAUDE.md` - Claude Code rules
-- **Cursor**: `.cursor/*.mdc` - Cursor-specific rules
-- **GitHub Copilot**: `.github/copilot-instructions.md` - GitHub Copilot rules
+### 🧠 Kiến thức từ nhật ký
+- Tự động nhận diện **người, địa điểm, sự kiện** trong nhật ký
+- Xem **mối quan hệ** giữa các thực thể (ví dụ: Minh - bạn thân - gặp ở quán café)
+- AI tạo **nhận xét sâu sắc** về các mối quan hệ
 
-### Customization Options
-These rules files are **starting points** - feel free to:
-- ✅ **Edit them** to match your team's coding standards
-- ✅ **Delete them** if you prefer different approaches
-- ✅ **Add your own** rules for other AI tools
-- ✅ **Update them** as new iOS APIs become available
+### ⚙️ Linh hoạt với AI models
+- Chọn model AI phù hợp: **Claude 3.5 Sonnet, GPT-4o, Gemini 2.0, v.v.**
+- Mỗi cuộc trò chuyện có thể dùng **model khác nhau**
+- Hỗ trợ **OpenRouter** - truy cập hàng chục models AI tiên tiến
 
-### What Makes These Rules Opinionated
-- **No ViewModels**: Embraces pure SwiftUI state management patterns
-- **Swift 6+ Concurrency**: Enforces modern async/await over legacy patterns
-- **Latest APIs**: Recommends iOS 18+ features with optional iOS 26 guidelines
-- **Testing First**: Promotes Swift Testing framework over XCTest
-- **Performance Focus**: Emphasizes @Observable over @Published for better performance
+### 💾 Sở hữu hoàn toàn dữ liệu
+- **Xuất JSON**: Backup toàn bộ dữ liệu (nhật ký, AI insights, entities)
+- **Xuất Markdown**: Đọc nhật ký dạng text thuần, mở bằng bất kỳ app nào
+- **Nhập JSON**: Khôi phục dữ liệu với tùy chọn xử lý xung đột thông minh
+- **Tích hợp Files app**: Lưu trực tiếp vào iCloud Drive, Dropbox, v.v.
 
-**Note for AI assistants**: You MUST read the relevant rules files before making changes to ensure consistency with project standards.
+### 🔒 Bảo mật & Riêng tư
+- **Dữ liệu lưu 100% trên iPhone** của bạn
+- **Mã hóa** hỗ trợ sẵn
+- AI chỉ nhận dữ liệu khi bạn hỏi, **không tự động upload**
+- Không có account, không có cloud sync - **bạn kiểm soát hoàn toàn**
 
-## Quick Start
+## 📲 Cài đặt
 
-1. **Open Workspace**: `Kioku.xcworkspace` in Xcode
-2. **Build & Run**: Select iPhone simulator and run
-3. **Start Journaling**: Create entries in Calendar tab
-4. **Chat with AI**: Switch to Chat tab for insights
+### Yêu cầu hệ thống
+- **iOS 18.0+** (iPhone)
+- **Xcode 16+** (để build từ source code)
 
-## Architecture Overview
+### Hướng dẫn cài đặt
 
-**Tech Stack**: SwiftUI + SwiftData + OpenRouter AI  
-**Navigation**: Tab-based (Calendar ↔ Chat)  
-**Data**: Local SQLite with encryption support  
-**AI Context**: Date-aware with historical pattern recognition  
+1. **Clone repository**:
+   ```bash
+   git clone https://github.com/phuc-nt/kioku-ios.git
+   cd kioku-ios
+   ```
 
+2. **Mở workspace trong Xcode**:
+   ```bash
+   open Kioku.xcworkspace
+   ```
+
+3. **Cấu hình OpenRouter API** (để dùng AI):
+   - Tạo tài khoản tại [openrouter.ai](https://openrouter.ai)
+   - Lấy API key
+   - Vào **Settings** trong app → nhập API key
+
+4. **Build & Run**:
+   - Chọn iPhone simulator hoặc device
+   - Nhấn **Run** (⌘R)
+
+## 🚀 Sử dụng
+
+### Bước 1: Viết nhật ký
+- Mở tab **Calendar** (📅)
+- Chọn ngày, nhập suy nghĩ của bạn
+- Tự động lưu khi bạn rời khỏi
+
+### Bước 2: Trò chuyện với AI
+- Chuyển sang tab **Chat** (💬)
+- Hỏi AI về nhật ký: "Tuần này tôi có vui không?", "Tôi hay gặp ai nhất?"
+- AI sẽ đọc nhật ký và trả lời dựa trên dữ liệu thực tế
+
+### Bước 3: Khám phá Insights
+- Vào **Insights** để xem người/địa điểm/sự kiện AI phát hiện
+- Xem **mối quan hệ** giữa các thực thể
+- Đọc **AI-generated insights** về cuộc sống bạn
+
+### Bước 4: Backup dữ liệu
+- Vào **Settings** → **Data Management**
+- **Export to JSON**: Backup toàn bộ
+- **Export to Markdown**: Xuất dạng text để đọc
+- **Import from JSON**: Khôi phục từ backup
+
+## 🛠️ Dành cho Developers
+
+### Tech Stack
+- **SwiftUI** + **SwiftData** (iOS native)
+- **OpenRouter API** (AI integration)
+- **Swift Package Manager** (modular architecture)
+- **Encryption support** (local data security)
+
+### Project Structure
 ```
-Kioku/
-├── Kioku.xcworkspace/              # Open this file in Xcode
-├── KiokuPackage/Sources/KiokuFeature/  # 🚀 Main feature code
-│   ├── Models/                     # Entry, AIAnalysis, ChatMessage
-│   ├── Services/                   # DateContext, ChatContext, OpenRouter
-│   └── Views/                      # Calendar, Chat, Navigation
-├── docs/00_context/                # 📋 Design documents
-│   ├── 01_business_requirement.md
-│   ├── 02_product_backlog.md
-│   └── 03_architecture_design.md   # Technical details
-└── docs/01_sprints/                # Sprint planning & progress
-```
-
-## Key Architecture Points
-
-### Workspace + SPM Structure
-- **App Shell**: `Kioku/` contains minimal app lifecycle code
-- **Feature Code**: `KiokuPackage/Sources/KiokuFeature/` is where most development happens
-- **Separation**: Business logic lives in the SPM package, app target just imports and displays it
-
-### Buildable Folders (Xcode 16)
-- Files added to the filesystem automatically appear in Xcode
-- No need to manually add files to project targets
-- Reduces project file conflicts in teams
-
-## Development
-
-### For New Developers
-1. **Read Architecture**: `docs/00_context/03_architecture_design.md` for technical overview
-2. **Check Current Sprint**: `docs/01_sprints/` for current development status  
-3. **Main Development**: `KiokuPackage/Sources/KiokuFeature/` for feature code
-
-### Next Features (Planned)
-- **🎤 Voice Integration**: Voice-to-text entry creation and voice conversations
-- **📊 Advanced Analytics**: Enhanced insight visualization and trend analysis
-- **🎨 UI/UX Polish**: Animations, accessibility improvements, dark mode optimization
-
-### Public API Requirements
-Types exposed to the app target need `public` access:
-```swift
-public struct NewView: View {
-    public init() {}
-    
-    public var body: some View {
-        // Your view code
-    }
-}
-```
-
-### Adding Dependencies
-Edit `KiokuPackage/Package.swift` to add SPM dependencies:
-```swift
-dependencies: [
-    .package(url: "https://github.com/example/SomePackage", from: "1.0.0")
-],
-targets: [
-    .target(
-        name: "KiokuFeature",
-        dependencies: ["SomePackage"]
-    ),
-]
+Kioku.xcworkspace          # Mở file này trong Xcode
+├── Kioku/                 # App target
+├── KiokuPackage/          # Feature modules (SPM)
+│   └── Sources/KiokuFeature/
+│       ├── Models/        # Entry, Entity, ChatMessage
+│       ├── Services/      # DataService, ExportService, AI
+│       └── Views/         # Calendar, Chat, Settings
+└── docs/                  # Architecture & sprint docs
 ```
 
-### Test Structure
-- **Unit Tests**: `KiokuPackage/Tests/KiokuFeatureTests/` (Swift Testing framework)
-- **UI Tests**: `KiokuUITests/` (XCUITest framework)
-- **Test Plan**: `Kioku.xctestplan` coordinates all tests
+### Development Workflow
+1. Đọc `docs/00_context/03_architecture_design.md` để hiểu kiến trúc
+2. Xem `docs/01_sprints/` để biết sprint hiện tại
+3. Code chủ yếu trong `KiokuPackage/Sources/KiokuFeature/`
 
-## Configuration
+### Testing
+- **UI Tests**: Sử dụng XcodeBuildMCP automation
+- **Unit Tests**: Swift Testing framework
+- Xem `docs/03_testing/` để biết test scenarios
 
-### XCConfig Build Settings
-Build settings are managed through **XCConfig files** in `Config/`:
-- `Config/Shared.xcconfig` - Common settings (bundle ID, versions, deployment target)
-- `Config/Debug.xcconfig` - Debug-specific settings  
-- `Config/Release.xcconfig` - Release-specific settings
-- `Config/Tests.xcconfig` - Test-specific settings
+## 📄 License
 
-### Entitlements Management
-App capabilities are managed through a **declarative entitlements file**:
-- `Config/Kioku.entitlements` - All app entitlements and capabilities
-- AI agents can safely edit this XML file to add HealthKit, CloudKit, Push Notifications, etc.
-- No need to modify complex Xcode project files
+MIT License - Xem file [LICENSE](LICENSE) để biết chi tiết.
 
-### Asset Management
-- **App-Level Assets**: `Kioku/Assets.xcassets/` (app icon, accent color)
-- **Feature Assets**: Add `Resources/` folder to SPM package if needed
+## 🙏 Credits
 
-### SPM Package Resources
-To include assets in your feature package:
-```swift
-.target(
-    name: "KiokuFeature",
-    dependencies: [],
-    resources: [.process("Resources")]
-)
-```
+- Scaffolded với [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP)
+- AI models via [OpenRouter](https://openrouter.ai)
 
-### Generated with XcodeBuildMCP
-This project was scaffolded using [XcodeBuildMCP](https://github.com/cameroncooke/XcodeBuildMCP), which provides tools for AI-assisted iOS development workflows.
+---
+
+**Made with ❤️ for people who love journaling and self-reflection**
