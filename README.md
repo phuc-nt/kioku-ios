@@ -5,19 +5,25 @@ A modern iOS journaling app with AI chat integration, built using SwiftUI and Sw
 ## Features
 
 - **📅 Calendar-based Journaling**: Write and organize entries by date
-- **🤖 AI Chat Integration**: Context-aware AI conversations about your journal patterns  
+- **🤖 AI Chat Integration**: Context-aware AI conversations about your journal patterns
 - **📖 Historical Context**: AI accesses current and historical entries for deeper insights
+- **🧠 Knowledge Graph**: Entity extraction, relationship mapping, and AI-powered insights
+- **⚙️ Flexible AI Models**: Choose from popular models or use custom OpenRouter models per conversation
+- **💾 Export & Backup**: Export journal data to JSON or Markdown, import from JSON with conflict resolution
 - **🔒 Privacy-First**: All data stored locally with encryption support
 - **🎨 Clean Design**: Native SwiftUI interface with tab-based navigation
 
-## Current Status (Sprint 10 Complete)
+## Current Status (Sprint 17 Complete)
 
-✅ **Core journaling functionality**  
-✅ **Tab-based navigation** (Calendar ↔ Chat)  
-✅ **AI chat with OpenRouter API integration**  
-✅ **Context-aware AI** (current + historical notes)  
-✅ **Context transparency** (users see what AI accesses)  
+✅ **Core journaling functionality**
+✅ **Tab-based navigation** (Calendar ↔ Chat)
+✅ **AI chat with OpenRouter API integration**
+✅ **Context-aware AI** (current + historical notes)
+✅ **Context transparency** (users see what AI accesses)
 ✅ **Historical notes discovery** (same day across months)
+✅ **Knowledge Graph** (entities, relationships, insights, semantic search)
+✅ **Flexible model configuration** (per-conversation AI model selection)
+✅ **Export/Import system** (JSON backup, Markdown export, conflict resolution)
 
 ## AI Assistant Rules Files
 
@@ -92,10 +98,9 @@ Kioku/
 3. **Main Development**: `KiokuPackage/Sources/KiokuFeature/` for feature code
 
 ### Next Features (Planned)
-- **🧠 Knowledge Graph**: Entity extraction and relationship mapping
-- **📊 Advanced Analytics**: Pattern recognition across journal entries
-- **🔍 Semantic Search**: Find entries by meaning, not just keywords
-- **📱 Enhanced AI Models**: Multi-model support and voice integration
+- **🎤 Voice Integration**: Voice-to-text entry creation and voice conversations
+- **📊 Advanced Analytics**: Enhanced insight visualization and trend analysis
+- **🎨 UI/UX Polish**: Animations, accessibility improvements, dark mode optimization
 
 ### Public API Requirements
 Types exposed to the app target need `public` access:
