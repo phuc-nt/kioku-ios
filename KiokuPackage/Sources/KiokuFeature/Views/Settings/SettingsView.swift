@@ -8,10 +8,8 @@ public struct SettingsView: View {
     @State private var validationState: ValidationState = .empty
     @State private var isSaving: Bool = false
     @State private var showingHelp: Bool = false
-    @State private var showClearDataAlert: Bool = false
     @State private var showDropDatabaseAlert: Bool = false
     @State private var isImportingTestData: Bool = false
-    @State private var isClearingData: Bool = false
     @State private var isDroppingDatabase: Bool = false
     @State private var showError: String?
     @State private var showSuccess: Bool = false
@@ -240,48 +238,27 @@ public struct SettingsView: View {
                     Spacer()
                 }
             }
-            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
+            .disabled(isImportingTestData || isDroppingDatabase)
 
-            // Clear All Data
-            Button(role: .destructive, action: { showClearDataAlert = true }) {
-                HStack {
-                    if isClearingData {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                    } else {
-                        Image(systemName: "trash")
-                    }
-                    Text("Clear All Data")
-                    Spacer()
-                }
-            }
-            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
-            .alert("Clear All Data?", isPresented: $showClearDataAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Clear", role: .destructive, action: clearAllData)
-            } message: {
-                Text("This will permanently delete all journal entries, conversations, and knowledge graph data. This action cannot be undone.")
-            }
-
-            // Drop Database (Nuclear Option)
+            // Clear All Data & Restart (Drop Database)
             Button(role: .destructive, action: { showDropDatabaseAlert = true }) {
                 HStack {
                     if isDroppingDatabase {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
-                        Image(systemName: "exclamationmark.triangle.fill")
+                        Image(systemName: "trash.fill")
                     }
-                    Text("Drop Database (Nuclear)")
+                    Text("Clear All Data & Restart")
                     Spacer()
                 }
             }
-            .disabled(isImportingTestData || isClearingData || isDroppingDatabase)
-            .alert("Drop Entire Database?", isPresented: $showDropDatabaseAlert) {
+            .disabled(isImportingTestData || isDroppingDatabase)
+            .alert("Clear All Data?", isPresented: $showDropDatabaseAlert) {
                 Button("Cancel", role: .cancel) {}
-                Button("Drop & Restart App", role: .destructive, action: dropDatabase)
+                Button("Clear & Restart App", role: .destructive, action: dropDatabase)
             } message: {
-                Text("This will delete the entire database file and requires app restart. This is the cleanest way to clear all data. The app will close after dropping the database.")
+                Text("This will permanently delete all journal entries, conversations, entities, relationships, and insights. The app will restart with a clean database. This action cannot be undone.")
             }
         }
     }
@@ -498,42 +475,39 @@ public struct SettingsView: View {
         }
     }
 
-    private func clearAllData() {
-        isClearingData = true
-
-        Task {
-            await MainActor.run {
-                let testDataService = TestDataService(dataService: dataService)
-                testDataService.clearAllData()
-            }
-
-            try? await Task.sleep(for: .milliseconds(500))
-
-            await MainActor.run {
-                isClearingData = false
-            }
-        }
-    }
-
     private func dropDatabase() {
         isDroppingDatabase = true
 
-        Task {
+        // Dismiss settings immediately to avoid UI observing data changes
+        dismiss()
+
+        // Capture dataService to avoid Sendable issues
+        let ds = dataService
+
+        Task.detached {
             do {
-                let testDataService = TestDataService(dataService: dataService)
-                try await testDataService.dropDatabase()
+                // Small delay to let UI dismiss
+                try? await Task.sleep(for: .milliseconds(300))
 
-                // Give user time to see the success message
-                try? await Task.sleep(for: .seconds(1))
+                await MainActor.run {
+                    let testDataService = TestDataService(dataService: ds)
+                    Task {
+                        do {
+                            try await testDataService.dropDatabase()
 
-                // Exit the app so user can restart with clean database
-                await MainActor.run {
-                    exit(0)
-                }
-            } catch {
-                await MainActor.run {
-                    isDroppingDatabase = false
-                    showError = "Failed to drop database: \(error.localizedDescription)"
+                            // Give user time to see console logs
+                            try? await Task.sleep(for: .seconds(1))
+
+                            // Exit the app so user can restart with clean database
+                            print("  🚪 Exiting app now...")
+                            exit(0)
+                        } catch {
+                            print("  ❌ FATAL ERROR during database drop: \(error)")
+                            print("  🚪 Exiting app anyway to prevent corrupt state...")
+                            // Exit even on error to avoid corrupt state
+                            exit(1)
+                        }
+                    }
                 }
             }
         }

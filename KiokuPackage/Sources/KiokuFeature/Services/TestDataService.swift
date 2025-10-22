@@ -24,38 +24,101 @@ public final class TestDataService: @unchecked Sendable {
     }
 
     /// Drop and recreate the entire database (nuclear option)
-    /// This is the cleanest way to clear all data - completely removes the database file
+    /// Deletes ALL data by removing all objects from SwiftData
+    /// Ensures 100% clean state - all entries, entities, relationships, conversations, insights will be deleted
+    /// IMPORTANT: App will exit after dropping database - user must manually restart
     @MainActor
-    public func dropDatabase() throws {
-        print("🗑️ Dropping database (nuclear option)...")
+    public func dropDatabase() async throws {
+        print("🗑️ Dropping database - clearing all data...")
+        print("  ⏳ This may take a moment for large datasets...")
 
-        // Get the database URL
-        let fileManager = FileManager.default
-        let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let dbURL = appSupport.appendingPathComponent("default.store")
+        // Delete all objects - ENTRIES FIRST to trigger cascade delete
+        var deletedCounts: [String: Int] = [:]
 
-        print("  📂 Database location: \(dbURL.path)")
-
-        // Check if database exists
-        if fileManager.fileExists(atPath: dbURL.path) {
-            // Delete the database file
-            try fileManager.removeItem(at: dbURL)
-            print("  ✅ Database file deleted successfully")
-        } else {
-            print("  ℹ️  Database file doesn't exist (already clean)")
+        // 1. Delete Entries FIRST (this will cascade delete relationships/entities)
+        print("  🗑️ Step 1/4: Deleting entries (will cascade)...")
+        let entries = dataService.fetchAllEntries()
+        deletedCounts["entries"] = entries.count
+        for entry in entries {
+            dataService.modelContext.delete(entry)
         }
 
-        // Also delete any .store-shm and .store-wal files (SQLite temporary files)
-        let shmURL = appSupport.appendingPathComponent("default.store-shm")
-        let walURL = appSupport.appendingPathComponent("default.store-wal")
+        // 2. Delete Conversations (cascade deletes messages)
+        print("  🗑️ Step 2/4: Deleting conversations...")
+        let conversations = dataService.fetchAllConversations()
+        deletedCounts["conversations"] = conversations.count
+        for conversation in conversations {
+            dataService.modelContext.delete(conversation)
+        }
 
-        try? fileManager.removeItem(at: shmURL)
-        try? fileManager.removeItem(at: walURL)
+        // 3. Delete Insights
+        print("  🗑️ Step 3/4: Deleting insights...")
+        let insightDescriptor = FetchDescriptor<Insight>()
+        if let insights = try? dataService.modelContext.fetch(insightDescriptor) {
+            deletedCounts["insights"] = insights.count
+            for insight in insights {
+                dataService.modelContext.delete(insight)
+            }
+        }
 
-        print("  🎉 Database dropped! App needs to be restarted to recreate.")
+        // 4. Delete AIAnalysis
+        print("  🗑️ Step 4/4: Deleting AI analyses...")
+        let analysisDescriptor = FetchDescriptor<AIAnalysis>()
+        if let analyses = try? dataService.modelContext.fetch(analysisDescriptor) {
+            deletedCounts["analyses"] = analyses.count
+            for analysis in analyses {
+                dataService.modelContext.delete(analysis)
+            }
+        }
+
+        // Note: Relationships and Entities should be cascade deleted by Entry deletion
+        // But we'll count any remaining orphans
+        let remainingRelationships = (try? dataService.modelContext.fetch(FetchDescriptor<EntityRelationship>())) ?? []
+        let remainingEntities = (try? dataService.modelContext.fetch(FetchDescriptor<Entity>())) ?? []
+
+        if !remainingRelationships.isEmpty {
+            print("  🧹 Cleaning \(remainingRelationships.count) orphaned relationships...")
+            for relationship in remainingRelationships {
+                dataService.modelContext.delete(relationship)
+            }
+        }
+
+        if !remainingEntities.isEmpty {
+            print("  🧹 Cleaning \(remainingEntities.count) orphaned entities...")
+            for entity in remainingEntities {
+                dataService.modelContext.delete(entity)
+            }
+        }
+
+        deletedCounts["relationships"] = remainingRelationships.count
+        deletedCounts["entities"] = remainingEntities.count
+
+        // Save all deletions
+        print("  💾 Committing all deletions to database...")
+        do {
+            try dataService.modelContext.save()
+            print("  ✅ Successfully saved all deletions")
+        } catch {
+            print("  ❌ CRITICAL: Failed to save deletions: \(error)")
+            throw error
+        }
+
+        // Small delay to ensure save completes
+        try? await Task.sleep(for: .milliseconds(500))
+
+        print("  🎉 Database cleared successfully!")
+        print("     ✅ Entries: \(deletedCounts["entries"] ?? 0)")
+        print("     ✅ Conversations: \(deletedCounts["conversations"] ?? 0)")
+        print("     ✅ Entities: \(deletedCounts["entities"] ?? 0)")
+        print("     ✅ Relationships: \(deletedCounts["relationships"] ?? 0)")
+        print("     ✅ Insights: \(deletedCounts["insights"] ?? 0)")
+        print("     ✅ Analyses: \(deletedCounts["analyses"] ?? 0)")
+        print("  ⚠️  App will exit in 1 second - please reopen to continue")
     }
 
-    /// Clear all data from the database with orphan detection
+    /// DEPRECATED: Use dropDatabase() instead
+    /// This method is kept for backwards compatibility but should not be used
+    @available(*, deprecated, message: "Use dropDatabase() instead for guaranteed clean state")
     public func clearAllData() {
         print("🗑️ Starting Clear All Data operation...")
 
