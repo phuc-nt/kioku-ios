@@ -65,6 +65,9 @@ fastlane/test_output
 docs/03_lesson/img/
 docs/99_lesson/img/
 
+# Debug exports folder
+exports/
+
 # Security - API Keys and Secrets
 # IMPORTANT: Never commit real API keys!
 *.secret
@@ -81,3 +84,5 @@ TestAPIKeys.swift
 .DS_Store
 .AppleDouble
 .LSOverride
+
+raw_data/

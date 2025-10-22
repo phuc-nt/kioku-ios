@@ -462,19 +462,50 @@ public class ExportService {
 
 struct ExportData: Codable {
     let version: String
-    let exportedAt: Date
-    let exportMetadata: ExportMetadata
+    let exportedAt: Date?  // Optional for minimal imports
+    let exportMetadata: ExportMetadata?  // Optional for minimal imports
     let entries: [ExportedEntry]
-    let entities: [ExportedEntity]
-    let relationships: [ExportedRelationship]
-    let insights: [ExportedInsight]
-    let conversations: [ExportedConversation]
+    let entities: [ExportedEntity]  // Can be empty array for minimal imports
+    let relationships: [ExportedRelationship]  // Can be empty array
+    let insights: [ExportedInsight]  // Can be empty array
+    let conversations: [ExportedConversation]  // Can be empty array
 
     enum CodingKeys: String, CodingKey {
         case version
         case exportedAt = "exported_at"
         case exportMetadata = "export_metadata"
         case entries, entities, relationships, insights, conversations
+    }
+
+    // Custom initializer with defaults for minimal imports
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        version = try container.decode(String.self, forKey: .version)
+        exportedAt = try container.decodeIfPresent(Date.self, forKey: .exportedAt)
+        exportMetadata = try container.decodeIfPresent(ExportMetadata.self, forKey: .exportMetadata)
+        entries = try container.decode([ExportedEntry].self, forKey: .entries)
+
+        // Default to empty arrays if not present (for minimal imports)
+        entities = (try? container.decode([ExportedEntity].self, forKey: .entities)) ?? []
+        relationships = (try? container.decode([ExportedRelationship].self, forKey: .relationships)) ?? []
+        insights = (try? container.decode([ExportedInsight].self, forKey: .insights)) ?? []
+        conversations = (try? container.decode([ExportedConversation].self, forKey: .conversations)) ?? []
+    }
+
+    // Regular init for exports
+    init(version: String, exportedAt: Date, exportMetadata: ExportMetadata,
+         entries: [ExportedEntry], entities: [ExportedEntity],
+         relationships: [ExportedRelationship], insights: [ExportedInsight],
+         conversations: [ExportedConversation]) {
+        self.version = version
+        self.exportedAt = exportedAt
+        self.exportMetadata = exportMetadata
+        self.entries = entries
+        self.entities = entities
+        self.relationships = relationships
+        self.insights = insights
+        self.conversations = conversations
     }
 }
 
@@ -524,6 +555,57 @@ struct ExportedEntry: Codable {
         case entityIds = "entity_ids"
         case relationshipIds = "relationship_ids"
         case analysisIds = "analysis_ids"
+    }
+
+    // Custom decoder for minimal imports (only date + content)
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Required fields - use defaults if not present
+        id = (try? container.decode(UUID.self, forKey: .id)) ?? UUID()
+        content = try container.decode(String.self, forKey: .content)
+
+        // Optional fields with sensible defaults
+        isEncrypted = (try? container.decode(Bool.self, forKey: .isEncrypted)) ?? false
+        date = try container.decodeIfPresent(Date.self, forKey: .date)
+
+        let now = Date()
+        createdAt = (try? container.decode(Date.self, forKey: .createdAt)) ?? now
+        updatedAt = (try? container.decode(Date.self, forKey: .updatedAt)) ?? now
+        dataVersion = (try? container.decode(Int.self, forKey: .dataVersion)) ?? 2
+
+        // KG tracking - default to not extracted
+        kgTracking = (try? container.decode(ExportedKGTracking.self, forKey: .kgTracking)) ??
+            ExportedKGTracking(
+                isEntitiesExtracted: false,
+                entitiesExtractedAt: nil,
+                entitiesExtractionModel: nil,
+                isRelationshipsDiscovered: false,
+                relationshipsDiscoveredAt: nil,
+                relationshipsDiscoveryModel: nil
+            )
+
+        // ID arrays - default to empty
+        entityIds = (try? container.decode([UUID].self, forKey: .entityIds)) ?? []
+        relationshipIds = (try? container.decode([UUID].self, forKey: .relationshipIds)) ?? []
+        analysisIds = (try? container.decode([UUID].self, forKey: .analysisIds)) ?? []
+    }
+
+    // Regular init for exports
+    init(id: UUID, content: String, isEncrypted: Bool, date: Date?, createdAt: Date,
+         updatedAt: Date, dataVersion: Int, kgTracking: ExportedKGTracking,
+         entityIds: [UUID], relationshipIds: [UUID], analysisIds: [UUID]) {
+        self.id = id
+        self.content = content
+        self.isEncrypted = isEncrypted
+        self.date = date
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.dataVersion = dataVersion
+        self.kgTracking = kgTracking
+        self.entityIds = entityIds
+        self.relationshipIds = relationshipIds
+        self.analysisIds = analysisIds
     }
 }
 

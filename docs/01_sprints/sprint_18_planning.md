@@ -1,18 +1,124 @@
 # Sprint 18: Data Management Enhancements
 
-**Sprint Period**: October 22-24, 2025
+**Sprint Period**: October 22-23, 2025
 **Epic**: EPIC-7 - User Empowerment & Data Portability
-**Story Points**: 3 points (1 user story - scope reduced)
-**Status**: ✅ COMPLETED (2025-10-22)
+**Story Points**: 6 points (2 user stories completed)
+**Status**: ✅ COMPLETED (2025-10-23)
 
 ## Sprint Goal
-~~Enhance data management capabilities with improved export options and~~ **Fix critical data cleanup functionality**, giving users reliable tools to reset their journal database completely.
+**Part 1**: Fix critical data cleanup functionality with reliable "Clear All Data"
+**Part 2**: Enable minimal JSON import (entries only) for easy conversion of raw journal data
 
-**Strategic Value**: Users gain confidence in long-term app usage through a robust "Clear All Data" feature that works reliably without crashes or data corruption.
+**Strategic Value**:
+- Users gain confidence through a robust "Clear All Data" that works without crashes
+- Users can easily import journal entries from any format (via AI conversion to JSON)
 
 ---
 
 ## User Stories
+
+### US-049: Minimal JSON Import (3 points)
+
+**As a** user
+**I want** to import journal entries using simple JSON format (only date + content)
+**So that** I can easily convert raw journal data from any format and import into Kioku
+
+**Priority**: HIGH
+**Status**: ✅ COMPLETED (2025-10-23)
+
+**Problem Statement**:
+- ImportService required full export format with all fields (entities, relationships, metadata)
+- Cannot import simple journal entries without complex JSON structure
+- Difficult to convert raw journal data (text files, notes) to importable format
+- Users need AI assistance to generate proper JSON with all required fields
+
+**Solution Approach**:
+1. Make ExportData fields optional (entities, relationships, metadata)
+2. Make ExportedEntry fields optional with sensible defaults
+3. Support minimal JSON format: `{"version": "1.0", "entries": [{"date": "...", "content": "..."}]}`
+4. Create SIMPLE_ENTRY_FORMAT.md guide for AI conversion
+5. Add DEBUG export to project folder for testing
+
+**Acceptance Criteria**:
+- [x] Import works with minimal JSON (only version + entries array)
+- [x] Entry fields auto-fill defaults: id=UUID(), createdAt=now, isEncrypted=false
+- [x] KG tracking defaults to "not extracted" (AI will extract after import)
+- [x] Empty arrays default for entities/relationships/insights/conversations
+- [x] Simple format doc created for AI conversion tools
+- [x] DEBUG export to project folder works
+- [x] Successfully import real journal data from draft_1.md
+
+**Technical Implementation**:
+
+**FR-S18-020: Minimal Import Support**
+- Modified `ExportData` struct:
+  - `exportedAt`: Optional (was required)
+  - `exportMetadata`: Optional (was required)
+  - `entities`, `relationships`, `insights`, `conversations`: Default to empty arrays
+  - Custom `init(from:)` decoder with defaults
+- Modified `ExportedEntry` struct:
+  - `id`: Generate UUID() if missing
+  - `isEncrypted`: Default false
+  - `createdAt`, `updatedAt`: Default to now
+  - `dataVersion`: Default to 2
+  - `kgTracking`: Default to not extracted
+  - `entityIds`, `relationshipIds`, `analysisIds`: Default to empty arrays
+  - Custom `init(from:)` decoder with all defaults
+
+**FR-S18-021: Simple Format Documentation**
+- Created `docs/04_import_format/SIMPLE_ENTRY_FORMAT.md`:
+  - Minimal JSON structure (date + content only)
+  - Date format conversion guide (MM.DD → ISO 8601)
+  - AI conversion prompt template
+  - Real example using draft_1.md
+  - Quick import steps
+- Simplified from comprehensive JSON_IMPORT_FORMAT.md
+- Focused on entry-only imports (no entities/relationships)
+
+**FR-S18-022: DEBUG Export to Project Folder**
+- Added DEBUG-only "Export to Project Folder" button
+- Exports directly to `/Users/phucnt/Workspace/kioku_ios/exports/`
+- Creates exports/ folder if doesn't exist
+- Added `exports/` to .gitignore
+- Useful for testing import without Files app
+
+**Technical Tasks**:
+- [x] Modify ExportData struct with optional fields and custom decoder
+- [x] Modify ExportedEntry struct with defaults and custom decoder
+- [x] Fix ExportedKGTracking default initialization
+- [x] Create SIMPLE_ENTRY_FORMAT.md guide
+- [x] Add DEBUG export to project folder button
+- [x] Update .gitignore for exports/
+- [x] Convert draft_1.md to draft_1.json (21 entries)
+- [x] Test import with minimal JSON format
+- [x] Verify AI entity extraction works after import
+- [x] Manual testing: Clear → Import → Extract → Chat
+
+**Files Created**:
+- ✅ `docs/04_import_format/SIMPLE_ENTRY_FORMAT.md` - Simple import guide
+- ✅ `raw_data/draft_1.json` - Converted test data (21 entries)
+
+**Files Modified**:
+- ✅ `KiokuPackage/Sources/KiokuFeature/Services/ExportService.swift`
+  - ExportData: Optional fields + custom decoder
+  - ExportedEntry: Defaults + custom decoder
+- ✅ `KiokuPackage/Sources/KiokuFeature/Views/Settings/DataManagementView.swift`
+  - DEBUG export to project folder button
+- ✅ `.gitignore` - Added exports/
+
+**Definition of Done**:
+- [x] Minimal JSON import works (only date + content required)
+- [x] All optional fields auto-fill with sensible defaults
+- [x] SIMPLE_ENTRY_FORMAT.md created and tested
+- [x] Successfully imported draft_1.json (21 entries)
+- [x] AI entity extraction works after import
+- [x] Chat context includes imported entries
+- [x] DEBUG export to project folder works
+- [x] Manual testing passed: Clear → Import → Extract → Explore → Chat
+- [x] Changes committed and pushed
+- [x] Sprint planning document updated
+
+---
 
 ### US-047: Enhanced Export Options (5 points)
 
@@ -368,40 +474,71 @@ screenshot() // Verify "0 orphaned" after cleanup
 
 ## Sprint Retrospective
 
-**Status**: Sprint 18 - COMPLETED (2025-10-22)
+**Status**: Sprint 18 - COMPLETED (2025-10-23)
 
-**What Went Well**:
+**Part 1: Clear All Data Fix** ✅
 - ✅ Root cause analysis was thorough and accurate
 - ✅ Fixed critical bug that was blocking users from clearing test data
-- ✅ Deletion order fix (entries first) resolved relationship constraint errors
-- ✅ Auto-dismiss Settings before cleanup prevented SwiftUI observation crashes
+- ✅ Deletion order fix (relationships → entities → entries) resolved constraint errors
+- ✅ Save after each deletion step prevented cascade violations
 - ✅ Clear logging made debugging much easier
-- ✅ Manual testing with Import Test Data validated the fix completely
+- ✅ Manual testing validated the fix completely
+
+**Part 2: Minimal JSON Import** ✅
+- ✅ Successfully enabled minimal import format (date + content only)
+- ✅ Custom Codable decoders with sensible defaults worked perfectly
+- ✅ SIMPLE_ENTRY_FORMAT.md provides clear guide for AI conversion
+- ✅ Real-world test: Converted and imported 21 journal entries from draft_1.md
+- ✅ AI entity extraction works seamlessly after import
+- ✅ DEBUG export to project folder speeds up testing workflow
+
+**What Went Well**:
+- ✅ Two major features completed in 2 days (Clear All Data + Minimal Import)
+- ✅ Custom Codable decoders elegantly solved complex JSON parsing
+- ✅ Documentation-driven approach (SIMPLE_ENTRY_FORMAT.md) made testing easy
+- ✅ Real user data (draft_1.md) validated the entire import workflow
+- ✅ Bug fixes were thorough and addressed root causes, not symptoms
 
 **What Could Be Improved**:
-- ⚠️ Should have had unit tests for deletion order logic
-- ⚠️ Initial approach (deleting database files while app running) was wrong - wasted time
+- ⚠️ Initial deletion order was wrong - had to iterate 3 times to get it right
+- ⚠️ Should have read SwiftData relationship documentation earlier
 - ⚠️ Could have used XcodeBuildMCP automation for regression testing
+- ⚠️ Need unit tests for deletion order logic and import defaults
 
 **Bugs Fixed During Testing**:
+
+**Part 1 (Clear All Data)**:
 1. **SQLite "vnode unlinked while in use" error** - Fixed by not deleting files, deleting objects instead
-2. **Fatal error: Cannot remove Entity from relationship** - Fixed by deleting entries FIRST
-3. **App hangs with loading spinner** - Fixed by auto-dismissing Settings view before cleanup
-4. **Sendable concurrency warnings** - Fixed with proper Task.detached usage
+2. **Fatal error: Cannot remove Entity from relationship** - Fixed deletion order (relationships FIRST)
+3. **Constraint violations during save** - Fixed by saving after EACH deletion step
+4. **App hangs with loading spinner** - Fixed by auto-dismissing Settings view before cleanup
+
+**Part 2 (Minimal Import)**:
+1. **"Failed to parse JSON: data missing" error** - Fixed by making ExportData fields optional
+2. **Missing required fields in ExportedEntry** - Fixed with custom decoder and defaults
+3. **Wrong ExportedKGTracking field names** - Fixed field names in default initialization
 
 **Key Learnings**:
-1. **SwiftData deletion order matters**: Deleting parent objects (entries) first triggers proper cascade deletes
-2. **UI observation during data changes causes crashes**: Must dismiss views observing data before bulk deletes
-3. **Never delete database files while app is running**: SQLite keeps file handles open
-4. **@MainActor isolation is tricky**: Use Task.detached with captured references to avoid Sendable issues
-5. **Detailed logging is invaluable**: Step-by-step logs helped pinpoint exact failure points
+1. **SwiftData deletion order is CRITICAL**: Relationships → Entities → Entries (reverse dependency order)
+2. **Save after each step**: Prevents cascade constraint violations in complex relationships
+3. **Custom Codable decoders**: Perfect for backward-compatible JSON with optional fields
+4. **Documentation before implementation**: SIMPLE_ENTRY_FORMAT.md guided the entire feature
+5. **Test with real data**: draft_1.md revealed edge cases that test data wouldn't
+6. **UI observation during data changes causes crashes**: Must dismiss views before bulk operations
 
 **Technical Decisions**:
-- ✅ **Merged 2 cleanup functions into 1**: Simpler UX, less confusion for users
+
+**Part 1**:
+- ✅ **Delete in reverse dependency order**: Relationships → Entities → Entries
+- ✅ **Save after each step**: Commit changes to prevent constraint violations
 - ✅ **Async/await for cleanup**: Proper modern Swift concurrency
-- ✅ **Exit app after cleanup**: Safest way to ensure clean restart without corrupt state
-- ✅ **Orphan cleanup**: Extra safety to catch any missed cascade deletes
-- ✅ **Deprecate old clearAllData()**: Keep for backwards compat but mark deprecated
+- ✅ **Exit app after cleanup**: Safest way to ensure clean restart
+
+**Part 2**:
+- ✅ **Custom Codable decoders**: Clean solution for optional fields with defaults
+- ✅ **Minimal format support**: Lowers barrier for importing raw journal data
+- ✅ **AI-first documentation**: SIMPLE_ENTRY_FORMAT.md designed for AI conversion tools
+- ✅ **DEBUG export to project folder**: Faster testing without Files app
 
 ---
 

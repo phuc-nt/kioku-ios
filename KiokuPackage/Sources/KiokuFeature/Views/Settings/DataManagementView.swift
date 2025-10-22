@@ -72,6 +72,29 @@ struct DataManagementView: View {
             }
             .disabled(isExporting || isImporting)
 
+            // Export to Project Folder (Debug only)
+            #if DEBUG
+            Button(action: exportToProjectFolder) {
+                HStack {
+                    if isExporting {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                    } else {
+                        Image(systemName: "folder.badge.plus")
+                    }
+                    VStack(alignment: .leading) {
+                        Text("Export to Project Folder")
+                            .foregroundColor(.orange)
+                        Text("Debug: Saves to ~/Workspace/kioku_ios/exports/")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+            }
+            .disabled(isExporting || isImporting)
+            #endif
+
             // Import from JSON
             Button(action: { showFileImporter = true }) {
                 HStack {
@@ -264,6 +287,63 @@ struct DataManagementView: View {
             }
         }
     }
+
+    #if DEBUG
+    private func exportToProjectFolder() {
+        isExporting = true
+        exportMessage = "Exporting..."
+        exportProgress = 0.0
+
+        Task {
+            do {
+                let exportService = ExportService(
+                    dataService: dataService,
+                    encryptionService: EncryptionService.shared
+                )
+
+                let data = try await exportService.exportToJSON(
+                    options: .default,
+                    progress: { progress, message in
+                        Task { @MainActor in
+                            exportProgress = progress
+                            exportMessage = message
+                        }
+                    }
+                )
+
+                // Save to project exports folder
+                let projectPath = "/Users/phucnt/Workspace/kioku_ios/exports"
+                let fileManager = FileManager.default
+
+                // Create exports folder if needed
+                if !fileManager.fileExists(atPath: projectPath) {
+                    try fileManager.createDirectory(atPath: projectPath, withIntermediateDirectories: true)
+                }
+
+                let filename = "kioku-export-\(Date().ISO8601Format()).json"
+                let filePath = "\(projectPath)/\(filename)"
+                let fileURL = URL(fileURLWithPath: filePath)
+
+                try data.write(to: fileURL)
+
+                await MainActor.run {
+                    isExporting = false
+                    exportMessage = ""
+                    exportProgress = 0.0
+                    showError = "✅ Exported to: exports/\(filename)\n\nOpen in Finder to view."
+                    print("📁 Exported to: \(filePath)")
+                }
+            } catch {
+                await MainActor.run {
+                    isExporting = false
+                    exportMessage = ""
+                    exportProgress = 0.0
+                    showError = "Export failed: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    #endif
 }
 
 struct TextFileDocument: FileDocument {

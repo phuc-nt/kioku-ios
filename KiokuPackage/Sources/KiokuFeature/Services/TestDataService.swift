@@ -32,85 +32,95 @@ public final class TestDataService: @unchecked Sendable {
         print("🗑️ Dropping database - clearing all data...")
         print("  ⏳ This may take a moment for large datasets...")
 
-        // Delete all objects - ENTRIES FIRST to trigger cascade delete
         var deletedCounts: [String: Int] = [:]
 
-        // 1. Delete Entries FIRST (this will cascade delete relationships/entities)
-        print("  🗑️ Step 1/4: Deleting entries (will cascade)...")
+        // CRITICAL: Delete in reverse dependency order AND save after each step
+        // This prevents constraint violations when deleting related objects
+
+        // 1. Relationships FIRST (they reference entities via fromEntity/toEntity)
+        print("  🗑️ Step 1/6: Deleting relationships...")
+        let relationshipDescriptor = FetchDescriptor<EntityRelationship>()
+        if let relationships = try? dataService.modelContext.fetch(relationshipDescriptor) {
+            deletedCounts["relationships"] = relationships.count
+            print("     Found \(relationships.count) relationships to delete")
+            for relationship in relationships {
+                dataService.modelContext.delete(relationship)
+            }
+            // CRITICAL: Save immediately to commit relationship deletions
+            try dataService.modelContext.save()
+            print("     ✅ Relationships deleted and saved")
+        }
+
+        // 2. Entities SECOND (they reference entries)
+        print("  🗑️ Step 2/6: Deleting entities...")
+        let entityDescriptor = FetchDescriptor<Entity>()
+        if let entities = try? dataService.modelContext.fetch(entityDescriptor) {
+            deletedCounts["entities"] = entities.count
+            print("     Found \(entities.count) entities to delete")
+            for entity in entities {
+                dataService.modelContext.delete(entity)
+            }
+            // CRITICAL: Save immediately to commit entity deletions
+            try dataService.modelContext.save()
+            print("     ✅ Entities deleted and saved")
+        }
+
+        // 3. Entries (now safe - no references from relationships/entities)
+        print("  🗑️ Step 3/6: Deleting entries...")
         let entries = dataService.fetchAllEntries()
         deletedCounts["entries"] = entries.count
+        print("     Found \(entries.count) entries to delete")
         for entry in entries {
             dataService.modelContext.delete(entry)
         }
+        try dataService.modelContext.save()
+        print("     ✅ Entries deleted and saved")
 
-        // 2. Delete Conversations (cascade deletes messages)
-        print("  🗑️ Step 2/4: Deleting conversations...")
+        // 4. Conversations (cascade deletes messages)
+        print("  🗑️ Step 4/6: Deleting conversations...")
         let conversations = dataService.fetchAllConversations()
         deletedCounts["conversations"] = conversations.count
+        print("     Found \(conversations.count) conversations to delete")
         for conversation in conversations {
             dataService.modelContext.delete(conversation)
         }
+        try dataService.modelContext.save()
+        print("     ✅ Conversations deleted and saved")
 
-        // 3. Delete Insights
-        print("  🗑️ Step 3/4: Deleting insights...")
+        // 5. Insights
+        print("  🗑️ Step 5/6: Deleting insights...")
         let insightDescriptor = FetchDescriptor<Insight>()
         if let insights = try? dataService.modelContext.fetch(insightDescriptor) {
             deletedCounts["insights"] = insights.count
+            print("     Found \(insights.count) insights to delete")
             for insight in insights {
                 dataService.modelContext.delete(insight)
             }
+            try dataService.modelContext.save()
+            print("     ✅ Insights deleted and saved")
         }
 
-        // 4. Delete AIAnalysis
-        print("  🗑️ Step 4/4: Deleting AI analyses...")
+        // 6. AIAnalysis
+        print("  🗑️ Step 6/6: Deleting AI analyses...")
         let analysisDescriptor = FetchDescriptor<AIAnalysis>()
         if let analyses = try? dataService.modelContext.fetch(analysisDescriptor) {
             deletedCounts["analyses"] = analyses.count
+            print("     Found \(analyses.count) analyses to delete")
             for analysis in analyses {
                 dataService.modelContext.delete(analysis)
             }
-        }
-
-        // Note: Relationships and Entities should be cascade deleted by Entry deletion
-        // But we'll count any remaining orphans
-        let remainingRelationships = (try? dataService.modelContext.fetch(FetchDescriptor<EntityRelationship>())) ?? []
-        let remainingEntities = (try? dataService.modelContext.fetch(FetchDescriptor<Entity>())) ?? []
-
-        if !remainingRelationships.isEmpty {
-            print("  🧹 Cleaning \(remainingRelationships.count) orphaned relationships...")
-            for relationship in remainingRelationships {
-                dataService.modelContext.delete(relationship)
-            }
-        }
-
-        if !remainingEntities.isEmpty {
-            print("  🧹 Cleaning \(remainingEntities.count) orphaned entities...")
-            for entity in remainingEntities {
-                dataService.modelContext.delete(entity)
-            }
-        }
-
-        deletedCounts["relationships"] = remainingRelationships.count
-        deletedCounts["entities"] = remainingEntities.count
-
-        // Save all deletions
-        print("  💾 Committing all deletions to database...")
-        do {
             try dataService.modelContext.save()
-            print("  ✅ Successfully saved all deletions")
-        } catch {
-            print("  ❌ CRITICAL: Failed to save deletions: \(error)")
-            throw error
+            print("     ✅ Analyses deleted and saved")
         }
 
-        // Small delay to ensure save completes
+        // Small delay to ensure all saves complete
         try? await Task.sleep(for: .milliseconds(500))
 
         print("  🎉 Database cleared successfully!")
+        print("     ✅ Relationships: \(deletedCounts["relationships"] ?? 0)")
+        print("     ✅ Entities: \(deletedCounts["entities"] ?? 0)")
         print("     ✅ Entries: \(deletedCounts["entries"] ?? 0)")
         print("     ✅ Conversations: \(deletedCounts["conversations"] ?? 0)")
-        print("     ✅ Entities: \(deletedCounts["entities"] ?? 0)")
-        print("     ✅ Relationships: \(deletedCounts["relationships"] ?? 0)")
         print("     ✅ Insights: \(deletedCounts["insights"] ?? 0)")
         print("     ✅ Analyses: \(deletedCounts["analyses"] ?? 0)")
         print("  ⚠️  App will exit in 1 second - please reopen to continue")
