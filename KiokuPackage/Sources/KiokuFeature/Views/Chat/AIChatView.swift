@@ -337,12 +337,43 @@ struct AIChatView: View {
         var fullResponse = ""
 
         do {
+            // Sprint 18: Build full message history for context-aware conversation
+            var messageHistory: [OpenRouterService.ChatMessage] = []
+
+            // Add system message with context (only once at the beginning)
+            if messages.isEmpty {
+                messageHistory.append(.system(prompt))
+                print("🤖 [Chat] First message - including system context")
+            }
+
+            // Add all previous messages from conversation
+            print("🤖 [Chat] Building message history...")
+            print("   📊 Total messages in UI: \(messages.count)")
+            for (index, msg) in messages.enumerated() {
+                if msg.isFromUser {
+                    messageHistory.append(.user(msg.content))
+                    print("   👤 Message \(index + 1): USER - \(msg.content.prefix(50))...")
+                } else {
+                    messageHistory.append(.assistant(msg.content))
+                    print("   🤖 Message \(index + 1): AI - \(msg.content.prefix(50))...")
+                }
+            }
+
+            // Add current user message
+            messageHistory.append(.user(userMessage))
+            print("   👤 Current message: \(userMessage)")
+            print("   📤 Total messages sending to API: \(messageHistory.count)")
+
             // Sprint 17: Use conversation-specific model if provided, otherwise use default
             let modelToUse = modelIdentifier ?? ModelValidationService.defaultModel
-            let response = try await openRouterService.completeText(
-                prompt: prompt,
+
+            // Sprint 18: Use completeWithHistory for context-aware responses
+            print("🌐 [Chat] Calling OpenRouter API with \(messageHistory.count) messages...")
+            let response = try await openRouterService.completeWithHistory(
+                messages: messageHistory,
                 model: modelToUse
             )
+            print("✅ [Chat] Received response: \(response.prefix(100))...")
             fullResponse = response
 
             // Add AI response message and stop streaming

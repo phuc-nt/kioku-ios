@@ -256,27 +256,50 @@ public final class OpenRouterService: @unchecked Sendable {
         model: String? = nil
     ) async throws -> String {
         var messages: [ChatMessage] = []
-        
+
         if let system = systemMessage {
             messages.append(.system(system))
         }
-        
+
         messages.append(.user(prompt))
-        
+
         let request = CompletionRequest(
             model: model ?? currentModel,
             messages: messages
         )
-        
+
         let response = try await completion(request: request)
-        
+
         guard let firstChoice = response.choices.first else {
             throw OpenRouterError.invalidResponse
         }
-        
+
         return firstChoice.message.content
     }
-    
+
+    /// Complete with full conversation history for context-aware responses
+    /// - Parameters:
+    ///   - messages: Full message history including system, user, and assistant messages
+    ///   - model: Model identifier to use (optional, defaults to currentModel)
+    /// - Returns: AI response text
+    public func completeWithHistory(
+        messages: [ChatMessage],
+        model: String? = nil
+    ) async throws -> String {
+        let request = CompletionRequest(
+            model: model ?? currentModel,
+            messages: messages
+        )
+
+        let response = try await completion(request: request)
+
+        guard let firstChoice = response.choices.first else {
+            throw OpenRouterError.invalidResponse
+        }
+
+        return firstChoice.message.content
+    }
+
     // MARK: - Private Methods
     
     private func buildURLRequest(for request: CompletionRequest, apiKey: String) throws -> URLRequest {
