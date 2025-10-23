@@ -2,16 +2,18 @@
 
 **Sprint Period**: October 22-23, 2025
 **Epic**: EPIC-7 - User Empowerment & Data Portability
-**Story Points**: 6 points (2 user stories completed)
+**Story Points**: 7 points (3 user stories completed)
 **Status**: ✅ COMPLETED (2025-10-23)
 
 ## Sprint Goal
 **Part 1**: Fix critical data cleanup functionality with reliable "Clear All Data"
 **Part 2**: Enable minimal JSON import (entries only) for easy conversion of raw journal data
+**Part 3**: Remove redundant Chat tab (Chat with AI button is sufficient)
 
 **Strategic Value**:
 - Users gain confidence through a robust "Clear All Data" that works without crashes
 - Users can easily import journal entries from any format (via AI conversion to JSON)
+- Simplified navigation with 4 tabs instead of 5 (Calendar has Chat with AI button)
 
 ---
 
@@ -115,6 +117,82 @@
 - [x] Chat context includes imported entries
 - [x] DEBUG export to project folder works
 - [x] Manual testing passed: Clear → Import → Extract → Explore → Chat
+- [x] Changes committed and pushed
+- [x] Sprint planning document updated
+
+---
+
+### US-050: Remove Redundant Chat Tab (1 point)
+
+**As a** user
+**I want** a simplified navigation with fewer tabs
+**So that** I can focus on the essential features without redundancy
+
+**Priority**: MEDIUM (UX Improvement)
+**Status**: ✅ COMPLETED (2025-10-23)
+
+**Problem Statement**:
+- App has 5 tabs: Calendar, Chat, Insights, Graph, Settings
+- Chat tab is redundant - Calendar already has "Chat with AI" button
+- Users confused about difference between Chat tab and Chat with AI button
+- Both lead to same AIChatView functionality
+- Extra tab clutters navigation
+
+**Solution Approach**:
+1. Remove Chat tab from main navigation
+2. Keep only "Chat with AI" button in Calendar view
+3. Update tab indices: Calendar=0, Insights=1, Graph=2, Settings=3
+4. Delete ChatTabView.swift (no longer needed)
+5. Simplify navigation to 4 essential tabs
+
+**Acceptance Criteria**:
+- [x] Chat tab removed from TabView
+- [x] Only 4 tabs visible: Calendar, Insights, Graph, Settings
+- [x] ChatTabView.swift deleted
+- [x] "Chat with AI" button still works in Calendar view
+- [x] Tab indices updated correctly (0-3 instead of 0-4)
+- [x] App builds and runs without errors
+- [x] Navigation feels simpler and more focused
+
+**Technical Implementation**:
+
+**FR-S18-030: Remove Chat Tab**
+- Removed `ChatTabView(selectedDate: $selectedDate)` from ContentView
+- Updated tab tags: Insights=1, Graph=2, Settings=3 (was 2, 3, 4)
+- Deleted `ChatTabView.swift` file (182 lines removed)
+- No changes to AIChatView - still accessible via Calendar
+
+**Rationale**:
+- ChatTabView was just a wrapper for AIChatView
+- Same functionality already accessible from Calendar view
+- Reduces cognitive load for users
+- Simpler navigation = better UX
+- Follows principle: "One way to do one thing"
+
+**Technical Tasks**:
+- [x] Remove ChatTabView from ContentView.swift
+- [x] Update tab tags (0, 1, 2, 3 instead of 0, 1, 2, 3, 4)
+- [x] Delete ChatTabView.swift file
+- [x] Test app with 4 tabs
+- [x] Verify "Chat with AI" button still works
+
+**Files Modified**:
+- ✅ `KiokuPackage/Sources/KiokuFeature/ContentView.swift` - Removed Chat tab
+- ✅ `KiokuPackage/Sources/KiokuFeature/Views/Chat/ChatTabView.swift` - Deleted (182 lines)
+
+**Files Unaffected**:
+- ✅ `AIChatView.swift` - Still used by Calendar's "Chat with AI" button
+- ✅ `ChatContextService.swift` - Still needed for chat context
+- ✅ `ChatMessageView.swift` - Still used by AIChatView
+- ✅ `ChatContextView.swift` - Still used by AIChatView
+
+**Definition of Done**:
+- [x] Chat tab removed from navigation
+- [x] Only 4 tabs visible in app
+- [x] ChatTabView.swift deleted
+- [x] App builds successfully
+- [x] "Chat with AI" from Calendar still works
+- [x] No broken references or imports
 - [x] Changes committed and pushed
 - [x] Sprint planning document updated
 
@@ -492,12 +570,20 @@ screenshot() // Verify "0 orphaned" after cleanup
 - ✅ AI entity extraction works seamlessly after import
 - ✅ DEBUG export to project folder speeds up testing workflow
 
+**Part 3: Remove Chat Tab** ✅
+- ✅ Simplified navigation from 5 tabs to 4 tabs
+- ✅ Removed redundant Chat tab (functionality already in Calendar)
+- ✅ Deleted 182 lines of unused code (ChatTabView.swift)
+- ✅ Cleaner UX following "one way to do one thing" principle
+- ✅ No impact on core chat functionality
+
 **What Went Well**:
-- ✅ Two major features completed in 2 days (Clear All Data + Minimal Import)
+- ✅ Three features completed in 2 days (7 story points total)
 - ✅ Custom Codable decoders elegantly solved complex JSON parsing
 - ✅ Documentation-driven approach (SIMPLE_ENTRY_FORMAT.md) made testing easy
 - ✅ Real user data (draft_1.md) validated the entire import workflow
 - ✅ Bug fixes were thorough and addressed root causes, not symptoms
+- ✅ Code cleanup removed redundancy and simplified UX
 
 **What Could Be Improved**:
 - ⚠️ Initial deletion order was wrong - had to iterate 3 times to get it right
@@ -539,6 +625,12 @@ screenshot() // Verify "0 orphaned" after cleanup
 - ✅ **Minimal format support**: Lowers barrier for importing raw journal data
 - ✅ **AI-first documentation**: SIMPLE_ENTRY_FORMAT.md designed for AI conversion tools
 - ✅ **DEBUG export to project folder**: Faster testing without Files app
+
+**Part 3**:
+- ✅ **Remove redundancy**: Chat tab was duplicate of Calendar's Chat button
+- ✅ **Simplify navigation**: 4 tabs clearer than 5 tabs
+- ✅ **Delete unused code**: 182 lines removed improves maintainability
+- ✅ **"One way to do one thing"**: Single entry point for chat feature
 
 ---
 

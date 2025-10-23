@@ -15,33 +15,26 @@ public struct ContentView: View {
                 }
                 .tag(0)
 
-            ChatTabView(selectedDate: $selectedDate)
-                .tabItem {
-                    Image(systemName: "message")
-                    Text("Chat")
-                }
-                .tag(1)
-
             InsightsView()
                 .tabItem {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                     Text("Insights")
                 }
-                .tag(2)
+                .tag(1)
 
             KnowledgeGraphView()
                 .tabItem {
                     Image(systemName: "network")
                     Text("Graph")
                 }
-                .tag(3)
+                .tag(2)
 
             SettingsView()
                 .tabItem {
                     Image(systemName: "gearshape")
                     Text("Settings")
                 }
-                .tag(4)
+                .tag(3)
         }
     }
     
