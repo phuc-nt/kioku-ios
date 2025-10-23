@@ -1,19 +1,21 @@
-# Sprint 18: Data Management Enhancements
+# Sprint 18: Data Management & Chat Enhancements
 
 **Sprint Period**: October 22-23, 2025
 **Epic**: EPIC-7 - User Empowerment & Data Portability
-**Story Points**: 7 points (3 user stories completed)
+**Story Points**: 9 points (4 user stories completed)
 **Status**: ✅ COMPLETED (2025-10-23)
 
 ## Sprint Goal
 **Part 1**: Fix critical data cleanup functionality with reliable "Clear All Data"
 **Part 2**: Enable minimal JSON import (entries only) for easy conversion of raw journal data
 **Part 3**: Remove redundant Chat tab (Chat with AI button is sufficient)
+**Part 4**: Enable conversation history in AI chat for context-aware responses
 
 **Strategic Value**:
 - Users gain confidence through a robust "Clear All Data" that works without crashes
 - Users can easily import journal entries from any format (via AI conversion to JSON)
 - Simplified navigation with 4 tabs instead of 5 (Calendar has Chat with AI button)
+- AI chat now maintains conversation context for natural follow-up questions
 
 ---
 
@@ -193,6 +195,139 @@
 - [x] App builds successfully
 - [x] "Chat with AI" from Calendar still works
 - [x] No broken references or imports
+- [x] Changes committed and pushed
+- [x] Sprint planning document updated
+
+---
+
+### US-051: Enable Conversation History in AI Chat (2 points)
+
+**As a** user
+**I want** AI to remember our previous messages in the conversation
+**So that** I can ask follow-up questions and have a natural, context-aware dialogue
+
+**Priority**: HIGH (Critical Bug Fix)
+**Status**: ✅ COMPLETED (2025-10-23)
+
+**Problem Statement**:
+- Old implementation only sent: system message + current user message
+- AI had NO memory of previous messages in conversation
+- Users couldn't do follow-up questions or reference earlier context
+- Each message was treated as completely new conversation
+- Impossible to have multi-turn dialogues
+- User asks "What's my name?" after saying "I'm Phuc" → AI says "I don't know"
+
+**Solution Approach**:
+1. Add `completeWithHistory()` method to OpenRouterService
+2. Build full message history array before each API call
+3. Include system message only on first message (to avoid repetition)
+4. Send all previous messages: user1 → AI1 → user2 → AI2 → current
+5. Add comprehensive logging to track message history
+
+**Acceptance Criteria**:
+- [x] AI receives full conversation history with each request
+- [x] System message sent only on first message
+- [x] All previous messages included in API call
+- [x] Message count increases with each turn (2 → 4 → 6 → 8...)
+- [x] AI can reference earlier messages in conversation
+- [x] Follow-up questions work naturally
+- [x] Detailed logging shows message history
+- [x] Manual testing confirms context retention
+
+**Technical Implementation**:
+
+**FR-S18-040: OpenRouterService History Method**
+- New method: `completeWithHistory(messages: [ChatMessage], model: String?)`
+- Accepts pre-built array of ChatMessage (system, user, assistant)
+- Reuses existing `completion(request:)` infrastructure
+- Returns response text like `completeText()`
+
+**FR-S18-041: AIChatView History Building**
+- Build `messageHistory` array before each API call
+- Check `if messages.isEmpty` → include system message
+- Loop through all UI messages → convert to ChatMessage
+  - `if msg.isFromUser` → `.user(content)`
+  - `else` → `.assistant(content)`
+- Append current user message
+- Call `completeWithHistory()` instead of `completeText()`
+
+**FR-S18-042: Comprehensive Logging**
+- Log total UI messages count
+- Log each message with index, role, and preview
+- Log current message
+- Log total messages sending to API
+- Log API call with message count
+- Log received response preview
+
+**Message Flow Example**:
+```
+Message 1: "I'm Phuc"
+  → Send: [system, user1] (2 messages)
+
+Message 2: "What did I do today?"
+  → Send: [user1, AI1, user2] (3 messages)
+
+Message 3: "What's my name?"
+  → Send: [user1, AI1, user2, AI2, user3] (5 messages)
+  → AI responds: "Your name is Phuc"
+```
+
+**Technical Tasks**:
+- [x] Add `completeWithHistory()` to OpenRouterService.swift
+- [x] Modify `generateStreamingAIResponse()` in AIChatView.swift
+- [x] Build message history array from UI messages
+- [x] Add system message check (isEmpty)
+- [x] Convert UI messages to ChatMessage format
+- [x] Add comprehensive logging
+- [x] Manual test with 3-message conversation
+- [x] Verify logs show increasing message count
+
+**Files Modified**:
+- ✅ `OpenRouterService.swift`:
+  - Added `completeWithHistory()` method (16 lines)
+  - Documentation with parameters and return value
+- ✅ `AIChatView.swift`:
+  - Modified `generateStreamingAIResponse()` method
+  - Added message history building logic (30 lines)
+  - Added detailed logging statements
+
+**Testing Results**:
+```
+Message 1: "Tôi buồn quá"
+🤖 [Chat] Building message history...
+   📊 Total messages in UI: 3
+   📤 Total messages sending to API: 4
+✅ Works
+
+Message 2: "Gợi ý cho tôi"
+   📊 Total messages in UI: 5
+   📤 Total messages sending to API: 6
+✅ Works - message count increased
+
+Message 3: "Thử lại"
+   📊 Total messages in UI: 7
+   👤 Message 1: USER - Tôi buồn quá...
+   🤖 Message 2: AI - Mình rất tiếc...
+   👤 Message 3: USER - Gợi ý cho tôi...
+   📤 Total messages sending to API: 8
+✅ Works - full history logged
+```
+
+**Trade-offs**:
+- ✅ **Benefit**: Context-aware conversations, natural follow-ups
+- ⚠️ **Cost**: Token usage increases with conversation length
+- ⚠️ **Cost**: Longer API response times for long conversations
+- 💡 **Future**: May need conversation pruning for very long chats (>50 messages)
+
+**Definition of Done**:
+- [x] `completeWithHistory()` method added to OpenRouterService
+- [x] AIChatView builds full message history
+- [x] System message sent only on first message
+- [x] All previous messages included in API calls
+- [x] Comprehensive logging implemented
+- [x] Manual testing passed with 3-message conversation
+- [x] Logs confirm increasing message count
+- [x] AI successfully references earlier messages
 - [x] Changes committed and pushed
 - [x] Sprint planning document updated
 
@@ -577,8 +712,18 @@ screenshot() // Verify "0 orphaned" after cleanup
 - ✅ Cleaner UX following "one way to do one thing" principle
 - ✅ No impact on core chat functionality
 
+**Part 4: Conversation History** ✅
+- ✅ Fixed critical bug: AI had NO memory of previous messages
+- ✅ Added `completeWithHistory()` method to OpenRouterService
+- ✅ Built full message history before each API call
+- ✅ System message sent only on first message (avoid repetition)
+- ✅ All previous messages included: user1 → AI1 → user2 → AI2 → current
+- ✅ Comprehensive logging tracks message count (4 → 6 → 8...)
+- ✅ Follow-up questions now work naturally with full context
+- ✅ Manual testing confirmed AI references earlier messages
+
 **What Went Well**:
-- ✅ Three features completed in 2 days (7 story points total)
+- ✅ Four features completed in 2 days (9 story points total)
 - ✅ Custom Codable decoders elegantly solved complex JSON parsing
 - ✅ Documentation-driven approach (SIMPLE_ENTRY_FORMAT.md) made testing easy
 - ✅ Real user data (draft_1.md) validated the entire import workflow
@@ -611,6 +756,10 @@ screenshot() // Verify "0 orphaned" after cleanup
 4. **Documentation before implementation**: SIMPLE_ENTRY_FORMAT.md guided the entire feature
 5. **Test with real data**: draft_1.md revealed edge cases that test data wouldn't
 6. **UI observation during data changes causes crashes**: Must dismiss views before bulk operations
+7. **Check implementation assumptions**: Always verify existing code behavior before fixing
+8. **Build message history correctly**: System message only on first turn, then full conversation
+9. **Comprehensive logging is essential**: Detailed logs helped verify conversation history working
+10. **Context-aware AI requires full history**: Each API call needs ALL previous messages
 
 **Technical Decisions**:
 
@@ -631,6 +780,14 @@ screenshot() // Verify "0 orphaned" after cleanup
 - ✅ **Simplify navigation**: 4 tabs clearer than 5 tabs
 - ✅ **Delete unused code**: 182 lines removed improves maintainability
 - ✅ **"One way to do one thing"**: Single entry point for chat feature
+
+**Part 4**:
+- ✅ **Add history method**: `completeWithHistory()` alongside existing `completeText()`
+- ✅ **Build full message array**: Include all previous user/assistant messages
+- ✅ **System message strategy**: Include only on first message to avoid repetition
+- ✅ **Comprehensive logging**: Track message count and content for debugging
+- ✅ **Preserve token efficiency**: Only send what's needed (no redundant system messages)
+- ✅ **Backward compatible**: Existing `completeText()` method still works
 
 ---
 
