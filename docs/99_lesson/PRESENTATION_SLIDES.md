@@ -94,10 +94,12 @@ graph LR
 ```mermaid
 graph TD
     A[📝 Input Entry] --> B[🤖 AI Processing]
-    B --> C1[👤 Minh<br/>PERSON<br/>Confidence: 0.95]
-    B --> C2[👤 Hằng<br/>PERSON<br/>Confidence: 0.92]
-    B --> C3[📍 Highlands<br/>LOCATION<br/>Confidence: 0.88]
-    B --> C4[📅 Dự án AI<br/>EVENT<br/>Confidence: 0.85]
+    B --> C1[👤 Minh<br/>PEOPLE<br/>Confidence: 0.95]
+    B --> C2[👤 Hằng<br/>PEOPLE<br/>Confidence: 0.92]
+    B --> C3[📍 Highlands<br/>PLACES<br/>Confidence: 0.88]
+    B --> C4[📅 Dự án AI<br/>EVENTS<br/>Confidence: 0.85]
+    B --> C5[💗 vui<br/>EMOTIONS<br/>Confidence: 0.80]
+    B --> C6[💗 excited<br/>EMOTIONS<br/>Confidence: 0.75]
 
     style A fill:#e3f2fd
     style B fill:#fff9c4
@@ -105,10 +107,24 @@ graph TD
     style C2 fill:#c8e6c9
     style C3 fill:#b3e5fc
     style C4 fill:#f8bbd0
+    style C5 fill:#ffc1cc
+    style C6 fill:#ffc1cc
 ```
 
 **Input:**
-> "Hôm nay gặp Minh và Hằng ở Highlands, bàn về dự án AI"
+> "Hôm nay gặp Minh và Hằng ở Highlands, bàn về dự án AI. Cảm thấy rất vui và excited!"
+
+**Extracted Entities (5 types):**
+- 👤 **People**: Minh, Hằng (confidence: 0.95, 0.92)
+- 📍 **Places**: Highlands (confidence: 0.88)
+- 📅 **Events**: Dự án AI (confidence: 0.85)
+- 💗 **Emotions**: vui, excited (confidence: 0.80, 0.75)
+- 🏷️ **Topics**: AI, work-related
+
+**Real-world Emotion Examples from Database:**
+- sợ (0.90), áp lực (0.85), nhẹ nhõm (0.85)
+- sad (0.85), anxious (0.80), happy (0.70)
+- bình yên (0.85), thích (0.80), tired (0.80)
 
 **Challenge: Entity Deduplication**
 
@@ -132,12 +148,14 @@ graph LR
 - Deduplication Logic: See `findOrCreateEntity()` in KnowledgeGraphService
 
 **Speaker Notes:**
-- AI tự động nhận diện người, địa điểm, sự kiện
-- Không cần manual tagging
+- AI tự động nhận diện 5 loại entities: People, Places, Events, **Emotions**, Topics
+- **Emotion extraction** là điểm mạnh: AI nhận biết cảm xúc cả tiếng Việt và tiếng Anh
+- Không cần manual tagging - AI tự động extract với confidence scores
+- Real-world data: 17 emotions, 11 people, 18 events, 4 places, 5 topics
 - Key challenge: "Minh" trong 5 entries → phải là 1 entity
 - Solution: In-memory cache + fuzzy matching → 100% success rate
 
-**Demo:** Show Graph view với entities
+**Demo:** Show Graph view với entities (including emotion nodes in pink)
 
 ---
 
@@ -152,22 +170,43 @@ graph TD
     Minh -->|about<br/>weight: 0.75| Project[📋 Dự án AI]
     Hang -->|about<br/>weight: 0.75| Project
 
+    Happy[💗 vui] -->|felt_during<br/>weight: 0.80| Meeting
+    Happy -->|felt_at<br/>weight: 0.75| Highlands
+    Excited[💗 excited] -->|felt_about<br/>weight: 0.70| Project
+
+    Minh -->|associated_with<br/>weight: 0.85| Happy
+    Hang -->|associated_with<br/>weight: 0.80| Happy
+
     style Minh fill:#c8e6c9
     style Hang fill:#c8e6c9
     style Highlands fill:#b3e5fc
     style Meeting fill:#f8bbd0
     style Project fill:#ffccbc
+    style Happy fill:#ffc1cc
+    style Excited fill:#ffc1cc
 ```
+
+**Relationship Types:**
+- **Social**: met_at, discussed_with (People ↔ Places/People)
+- **Activity**: about, location_of (Events ↔ Topics/Places)
+- **Emotional**: felt_during, felt_at, felt_about (Emotions ↔ Events/Places/Topics)
+- **Association**: associated_with (Emotions ↔ People)
 
 **Weighted Edges:**
 - Frequency → Relationship strength
 - Minh-Highlands: 3 meetings → weight 0.85
 - Minh-Hằng: colleague → weight 0.78
+- **Happy-Minh: positive emotions when meeting → weight 0.85**
+
+**Emotion Relationships Enable:**
+- "When do I feel happiest?" → Query: Emotions → Events/Places
+- "Who makes me feel anxious?" → Query: Emotions → People
+- "What topics stress me out?" → Query: Emotions → Topics
 
 **Why Knowledge Graph > Vector DB?**
 - ✅ **Explainable**: Can show "why" AI made connection
-- ✅ **Queryable**: SQL-like pattern queries
-- ✅ **Structured**: Typed relationships
+- ✅ **Queryable**: SQL-like pattern queries (e.g., find all happy moments)
+- ✅ **Structured**: Typed relationships including emotions
 - ✅ **Lightweight**: No ML inference needed
 
 **Code Reference:**
@@ -175,11 +214,14 @@ graph TD
 - Relationship Discovery: See `discoverRelationships()` in KnowledgeGraphService
 
 **Speaker Notes:**
-- Relationships tạo context giữa các entities
+- Relationships tạo context giữa các entities (không chỉ social, mà cả emotional)
+- **Emotion relationships** là unique feature: Track cảm xúc với people/places/events
 - Weighted edges: frequency → relationship strength
 - Temporal tracking: relationships evolve over time
+- Real queries: "When happy?" → Highlands + Minh meetings
+- "When anxious?" → Work projects + deadline events
 
-**Demo:** Tap on entity → show relationships
+**Demo:** Tap on entity → show relationships (especially emotion nodes)
 
 ---
 
@@ -214,10 +256,18 @@ graph TD
    > "Bạn gặp Minh 4 lần - người bạn gặp nhiều nhất. Gặp ở Highlands → mood tích cực (80% entries)"
 
 2. **📍 Location Insight (88%)**
-   > "Highlands = flow state location cho deep work"
+   > "Highlands = flow state location cho deep work. 90% 'happy' emotions tại đây."
 
 3. **😊 Emotional Trend (85%)**
    > "Mood ↑ 30% so với tuần trước. Correlation: social interactions ↑ 50%"
+
+4. **💗 Emotional Trigger Analysis (90%)**
+   > "Bạn cảm thấy 'anxious' khi mention work deadlines (5/5 times)
+   > Bạn cảm thấy 'bình yên' khi ở nhà một mình (4/4 times)"
+
+5. **🎯 Emotional-Social Correlation (87%)**
+   > "Meetings với Minh → 85% positive emotions (happy, excited)
+   > Solo work sessions → 60% neutral, 30% stressed, 10% satisfied"
 
 **Key Features:**
 - Explainable (show supporting entries)
@@ -229,11 +279,13 @@ graph TD
 - Insight Model: [`KiokuPackage/Sources/KiokuFeature/Models/AIInsight.swift`](../../../KiokuPackage/Sources/KiokuFeature/Models/AIInsight.swift)
 
 **Speaker Notes:**
-- AI phân tích patterns từ KG data
+- AI phân tích patterns từ KG data (bao gồm cả emotional patterns)
+- **Emotional insights** unique: Trigger analysis, emotional-social correlations
 - Mỗi insight có confidence score
 - Explainability: show supporting entries
+- Actionable: "Avoid work deadlines when possible", "Schedule more Minh meetings for mood boost"
 
-**Demo:** Insights tab
+**Demo:** Insights tab (show emotional insights)
 
 ---
 
@@ -719,6 +771,8 @@ mindmap
 - 👤 Person/User
 - 📍 Location
 - 📅 Event/Date
+- 💗 Emotion (Pink - #ffc1cc)
+- 🏷️ Topic/Tag
 - 🤖 AI Processing
 - 🕸️ Knowledge Graph
 - 💬 Chat/Conversation
@@ -726,6 +780,13 @@ mindmap
 - ⚙️ Settings/Config
 - 💾 Data/Storage
 - 🌐 API/External
+
+**Entity Color Coding:**
+- 👤 People: Green (#c8e6c9)
+- 📍 Places: Blue (#b3e5fc)
+- 📅 Events: Pink (#f8bbd0)
+- 💗 Emotions: Light Pink (#ffc1cc) ⭐ NEW
+- 🏷️ Topics: Purple (#d1c4e9)
 
 ---
 
