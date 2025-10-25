@@ -296,33 +296,166 @@ sequenceDiagram
     participant User
     participant Chat as AIChatView
     participant Context as ChatContextService
+    participant Related as RelatedNotesService
     participant KG as Knowledge Graph
     participant AI as OpenRouter API
 
+    User->>Chat: Open chat for Oct 8 entry
+    Chat->>Context: generateContextForNote(entry)
+
+    Note over Context: Phase 1: Temporal Context
+    Context->>Context: Current entry (Oct 8)
+    Context->>Context: Historical notes (same date, prev years)
+    Context->>Context: Recent notes (past 7 days)
+
+    Note over Context: Phase 2: Entity Context
+    Context->>KG: Fetch entities from entry
+    KG-->>Context: Minh, Hằng, Highlands, vui
+    Context->>KG: Fetch entities from date range
+    KG-->>Context: 15 entities (7 days)
+
+    Note over Context: Phase 3: Related Notes (KG)
+    Context->>Related: findRelatedNotes(entry, limit=5)
+    Related->>KG: Score via entity relationships
+    Related->>KG: Score via insights
+    Related->>Related: Apply recency decay
+    Related-->>Context: 5 related notes (scored)
+
+    Note over Context: Phase 4: Insights Context
+    Context->>KG: Fetch relevant insights
+    KG-->>Context: Daily/Weekly insights
+
+    Context-->>Chat: Complete context package
+    Note over Chat: Context includes:<br/>- Current entry<br/>- 3 historical<br/>- 5 recent<br/>- 5 related (KG)<br/>- 15 entities<br/>- 3 insights
+
     User->>Chat: "Lần cuối tôi gặp Minh?"
-    Chat->>Context: buildContext(query)
-    Context->>KG: Query entities = "Minh"
-    KG-->>Context: 5 entries found
-    Context->>Context: Score relevance
-    Note over Context: Oct 8: 0.92 ⭐<br/>Oct 5: 0.78<br/>Oct 3: 0.65
-    Context-->>Chat: Top 5 relevant entries
-    Chat->>AI: completeWithHistory(messages + context)
+    Chat->>AI: completeWithHistory(messages + full context)
     AI-->>Chat: "Ngày 8/10 tại Highlands..."
     Chat->>User: Show response + entry links
 ```
 
-**Relevance Scoring Formula:**
+**Complete Context Building Process:**
+
+```mermaid
+graph TB
+    subgraph Input["Input: Oct 8 Entry"]
+        E[📝 Today's Entry<br/>Meet Minh at Highlands]
+    end
+
+    subgraph Phase1["Phase 1: Temporal Context"]
+        T1[📅 Historical<br/>Oct 8, 2024<br/>Oct 8, 2023]
+        T2[🔖 Recent<br/>Oct 1-7, 2025<br/>5 entries]
+    end
+
+    subgraph Phase2["Phase 2: Entity Context"]
+        Ent1[👤 Minh<br/>appears in 5 entries]
+        Ent2[📍 Highlands<br/>appears in 3 entries]
+        Ent3[💗 vui<br/>appears in 4 entries]
+    end
+
+    subgraph Phase3["Phase 3: Related Notes via KG"]
+        R1[📝 Oct 5: Minh @ Starbucks<br/>Score: 0.85<br/>Reason: Entity relationship]
+        R2[📝 Oct 3: Minh meeting<br/>Score: 0.78<br/>Reason: Entity + Insight]
+        R3[📝 Sep 28: Highlands work<br/>Score: 0.65<br/>Reason: Location match]
+    end
+
+    subgraph Phase4["Phase 4: Insights Context"]
+        I1[💡 Weekly: Minh meetings<br/>→ positive mood]
+        I2[💡 Daily: Highlands<br/>→ flow state]
+    end
+
+    subgraph Output["Complete Context Package"]
+        Context[🎯 Full Context<br/>- 1 current entry<br/>- 3 historical<br/>- 5 recent<br/>- 5 related via KG<br/>- 15 entities<br/>- 3 insights<br/><br/>Total: ~3000 tokens]
+    end
+
+    E --> Phase1
+    E --> Phase2
+    E --> Phase3
+    E --> Phase4
+
+    Phase1 --> T1
+    Phase1 --> T2
+    Phase2 --> Ent1
+    Phase2 --> Ent2
+    Phase2 --> Ent3
+    Phase3 --> R1
+    Phase3 --> R2
+    Phase3 --> R3
+    Phase4 --> I1
+    Phase4 --> I2
+
+    T1 --> Context
+    T2 --> Context
+    Ent1 --> Context
+    Ent2 --> Context
+    Ent3 --> Context
+    R1 --> Context
+    R2 --> Context
+    R3 --> Context
+    I1 --> Context
+    I2 --> Context
+
+    style E fill:#e3f2fd
+    style Phase1 fill:#fff9c4
+    style Phase2 fill:#f3e5f5
+    style Phase3 fill:#e8f5e9
+    style Phase4 fill:#ffccbc
+    style Context fill:#c8e6c9,stroke:#2e7d32,stroke-width:3px
 ```
-score = relationship_weight × 0.4 +
-        insight_confidence × 0.3 +
-        recency_factor × 0.3
+
+**Relevance Scoring Formula (Phase 3):**
+```
+Related Note Score =
+  (relationship_weight × 0.4) +     // Entity connections
+  (insight_confidence × 0.3) +      // Insight mentions
+  (recency_factor × 0.3)            // Time decay (0.5-1.0)
+
+Recency Factor:
+  - Same week: 1.0
+  - 1 month ago: 0.8
+  - 3 months ago: 0.6
+  - 6+ months ago: 0.5
+```
+
+**Context Composition Example:**
+```
+Current Entry (Oct 8):
+  "Hôm nay gặp Minh và Hằng ở Highlands, bàn về dự án AI.
+   Cảm thấy rất vui và excited!"
+
+Historical (Oct 8, 2024):
+  "Năm ngoái cũng gặp Minh vào ngày này..."
+
+Recent (Oct 7):
+  "Hôm qua brainstorm ý tưởng cho dự án..."
+
+Related via KG (Oct 5, Score: 0.85):
+  "Meeting với Minh ở Starbucks..."
+  Reason: Connected via "Minh" entity (PEOPLE) + "met_at" relationship
+
+Related via KG (Oct 3, Score: 0.78):
+  "Discuss project timeline với team..."
+  Reason: Connected via "dự án" entity (EVENTS) + weekly insight
+
+Entities (15 from 7-day range):
+  - People: Minh (5 mentions), Hằng (3 mentions)
+  - Places: Highlands (3), Starbucks (2)
+  - Emotions: vui (4), excited (2), anxious (1)
+  - Events: Dự án AI (3), Meeting (5)
+
+Insights (3 relevant):
+  - "Meetings với Minh → 85% positive emotions"
+  - "Highlands = flow state location"
+  - "Work projects this week: high productivity"
 ```
 
 **RAG Architecture Benefits:**
-- ✅ Accurate (retrieves real data, not hallucination)
-- ✅ Explainable (shows which entries AI read)
-- ✅ Context-aware (conversation history maintained)
-- ✅ Verifiable (user can click entry links)
+- ✅ **Comprehensive** (temporal + entity + relationship + insight context)
+- ✅ **Accurate** (retrieves real data, not hallucination)
+- ✅ **Explainable** (shows which entries AI read + relevance scores)
+- ✅ **Context-aware** (conversation history + full journal context)
+- ✅ **Verifiable** (user can click entry links to validate)
+- ✅ **Smart ranking** (KG-based relevance scoring, not random)
 
 **Code References:**
 - Chat Context Service: [`KiokuPackage/Sources/KiokuFeature/Services/ChatContextService.swift`](../../../KiokuPackage/Sources/KiokuFeature/Services/ChatContextService.swift)
@@ -331,11 +464,23 @@ score = relationship_weight × 0.4 +
 - Relevance Scoring: See `calculateRelevanceScore()` in ChatContextService
 
 **Speaker Notes:**
-- RAG: Retrieve relevant context trước khi generate response
-- Conversation history: AI nhớ toàn bộ conversation
-- Explainable: User thấy AI đọc entries nào
+- **4-phase context building** là core innovation:
+  - **Phase 1 (Temporal)**: Historical (same date prev years) + Recent (past 7 days) → Time-based context
+  - **Phase 2 (Entities)**: Extract entities from current + related entries → Who/What/Where context
+  - **Phase 3 (KG Relations)**: Score related notes via entity relationships + insights → Smart discovery
+  - **Phase 4 (Insights)**: Include relevant AI insights → Pattern awareness
+- **Not just RAG**: Standard RAG = vector similarity. Ours = Temporal + Entity + Relationship + Insight
+- **Comprehensive**: ~14 entries total context (1 current + 3 historical + 5 recent + 5 related)
+- **Smart ranking**: KG-based relevance scoring với reasons (not black box)
+- **Explainable**: User thấy tại sao entry được include (entity match, relationship, insight)
+- Real example: "Lần cuối gặp Minh?" → AI reads 5 Minh-related entries, ranked by relevance
+- **Token efficient**: Only top 5 related notes (not all 100+ entries) → ~3000 tokens total
 
-**Demo:** Chat session
+**Demo:**
+1. Open Oct 8 entry chat
+2. Show context building log (check console)
+3. Ask question → AI cites specific entries
+4. Click entry links to verify
 
 ---
 
