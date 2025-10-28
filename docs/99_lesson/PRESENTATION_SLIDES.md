@@ -43,11 +43,11 @@
 
 ```mermaid
 graph TD
-    A[👤 User writes journal daily] --> B{After 3 months...}
-    B --> C[❓ Question: Lần cuối gặp Minh?]
-    C --> D[😓 Must read 100 entries manually]
-    D --> E[⏰ 30 minutes wasted]
-    E --> F[❌ Still not found]
+    A[👤 User writes journal daily] --> B{After 2 months...}
+    B --> C[❓ Question: When was last quality time with Jake?]
+    C --> D[😓 Must read 20 entries manually]
+    D --> E[⏰ 15-20 minutes wasted]
+    E --> F[❌ Still not sure about patterns]
 
     style A fill:#e1f5e1
     style C fill:#fff4e1
@@ -156,13 +156,13 @@ graph LR
 
 ```mermaid
 graph TD
-    A[📝 Input Entry] --> B[🤖 AI Processing]
-    B --> C1[👤 Minh<br/>PEOPLE<br/>Confidence: 0.95]
-    B --> C2[👤 Hằng<br/>PEOPLE<br/>Confidence: 0.92]
-    B --> C3[📍 Highlands<br/>PLACES<br/>Confidence: 0.88]
-    B --> C4[📅 Dự án AI<br/>EVENTS<br/>Confidence: 0.85]
-    B --> C5[💗 vui<br/>EMOTIONS<br/>Confidence: 0.80]
-    B --> C6[💗 excited<br/>EMOTIONS<br/>Confidence: 0.75]
+    A[📝 Input Entry<br/>Oct 25: Jake's 4-year checkup] --> B[🤖 AI Processing]
+    B --> C1[👤 Sarah<br/>PEOPLE<br/>Confidence: 0.95]
+    B --> C2[👤 Jake<br/>PEOPLE<br/>Confidence: 0.92]
+    B --> C3[📍 ice cream place<br/>PLACES<br/>Confidence: 0.88]
+    B --> C4[📅 4-year checkup<br/>EVENTS<br/>Confidence: 0.90]
+    B --> C5[💗 happy<br/>EMOTIONS<br/>Confidence: 0.85]
+    B --> C6[💗 nervous<br/>EMOTIONS<br/>Confidence: 0.80]
 
     style A fill:#e3f2fd
     style B fill:#fff9c4
@@ -192,10 +192,10 @@ graph TD
 
 ```mermaid
 graph LR
-    E1[Entry 1: Minh] --> Cache{In-Memory<br/>Cache}
-    E2[Entry 2: Minh] --> Cache
-    E3[Entry 5: Minh] --> Cache
-    Cache --> Result[✅ Single Entity<br/>Minh<br/>Referenced 5x]
+    E1[Entry 1: Sarah] --> Cache{In-Memory<br/>Cache}
+    E2[Entry 2: Sarah] --> Cache
+    E3[Entry 20: Sarah] --> Cache
+    Cache --> Result[✅ Single Entity<br/>Sarah<br/>Referenced 20x<br/>100% coverage]
 
     style E1 fill:#e3f2fd
     style E2 fill:#e3f2fd
@@ -248,27 +248,30 @@ graph LR
 
 ```mermaid
 graph TD
-    Minh[👤 Minh] -->|met_at<br/>weight: 0.85| Highlands[📍 Highlands]
-    Hang[👤 Hằng] -->|met_at<br/>weight: 0.85| Highlands
-    Minh -->|discussed_with<br/>weight: 0.78| Hang
-    Highlands -->|location_of<br/>weight: 0.90| Meeting[📅 Meeting]
-    Minh -->|about<br/>weight: 0.75| Project[📋 Dự án AI]
-    Hang -->|about<br/>weight: 0.75| Project
+    Sarah[👤 Sarah] -->|temporal<br/>weight: 0.95| Home[📍 home]
+    Jake[👤 Jake] -->|temporal<br/>weight: 0.90| Home
+    Sarah -->|topical<br/>weight: 0.85| Jake
+    Home -->|location_of<br/>weight: 0.92| TacoNight[📅 taco night]
+    Jake -->|about<br/>weight: 0.88| Checkup[📅 4-year checkup]
+    Emma[👤 Emma] -->|about<br/>weight: 0.80| Checkup
 
-    Happy[💗 vui] -->|felt_during<br/>weight: 0.80| Meeting
-    Happy -->|felt_at<br/>weight: 0.75| Highlands
-    Excited[💗 excited] -->|felt_about<br/>weight: 0.70| Project
+    Happy[💗 happy] -->|emotional<br/>weight: 0.85| TacoNight
+    Happy -->|emotional<br/>weight: 0.82| Home
+    Nervous[💗 nervous] -->|emotional<br/>weight: 0.75| Checkup
 
-    Minh -->|associated_with<br/>weight: 0.85| Happy
-    Hang -->|associated_with<br/>weight: 0.80| Happy
+    Sarah -->|emotional<br/>weight: 0.90| Happy
+    Jake -->|emotional<br/>weight: 0.85| Happy
+    Emma -->|emotional<br/>weight: 0.88| Proud[💗 proud]
 
-    style Minh fill:#c8e6c9
-    style Hang fill:#c8e6c9
-    style Highlands fill:#b3e5fc
-    style Meeting fill:#f8bbd0
-    style Project fill:#ffccbc
+    style Sarah fill:#c8e6c9
+    style Jake fill:#c8e6c9
+    style Emma fill:#c8e6c9
+    style Home fill:#b3e5fc
+    style TacoNight fill:#f8bbd0
+    style Checkup fill:#f8bbd0
     style Happy fill:#ffc1cc
-    style Excited fill:#ffc1cc
+    style Nervous fill:#ffc1cc
+    style Proud fill:#ffc1cc
 ```
 
 **Real Demo Results: 105 relationships discovered**
@@ -349,15 +352,15 @@ graph TD
 
 ```mermaid
 graph TD
-    KG[🕸️ Knowledge Graph Data] --> Analysis[🤖 AI Analysis]
-    Analysis --> I1[🤝 Social Pattern<br/>Minh: 4 meetings<br/>Conf: 0.92]
-    Analysis --> I2[📍 Location Insight<br/>Highlands = Flow State<br/>Conf: 0.88]
-    Analysis --> I3[😊 Emotional Trend<br/>Mood ↑ 30%<br/>Conf: 0.85]
+    KG[🕸️ Knowledge Graph Data<br/>119 entities + 105 relationships] --> Analysis[🤖 AI Analysis]
+    Analysis --> I1[🤝 Social Pattern<br/>Sarah: 20/20 entries<br/>100% coverage]
+    Analysis --> I2[📍 Location Insight<br/>home = happiness<br/>10 happy vs 2 at work]
+    Analysis --> I3[😊 Emotional Trend<br/>Happy: family time<br/>Stressed: deployments]
 
-    I1 --> Support1[📝 Oct 1: Minh @ Highlands]
-    I1 --> Support2[📝 Oct 3: Minh @ Highlands]
-    I1 --> Support3[📝 Oct 5: Minh @ Starbucks]
-    I1 --> Support4[📝 Oct 7: Minh @ Highlands]
+    I1 --> Support1[📝 Sep 1: Sarah @ farmers market]
+    I1 --> Support2[📝 Oct 5: Sarah @ pottery workshop]
+    I1 --> Support3[📝 Oct 25: Sarah @ taco night]
+    I1 --> Support4[📝 Oct 31: Sarah @ pumpkin carving]
 
     style KG fill:#f3e5f5
     style Analysis fill:#fff9c4
@@ -525,7 +528,6 @@ graph TB
     Phase3 --> R2
     Phase3 --> R3
     Phase4 --> I1
-    Phase4 --> I2
 
     T1 --> Context
     T2 --> Context
@@ -536,7 +538,6 @@ graph TB
     R2 --> Context
     R3 --> Context
     I1 --> Context
-    I2 --> Context
 
     style E fill:#e3f2fd
     style Phase1 fill:#fff9c4
