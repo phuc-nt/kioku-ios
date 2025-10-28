@@ -754,6 +754,14 @@ sequenceDiagram
 
 ---
 
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Về kiến trúc kỹ thuật: UI layer dùng SwiftUI thuần iOS 18. Service layer gồm OpenRouterService cho AI, ChatContextService cho RAG, KnowledgeGraphService cho entity extraction. Data layer dùng SwiftData - framework mới nhất của Apple, với @Model, @Query, @Observable patterns. External là OpenRouter API - cho phép access 15+ AI models.
+>
+> Data flow: User viết entry → save vào SwiftData → trigger extraction async → AI extract entities → save entities và relationships. User hỏi câu hỏi → query KG for context → load relevant entries → gửi context + question cho AI → nhận response → show answer với citations. Tất cả async/await, không block UI."
+
+---
+
 # Slide 9: Key Technical Challenges
 
 ```mermaid
@@ -821,6 +829,18 @@ graph TD
 
 ---
 
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Ba technical challenges chính tôi gặp phải:
+>
+> Challenge 1: Entity Deduplication - Sarah xuất hiện 20 lần, phải ensure chỉ tạo 1 entity. Solution: In-memory cache với normalized name matching. Result: 100% success, 1 Sarah entity với 20 references, có proof trong export JSON.
+>
+> Challenge 2: SwiftData Deletion Order - xóa entity trước sẽ crash vì 105 relationships bị orphan. Xóa Sarah sẽ orphan 20+ relationships. Solution: Reverse dependency order - xóa Insights trước, rồi Relations, rồi Entities, cuối cùng Entries. Result: Clean deletion, zero crashes với 119 entities + 105 relationships.
+>
+> Challenge 3: RAG Context Size - 20 entries plus 119 entities = 15K+ tokens, exceed limits. Query 'When with Jake?' cần context từ 19 entries. Solution: 4-phase filtering - chỉ lấy top 5 related plus 10 entities. Result: 3-4K tokens per query, fit tất cả models. Proof từ logs: 156 scores → 19 entries → top 5 filtered, smart ranking không phải random."
+
+---
+
 # Slide 10: Results & Impact
 
 ```mermaid
@@ -884,6 +904,20 @@ graph LR
 - Demo data shows system working end-to-end
 - Quality: Sarah 20/20 deduplication = gold standard
 - Ready for App Store (MIT license, privacy policy complete)
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Results & Impact - Đây là những gì đã deliver:
+>
+> Version 0.1.0, production-ready iOS 18+ app. All core features complete: journaling, knowledge graph, AI chat, insights, export/import. Tested với real demo data: 20 entries extract ra 119 entities + 105 relationships. App Store ready với LICENSE, PRIVACY.md, CHANGELOG.md.
+>
+> Real demo results - tất cả verifiable: 119 entities (breakdown: 40 emotions, 32 topics, 28 events, 11 people, 8 places). 105 relationships discovered. 100% deduplication - Sarah entity: 1 instance với 20 references. Context-aware chat: 156 scores → 19 entries → top 5 filtered. Explainable AI - thấy được exact connections.
+>
+> User value thực tế: Search instant thay vì 20 phút. Sarah auto-discovered là người quan trọng nhất. Patterns thực tế: Happy khi family time, Stressed khi deployments. Privacy: 100% local, encryption. Flexibility: 15+ AI models.
+>
+> Sẵn sàng App Store, có đầy đủ documentation, demo data có thể verify mọi số liệu tôi đã nói."
 
 ---
 
@@ -1034,6 +1068,24 @@ mindmap
 
 ---
 
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Một số câu hỏi thường gặp:
+>
+> Tại sao Knowledge Graph thay vì Vector DB? KG cung cấp structure và explainability - bạn thấy exact reason: 'Connected via emotional through Emma'. Có 105 relationships với explicit types. Queryable như SQL. Lightweight và scalable.
+>
+> AI hallucination xử lý thế nào? Confidence scoring 0.7-0.9 cho mỗi entity. Real demo có confidence 0.7-0.95 trong export. Show supporting entries để user verify. RAG-based chat cite real entries, không generate facts. Log cho thấy exact connections với scores.
+>
+> Performance với 10,000 entries? Current demo 20 entries instant. SwiftData pagination, lazy extraction. Smart filtering: 156 → 19 → 5, không phải 10,000. Indexed queries, graph queries O(log n).
+>
+> Tại sao OpenRouter chứ không local LLM? Trade-off quality vs privacy. Demo dùng Claude/GPT cho 119-entity extraction - high quality. OpenRouter access 15+ models. Future: hybrid approach. Architecture supports self-hosting.
+>
+> Data security? SwiftData với encryption keys trong iOS Keychain. 100% local, no cloud sync by design. Export control - user chọn destination. PRIVACY.md App Store compliant. MIT license - open source, có thể audit.
+>
+> Có thể show demo không? Có! Export JSON `kioku-export-2025-10-26T08:52:24Z.json` chứa 119 entities, 105 relationships, all 20 entries. Mọi số liệu tôi mention đều verifiable trong export này."
+
+---
+
 # Slide 13: Thank You
 
 ```
@@ -1084,6 +1136,27 @@ mindmap
 - Key message: Not just a demo, but production-ready product
 - Differentiator: Emotional intelligence + Explainability + Privacy
 - Thank interviewer, offer to show live demo or export JSON
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Tổng kết lại:
+>
+> Năm key takeaways: Một, Problem to Solution - từ manual search 20 phút thành instant AI answer dưới 1 giây. Hai, Real Results - 20 entries tạo ra 119 entities + 105 relationships, tất cả proven. Ba, Technical Innovation - Knowledge Graph kết hợp 4-phase RAG, không chỉ là vector DB. Bốn, Quality - 100% deduplication với Sarah 20/20, explainable AI show exact connections. Năm, Production-Ready - v0.1.0, MIT license, App Store compliant.
+>
+> Điều gì làm Kioku đặc biệt? Emotional intelligence - 40 emotion entities, category lớn nhất. Explainability - không phải black box, thấy được 'Connected via emotional through Emma'. Privacy-first - 100% local, encryption, no cloud. Verifiable - mọi số liệu backed by real demo data, có thể show export JSON.
+>
+> Tất cả source code, demo data, và export JSON đều có trên GitHub. Tôi sẵn sàng show live demo hoặc export JSON nếu các bạn muốn verify các con số tôi đã trình bày.
+>
+> Cảm ơn các bạn đã lắng nghe. Tôi rất vui được trả lời thêm câu hỏi nếu các bạn có."
+
+---
+
+**Presentation Complete!**
+- **Total duration**: ~12-15 minutes for main slides + 2-3 min Q&A
+- **All slides have Vietnamese speaker scripts**: Natural flow, technical depth, real data emphasized
+- **Ready for interview**: Can deliver in Vietnamese with confidence
 
 ---
 
