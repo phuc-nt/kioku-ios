@@ -325,6 +325,26 @@ graph TD
 
 ---
 
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Tính năng thứ hai là Relationship Discovery - phát hiện mối quan hệ tự động.
+>
+> Từ 20 entries, AI phát hiện ra 105 relationships. Trung bình mỗi entry có 5.25 relationships - con số thực tế, không phải giả định.
+>
+> Có 4 loại relationships: Temporal - cùng xuất hiện trong một entry, Topical - cùng được thảo luận trong context, Emotional - cảm xúc liên kết với người/sự kiện, và Social - mối quan hệ giữa người với người.
+>
+> Ví dụ cụ thể từ entry ngày 25 tháng 10 - ngày Jake đi khám sức khỏe. Entry này có 10 entities, và các entities này connect tới 19 entries khác thông qua relationships. Top entry có score 6.00 với 10 connections: 'Connected via emotional relationship through Emma, via topical relationship through Jake, via emotional relationship through happy...' Debug logs cho thấy chính xác tại sao những entries này được kết nối.
+>
+> Sarah xuất hiện 20/20 entries - strongest relationship entity. Jake 17 entries. Emma có 3 loại relationships: proud (4 entries), frustrated (2 entries), topical.
+>
+> Điểm đặc biệt là Emotion Relationships. 40 emotions với multiple connections tạo nên một mạng lưới cảm xúc phong phú. Ví dụ: 'happy' có 8 relationships với candy, pottery workshop, Sarah, pizza night, family traditions, taco night...
+>
+> Tại sao Knowledge Graph thay vì Vector DB? KG cung cấp structure và explainability. Bạn thấy chính xác 'tại sao' AI kết nối các entries - không phải black box. Có thể query như SQL: 'Show all happy moments with Sarah'. Lightweight - không cần ML inference, chỉ là graph traversal. 119 entities + 105 relationships = instant queries.
+>
+> Nếu demo, tap vào Sarah entity, bạn sẽ thấy 20+ relationships. Tap vào 'happy' emotion, bạn thấy 8 connections rõ ràng."
+
+---
+
 # Slide 6: Feature 3 - AI Insights
 
 ```mermaid
@@ -397,6 +417,16 @@ graph TD
 - Actionable: "Prioritize family time for happiness", "Prepare better for deployments to reduce stress"
 
 **Demo:** Show knowledge graph with 40 emotion nodes (pink), tap Sarah → 20 entries
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Tính năng thứ ba: AI Insights - phân tích patterns tự động từ Knowledge Graph.
+>
+> Đây là 5 loại insights thực tế từ demo data: Một, Social Pattern - Sarah xuất hiện 100% entries, AI tự nhận ra đây là người quan trọng nhất. Hai, Location Insight - 'home' liên kết với 10 'happy' emotions, so với 2 ở 'work'. Ba, Emotional Trend - 40 emotions được track, 'happy' peak khi có family time, 'stressed' khi work deployments. Bốn, Emotional Trigger Analysis - cảm thấy 'grateful' sau quality time với Sarah (5 entries), 'stressed' khi production issues, 'proud' khi Emma đạt được milestone. Năm, Emotional-Social Correlation - Sarah + family time = 85% positive emotions, work alone = 60% mixed, Emma activities = 70% proud.
+>
+> Mọi insight đều explainable - có supporting entries. Actionable - bạn có thể leverage patterns này: Ưu tiên family time để tăng happiness, chuẩn bị tốt cho deployments để giảm stress. Confidence-based - entity có score 0.7-0.9."
 
 ---
 
@@ -616,6 +646,22 @@ Final Context Package:
 3. Ask "When was the last time I spent quality time with Jake?"
 4. AI responds with Oct 25 (checkup + ice cream) citing specific entry
 5. Click entry links to verify accuracy
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Tính năng thứ tư - và quan trọng nhất: Context-Aware Chat. Đây là RAG - Retrieval Augmented Generation - nhưng không phải RAG thông thường.
+>
+> Hầu hết RAG systems chỉ dùng vector similarity. Của tôi là 4-phase context building: Temporal + Entity + Relationship + Insight. Đây là innovation chính.
+>
+> Phase 1 - Temporal Context: Load entry hiện tại, historical entries cùng ngày các năm trước, và recent entries 7 ngày gần đây. Phase 2 - Entity Context: Extract 10 entities từ entry, fetch tất cả entities từ date range. Phase 3 - Related Notes qua KG: Đây là phần hay nhất. Check 10 entities for relationships, tìm được 156 scores qua entity relationships. 156 scores này combine thành 19 unique entries. Filter với minRelevance = 0.1, còn lại top 5 entries. Top entry score 6.00 với 10 relationship connections - log cho thấy chính xác: 'Connected via emotional relationship through Emma, via topical relationship through Jake...' Phase 4 - Insights Context: Load relevant AI insights.
+>
+> Kết quả: Complete context package gồm 1 entry hiện tại, 5 related entries từ 19 candidates, 10 entities, 105 total relationships. Sarah signal mạnh nhất - xuất hiện 20/20 entries.
+>
+> Tại sao approach này tốt? Comprehensive - không chỉ vector, mà có temporal, entity, relationship. Accurate - retrieve real data, không hallucinate. Explainable - show đúng entries AI đã đọc với relevance scores. Token efficient - chỉ top 5 related, không phải all 20, nên fit được model limits.
+>
+> Demo thực tế: Mở entry ngày 25/10, hỏi 'When was last time with Jake?', AI đọc context package, trả lời ngay với Oct 25 checkup + ice cream, cite chính xác entry."
 
 ---
 
