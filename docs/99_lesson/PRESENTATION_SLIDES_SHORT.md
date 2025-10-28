@@ -28,6 +28,14 @@
 >
 > Trong 20 phút tiếp theo, tôi sẽ tập trung vào: vấn đề cần giải quyết, các tính năng AI chính, và kiến trúc kỹ thuật."
 
+**🎤 Speaker Script (日本語):**
+
+> "こんにちは、Phuc Nguyenです。今日(きょう)はKioku - AI統合(とうごう)の個人(こじん)日記(にっき)アプリを紹介(しょうかい)します。
+>
+> Kiokuは日本語(にほんご)で「記憶(きおく)」という意味(いみ)です。このiOSアプリは、伝統的(でんとうてき)な日記(にっき)とAI技術(ぎじゅつ) - Knowledge GraphとAI Assistantを組(く)み合(あ)わせています。
+>
+> これから20分間(ふんかん)で、解決(かいけつ)すべき問題(もんだい)、主(おも)なAI機能(きのう)、技術(ぎじゅつ)アーキテクチャについて説明(せつめい)します。"
+
 ---
 
 # Slide 2: The Problem
@@ -58,6 +66,12 @@ graph TD
 > "Vấn đề: Sau 2 tháng viết nhật ký, bạn có 20 entries với 5,000+ từ. Muốn hỏi 'Lần cuối với Jake là khi nào?' phải đọc thủ công 20 entries, mất 15-20 phút. Hoặc 'Hoạt động nào khiến tôi hạnh phúc?' - với 40 cảm xúc khác nhau, không thể tìm pattern thủ công.
 >
 > Bốn vấn đề chính: Memory Overload, No Context Awareness, Lost Connections, và Privacy Concerns. Các giải pháp hiện tại: Google Docs không có AI, Day One lưu cloud, Notion không privacy."
+
+**🎤 Speaker Script (日本語):**
+
+> "問題(もんだい)について説明(せつめい)します。2ヶ月(かげつ)日記(にっき)を書(か)いたら、20エントリー、5000語(ご)以上(いじょう)になります。'Jakeと最後(さいご)に会(あ)ったのはいつ？'と聞(き)きたいとき、20エントリーを手作業(てさぎょう)で読(よ)む必要(ひつよう)があり、15-20分(ふん)かかります。または'どの活動(かつどう)が幸(しあわ)せにする？' - 40の感情(かんじょう)があり、手作業(てさぎょう)でパターンを見(み)つけることは不可能(ふかのう)です。
+>
+> 4つの主(おも)な問題(もんだい)：Memory Overload、Context Awareness無(な)し、Lost Connections、Privacy問題(もんだい)。現在(げんざい)のソリューション：Google DocsにはAI無(な)し、Day Oneはクラウド保存(ほぞん)、Notionはプライバシー無(な)しです。"
 
 ---
 
@@ -93,6 +107,14 @@ graph LR
 > Sarah xuất hiện CẢ 20 entries - AI tự nhận ra đây là người quan trọng nhất. Tất cả tạo thành Knowledge Graph, giúp AI hiểu context đầy đủ.
 >
 > Kết quả: Hỏi 'Lần cuối với Jake?' → Trả lời instant: '25 tháng 10, khám sức khỏe và ăn kem'. Tech stack: iOS 18, OpenRouter API, Local-first với encryption."
+
+**🎤 Speaker Script (日本語):**
+
+> "解決策(かいけつさく)：20エントリー → AIが119エンティティと105リレーションシップを抽出(ちゅうしゅつ)。これは実際(じっさい)のデモの数字(すうじ)です。119エンティティの内訳(うちわけ)：40感情(かんじょう)、32トピック、28イベント、11人(にん)、8場所(ばしょ)。
+>
+> Sarahは全(すべ)ての20エントリーに登場(とうじょう)します - AIが自動的(じどうてき)に最(もっと)も重要(じゅうよう)な人(ひと)と認識(にんしき)しました。これらすべてがKnowledge Graphになり、AIが完全(かんぜん)なコンテキストを理解(りかい)できます。
+>
+> 結果(けっか)：'Jakeと最後(さいご)はいつ？'と聞(き)く → 即座(そくざ)に回答(かいとう)：'10月(がつ)25日(にち)、健康診断(けんこうしんだん)とアイスクリーム'。Tech stack：iOS 18、OpenRouter API、ローカルファースト+暗号化(あんごうか)。"
 
 ---
 
@@ -148,6 +170,14 @@ graph LR
 >
 > Challenge lớn: Entity Deduplication. 'Sarah' 20 lần phải là 1 entity, không phải 20 duplicates. Solution: In-memory cache với normalized matching. Result: 100% deduplication success."
 
+**🎤 Speaker Script (日本語):**
+
+> "機能(きのう)1：Entity Extraction。エントリーを書(か)くとき、AIが自動的(じどうてき)に5種類(しゅるい)のエンティティを抽出(ちゅうしゅつ)：People、Places、Events、Emotions、Topics。
+>
+> 実際(じっさい)の結果(けっか)：20エントリーから119エンティティ。特(とく)に40の感情(かんじょう)エンティティ - 最大(さいだい)のカテゴリー、emotional intelligenceを示(しめ)します。Sarahは全(すべ)ての20エントリーに登場(とうじょう) - 完璧(かんぺき)な検出(けんしゅつ)。
+>
+> 大(おお)きな課題(かだい)：Entity Deduplication。'Sarah'が20回(かい)登場(とうじょう)するとき、1つのエンティティにする必要(ひつよう)があります、20個(こ)の重複(じゅうふく)ではなく。解決策(かいけつさく)：In-memoryキャッシュとnormalized matching。結果(けっか)：100%重複排除(じゅうふくはいじょ)成功(せいこう)。"
+
 ---
 
 # Slide 5: Feature 2 - Relationship Discovery
@@ -198,6 +228,14 @@ graph TD
 > Có 4 loại: Temporal, Topical, Emotional, Social. Entry ngày 25/10 có 10 entities, connect tới 19 entries khác. Top entry score 6.00 với 10 connections - log cho thấy exact reasons.
 >
 > Tại sao Knowledge Graph thay vì Vector DB? Explainable - thấy exact reasons. Queryable như SQL. Lightweight - graph traversal, không cần ML inference."
+
+**🎤 Speaker Script (日本語):**
+
+> "機能(きのう)2：Relationship Discovery。20エントリーから、AIが105リレーションシップを発見(はっけん) - 平均(へいきん)5.25個(こ)。
+>
+> 4種類(しゅるい)あります：Temporal、Topical、Emotional、Social。10月(がつ)25日(にち)のエントリーは10エンティティがあり、19個(こ)の他(ほか)のエントリーに接続(せつぞく)します。トップスコア6.00、10個(こ)の接続(せつぞく) - ログで正確(せいかく)な理由(りゆう)が分(わ)かります。
+>
+> なぜKnowledge GraphでVector DBではないのか？Explainable - 正確(せいかく)な理由(りゆう)が見(み)える。SQLのようにQueryable。Lightweight - graph traversal、ML推論(すいろん)不要(ふよう)。"
 
 ---
 
@@ -272,6 +310,14 @@ sequenceDiagram
 >
 > Kết quả: Complete context package - 1 current entry, 5 related từ 19 candidates, 10 entities, 105 total relationships. Tại sao tốt? Comprehensive, Accurate, Explainable, Token efficient."
 
+**🎤 Speaker Script (日本語):**
+
+> "機能(きのう)3：Context-Aware Chat。これは普通(ふつう)のRAGではありません。ほとんどのRAGはvector similarityだけ使(つか)います。私(わたし)のは4-phase：Temporal + Entity + Relationship + Insight。
+>
+> Phase 1：現在(げんざい)、過去(かこ)、最近(さいきん)のエントリーをロード。Phase 2：エンティティを抽出(ちゅうしゅつ)。Phase 3：エンティティのリレーションシップをチェック - 156スコアを発見(はっけん)、19エントリーに統合(とうごう)、トップ5にフィルター。Phase 4：インサイトをロード。
+>
+> 結果(けっか)：完全(かんぜん)なコンテキストパッケージ - 1つの現在(げんざい)エントリー、19候補(こうほ)から5つの関連(かんれん)、10エンティティ、105総(そう)リレーションシップ。なぜ良(よ)いのか？Comprehensive、Accurate、Explainable、Token efficient。"
+
 ---
 
 # Slide 8: Technical Architecture
@@ -327,6 +373,12 @@ graph TB
 >
 > Data flow: User viết entry → save SwiftData → trigger extraction async → AI extract entities → save relationships. User hỏi → query KG for context → load relevant entries → gửi AI → show answer với citations. Tất cả async/await, không block UI."
 
+**🎤 Speaker Script (日本語):**
+
+> "技術(ぎじゅつ)アーキテクチャ：UI layerは純粋(じゅんすい)なSwiftUI、iOS 18。Service layerはOpenRouter、ChatContext、KnowledgeGraph、Insightサービス。Data layerはSwiftData - Appleの最新(さいしん)フレームワーク。ExternalはOpenRouter API - 15以上(いじょう)のAIモデルにアクセス。
+>
+> データフロー：ユーザーがエントリーを書(か)く → SwiftDataに保存(ほぞん) → 非同期(ひどうき)で抽出(ちゅうしゅつ)開始(かいし) → AIがエンティティを抽出(ちゅうしゅつ) → リレーションシップを保存(ほぞん)。ユーザーが質問(しつもん) → コンテキストのためKGをクエリ → 関連(かんれん)エントリーをロード → AIに送信(そうしん) → 引用(いんよう)付(つ)きで回答(かいとう)を表示(ひょうじ)。すべてasync/await、UIをブロックしません。"
+
 ---
 
 # Slide 11: Future Roadmap
@@ -367,6 +419,10 @@ timeline
 **🎤 Speaker Script (Tiếng Việt):**
 
 > "Roadmap tương lai: Q4 2025 - Enhanced export và data cleanup. Q1 2026 - Advanced AI với sentiment analysis và predictive insights. Q2 2026 - Visualization với interactive graph và emotional heatmap. Q3 2026 - Cross-platform: macOS app, iCloud sync, web viewer. Clear roadmap cho future development."
+
+**🎤 Speaker Script (日本語):**
+
+> "今後(こんご)のロードマップ：2025年(ねん)Q4 - Enhanced exportとdata cleanup。2026年(ねん)Q1 - Advanced AI、sentiment analysisとpredictive insights。2026年(ねん)Q2 - Visualization、interactive graphとemotional heatmap。2026年(ねん)Q3 - Cross-platform：macOSアプリ、iCloud sync、webビューアー。明確(めいかく)な今後(こんご)の開発(かいはつ)ロードマップです。"
 
 ---
 
@@ -434,6 +490,20 @@ mindmap
 >
 > Show demo? Có! Export JSON chứa 119 entities, 105 relationships, all 20 entries - mọi số liệu verifiable."
 
+**🎤 Speaker Script (日本語):**
+
+> "よくある質問(しつもん)：
+>
+> なぜVector DBではなくKG？StructureとExplainability - 正確(せいかく)な理由(りゆう)が見(み)える。105リレーションシップ、explicit types。Queryable、lightweight。
+>
+> AI hallucination対策(たいさく)は？Confidence scoring 0.7-0.95。RAGは実際(じっさい)のエントリーを引用(いんよう)、事実(じじつ)を生成(せいせい)しない。ユーザーが確認(かくにん)できる。
+>
+> 10Kエントリーでのパフォーマンスは？Pagination、smart filtering 156→19→5。Graph queriesはO(log n)。
+>
+> セキュリティは？100%ローカル保存(ほぞん)、暗号化(あんごうか)キーはKeychainに、PRIVACY.mdはApp Store準拠(じゅんきょ)。
+>
+> デモを見(み)せられる？はい！Export JSONに119エンティティ、105リレーションシップ、全(すべ)て20エントリー - すべての数字(すうじ)が確認可能(かくにんかのう)。"
+
 ---
 
 # Slide 13: Thank You
@@ -487,6 +557,18 @@ mindmap
 >
 > Cảm ơn các bạn đã lắng nghe!"
 
+**🎤 Speaker Script (日本語):**
+
+> "まとめ：
+>
+> 5つの重要(じゅうよう)ポイント：Problem to Solution - 20分(ふん)が1秒(びょう)に。Real Results - 119エンティティ + 105リレーションシップが証明(しょうめい)済(ず)み。Technical Innovation - Knowledge Graph + 4-phase RAG。Quality - 100%重複排除(じゅうふくはいじょ)、説明可能(せつめいかのう)。Production-Ready - v0.1.0、MITライセンス、App Store準拠(じゅんきょ)。
+>
+> 特別(とくべつ)な点(てん)：40感情(かんじょう)のEmotional intelligence。Explainability - ブラックボックスではない。Privacy-first - 100%ローカル。Verifiable - すべてのデータが実際(じっさい)のデータに基(もと)づいています。
+>
+> すべてのソースコード、デモデータ、export JSONはGitHubにあります。ライブデモまたは数字(すうじ)の確認(かくにん)ができます。
+>
+> ご清聴(せいちょう)ありがとうございました！"
+
 ---
 
 **Presentation Complete!**
@@ -495,3 +577,4 @@ mindmap
 - **Kept**: All essential diagrams, core features, architecture, Q&A
 - **Concise**: Shorter speaker scripts, focus on key points
 - **Ready**: For 20-minute technical interview presentation
+- **Languages**: Vietnamese + Japanese (with furigana) speaker scripts for all slides
