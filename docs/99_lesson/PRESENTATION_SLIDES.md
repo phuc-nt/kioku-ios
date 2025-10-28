@@ -27,6 +27,18 @@
 
 ---
 
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Xin chào, tôi là Phuc Nguyễn. Hôm nay tôi xin giới thiệu với các bạn Kioku - một ứng dụng nhật ký cá nhân tích hợp AI.
+>
+> Kioku nghĩa là 'ký ức' trong tiếng Nhật. Đây là một ứng dụng iOS kết hợp giữa việc viết nhật ký truyền thống với công nghệ AI hiện đại, đặc biệt là Knowledge Graph và AI Assistant.
+>
+> Trong 15 phút tiếp theo, tôi sẽ tập trung vào ba khía cạnh: các tính năng AI độc đáo, cách tiếp cận giải quyết vấn đề, và kiến trúc kỹ thuật của hệ thống.
+>
+> Đây là một sản phẩm thực tế mà tôi đã phát triển trong 3 tháng, với đầy đủ dữ liệu demo và đã sẵn sàng để publish lên App Store."
+
+---
+
 # Slide 2: The Problem
 
 ```mermaid
@@ -62,6 +74,22 @@ graph TD
 - 20 entries over 2 months = 5,000+ words of journal data
 - Questions like "When was Sarah's pottery class?" or "What makes me feel stressed?" require AI
 - Current solutions: Google Docs (no AI), Day One (cloud, basic AI), Notion (no privacy)
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Trước khi nói về giải pháp, hãy cùng xem vấn đề mà Kioku sinh ra để giải quyết.
+>
+> Hãy tưởng tượng bạn là một software engineer, có gia đình, cuộc sống bận rộn. Bạn viết nhật ký mỗi ngày để ghi lại suy nghĩ, cảm xúc, và những sự kiện quan trọng. Sau 2 tháng, bạn có 20 entries với hơn 5,000 từ.
+>
+> Một ngày đẹp trời, bạn muốn hỏi: 'Lần cuối cùng tôi dành thời gian chất lượng với con trai Jake là khi nào?' Bạn phải làm gì? Mở từng entry một, đọc lại, tìm kiếm thủ công. Mất 15-20 phút và có thể vẫn không tìm thấy câu trả lời chính xác.
+>
+> Hoặc câu hỏi phức tạp hơn: 'Những hoạt động nào khiến tôi cảm thấy hạnh phúc nhất?' Với 20 entries và 40 cảm xúc khác nhau, việc tìm ra pattern này gần như không thể làm thủ công.
+>
+> Đây là bốn vấn đề chính: Memory Overload - bạn không thể nhớ hết những gì đã viết. No Context Awareness - không thể hỏi AI những câu hỏi cá nhân hóa. Lost Connections - không thấy được mối liên hệ giữa công việc, gia đình, và cảm xúc. Và cuối cùng là Privacy Concerns - các ứng dụng nhật ký hiện tại đều lưu dữ liệu lên cloud, không an toàn cho những suy nghĩ riêng tư nhất của bạn.
+>
+> Các giải pháp hiện tại như Google Docs thì không có AI, Day One có AI nhưng cơ bản và dữ liệu lên cloud, Notion thì hoàn toàn không privacy."
 
 ---
 
@@ -101,6 +129,26 @@ graph LR
 - Jake in 17 entries, Emma with 3 relationship types
 - Local-first: dữ liệu 100% trên máy user (no cloud sync)
 - Multi-model: chọn AI model phù hợp cho từng conversation
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Giải pháp của Kioku là gì? Nhìn vào diagram này.
+>
+> Đầu tiên, bạn viết nhật ký như bình thường - 20 entries trong 2 tháng, khoảng 5,000 từ. Đây là dữ liệu thô, unstructured text.
+>
+> Kioku sử dụng AI để xử lý dữ liệu này và tự động extract ra 119 entities. Đây là con số thực từ demo data của tôi, không phải ví dụ giả định. 119 entities bao gồm: 40 cảm xúc, 32 topics, 28 sự kiện, 11 người, và 8 địa điểm.
+>
+> Nhưng không dừng ở đó. AI còn discover ra 105 relationships giữa các entities này. Ví dụ: Sarah - người vợ - xuất hiện trong CẢ 20 entries. AI tự động nhận ra đây là người quan trọng nhất trong cuộc sống của nhân vật. Jake - con trai - xuất hiện 17 lần, Emma - con gái - có 3 loại relationship khác nhau.
+>
+> Tất cả những mối quan hệ này tạo thành một Knowledge Graph - một cấu trúc dữ liệu có tổ chức, giúp AI hiểu được context đầy đủ khi bạn hỏi câu hỏi.
+>
+> Kết quả? Bạn hỏi 'Lần cuối với Jake là khi nào?' - AI trả lời ngay lập tức: '25 tháng 10, đi khám sức khỏe và ăn kem'. Không phải tìm kiếm 20 phút, mà là instant answer với đầy đủ context.
+>
+> Tech stack: iOS 18, Swift native với SwiftUI và SwiftData. OpenRouter API cho phép chọn AI model linh hoạt - Claude, GPT-4, Gemini. Và quan trọng nhất: Local-first architecture - 100% dữ liệu lưu trên máy user, không có cloud sync. Privacy là ưu tiên số một.
+>
+> Key innovation ở đây là transform unstructured text thành structured knowledge graph, giúp AI có thể hiểu và trả lời câu hỏi một cách chính xác."
 
 ---
 
@@ -175,6 +223,24 @@ graph LR
 - Solution: In-memory cache + fuzzy matching → 100% deduplication success
 
 **Demo:** Show Graph view với 119 entities (especially highlight 40 pink emotion nodes)
+
+---
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Tính năng đầu tiên là Entity Extraction - trích xuất thực thể tự động.
+>
+> Khi bạn viết một entry, AI sẽ tự động nhận diện 5 loại entities: People - người, Places - địa điểm, Events - sự kiện, Emotions - cảm xúc, và Topics - chủ đề.
+>
+> Và đây là kết quả thực tế từ 20 entries demo của tôi: 119 entities được extract. Điều đặc biệt là 40 trong số đó là emotion entities - category lớn nhất. Đây là điểm mạnh độc đáo của Kioku: emotional intelligence. AI không chỉ biết bạn gặp ai, ở đâu, mà còn hiểu bạn cảm thấy thế nào.
+>
+> 32 topics về cuộc sống: work-life balance, microservices, parenting. 28 events: soccer games, Halloween, deployments. 11 người: và đặc biệt - Sarah xuất hiện trong CẢ 20 entries. AI tự động phát hiện đây là người quan trọng nhất - perfect detection. 8 địa điểm như home, work, farmers market.
+>
+> Mỗi entity đều có confidence score từ 0.7 đến 0.9. Không cần manual tagging - hoàn toàn tự động.
+>
+> Một technical challenge lớn ở đây là Entity Deduplication. 'Sarah' xuất hiện 20 lần - nếu không xử lý tốt, sẽ tạo ra 20 Sarah entities khác nhau. Giải pháp của tôi là in-memory cache kết hợp với normalized name matching. Kết quả: 100% deduplication success - 1 Sarah entity duy nhất với 20 references.
+>
+> Nếu bạn nhìn vào Graph view, bạn sẽ thấy 119 nodes với màu sắc khác nhau. Đặc biệt chú ý 40 pink nodes - đó là các emotion entities, thể hiện emotional intelligence của hệ thống."
 
 ---
 
