@@ -183,24 +183,22 @@ graph LR
 
 # Slide 5: Feature 2 - Relationship Discovery
 
-**Core Concept:** AI analyzes entry text to find meaningful connections between entities.
-
 ```mermaid
 graph TD
-    Sarah[👤 Sarah] -->|temporal<br/>weight: 0.95| Home[📍 home]
-    Jake[👤 Jake] -->|temporal<br/>weight: 0.90| Home
-    Sarah -->|topical<br/>weight: 0.85| Jake
-    Home -->|location_of<br/>weight: 0.92| TacoNight[📅 taco night]
-    Jake -->|about<br/>weight: 0.88| Checkup[📅 4-year checkup]
-    Emma[👤 Emma] -->|about<br/>weight: 0.80| Checkup
+    Sarah[👤 Sarah] -->|temporal<br/>0.95| Home[📍 home]
+    Jake[👤 Jake] -->|temporal<br/>0.90| Home
+    Sarah -->|topical<br/>0.85| Jake
+    Home -->|location_of<br/>0.92| TacoNight[📅 taco night]
+    Jake -->|about<br/>0.88| Checkup[📅 4-year checkup]
+    Emma[👤 Emma] -->|about<br/>0.80| Checkup
 
-    Happy[💗 happy] -->|emotional<br/>weight: 0.85| TacoNight
-    Happy -->|emotional<br/>weight: 0.82| Home
-    Nervous[💗 nervous] -->|emotional<br/>weight: 0.75| Checkup
+    Happy[💗 happy] -->|emotional<br/>0.85| TacoNight
+    Happy -->|emotional<br/>0.82| Home
+    Nervous[💗 nervous] -->|emotional<br/>0.75| Checkup
 
-    Sarah -->|emotional<br/>weight: 0.90| Happy
-    Jake -->|emotional<br/>weight: 0.85| Happy
-    Emma -->|emotional<br/>weight: 0.88| Proud[💗 proud]
+    Sarah -->|emotional<br/>0.90| Happy
+    Jake -->|emotional<br/>0.85| Happy
+    Emma -->|emotional<br/>0.88| Proud[💗 proud]
 
     style Sarah fill:#c8e6c9
     style Jake fill:#c8e6c9
@@ -213,174 +211,94 @@ graph TD
     style Proud fill:#ffc1cc
 ```
 
-**Real Results:**
-- **105 relationships** from 20 entries (avg 5.25 per entry)
-- **4 types**: CAUSAL (0.9), EMOTIONAL (0.7), TEMPORAL (0.5), TOPICAL (0.4)
-- **Each has**: type, confidence (0.6-0.95), evidence text, weight
+**Real Results:** 105 relationships, 4 types (CAUSAL, EMOTIONAL, TEMPORAL, TOPICAL)
 
-**4 Relationship Types:**
-1. **CAUSAL** (0.9): "stressed → guilty" - A causes B
-2. **EMOTIONAL** (0.7): "Jake → frustrated" - Person/Event → Emotion
-3. **TEMPORAL** (0.5): "Sarah & Jake → home" - Time-based co-occurrence
-4. **TOPICAL** (0.4): "work-life balance → stressed" - Shared theme
-
-**Why Knowledge Graph > Vector DB?**
-- ✅ **Explainable**: See exact evidence from text
-- ✅ **Typed**: Know relationship nature (cause vs emotion)
-- ✅ **Weighted**: Understand strength (0.9 > 0.4)
-- ✅ **Queryable**: "Show all causes of stress"
-
-**📖 Deep Dive:** See [TECHNICAL_DEEP_DIVE.md - Feature 1](./TECHNICAL_DEEP_DIVE.md#feature-1-relationship-discovery) for:
-- How AI creates relationships (4 questions framework)
-- Weight decision logic (confidence scoring)
-- Real example analysis: "stressed → guilty"
+**📖 Technical Details:** [TECHNICAL_DEEP_DIVE.md - Feature 1](./TECHNICAL_DEEP_DIVE.md#feature-1-relationship-discovery)
 
 **🎤 Speaker Script (Tiếng Việt):**
 
-> "Tính năng 2: Relationship Discovery. AI phân tích văn bản để tìm connections giữa entities.
+> "Tính năng 2: Relationship Discovery. AI tự động tìm connections giữa entities.
 >
-> Có 4 loại relationships: CAUSAL - nhân quả (0.9), EMOTIONAL - cảm xúc (0.7), TEMPORAL - thời gian (0.5), TOPICAL - chủ đề (0.4). Weight cao hơn = meaningful hơn.
+> Nhìn vào Knowledge Graph: 105 relationships giữa people, places, events, emotions. Mỗi relationship có type và weight.
 >
-> Kết quả thực: 105 relationships từ 20 entries. Mỗi relationship có evidence từ văn bản gốc, confidence score, và type rõ ràng.
+> 4 types: CAUSAL - nhân quả (0.9), EMOTIONAL - cảm xúc (0.7), TEMPORAL - thời gian (0.5), TOPICAL - chủ đề (0.4).
 >
-> Tại sao tốt hơn Vector DB? Explainable - thấy lý do. Typed - biết nature. Weighted - hiểu strength. Queryable - có thể query specific.
->
-> Chi tiết kỹ thuật về cách AI tạo relationships và logic confidence scoring xem trong TECHNICAL_DEEP_DIVE document."
+> Chi tiết về cách AI tạo relationships, confidence scoring logic, và real examples - xem TECHNICAL_DEEP_DIVE document."
 
 **🎤 Speaker Script (日本語):**
 
-> "機能(きのう)2：Relationship Discovery。AIはテキストを分析(ぶんせき)してentities間(かん)のconnectionsを見(み)つけます。
+> "機能(きのう)2：Relationship Discovery。AIが自動的(じどうてき)にentities間(かん)のconnectionsを見(み)つけます。
 >
-> 4つのrelationship types：CAUSAL - 因果(いんが)（0.9）、EMOTIONAL - 感情(かんじょう)（0.7）、TEMPORAL - 時間(じかん)（0.5）、TOPICAL - トピック（0.4）。Weightが高(たか)い = より意味(いみ)がある。
+> Knowledge Graphを見(み)ると：people、places、events、emotions間(かん)の105リレーションシップ。各(かく)relationshipにはtypeとweightがあります。
 >
-> 実際(じっさい)の結果(けっか)：20エントリーから105リレーションシップ。各(かく)relationshipは元(もと)のテキストからのevidence、confidence score、明確(めいかく)なtypeがあります。
+> 4つのtypes：CAUSAL - 因果(いんが)（0.9）、EMOTIONAL - 感情(かんじょう)（0.7）、TEMPORAL - 時間(じかん)（0.5）、TOPICAL - トピック（0.4）。
 >
-> なぜVector DBより良(よ)いか？Explainable - 理由(りゆう)が見(み)える。Typed - natureが分(わ)かる。Weighted - strengthが理解(りかい)できる。Queryable - 特定(とくてい)のクエリ可能(かのう)。
->
-> AIがどのようにrelationshipsを作成(さくせい)するか、confidence scoringのロジックなどの技術的(ぎじゅつてき)な詳細(しょうさい)はTECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
+> AIがどのようにrelationshipsを作成(さくせい)するか、confidence scoringロジック、実例(じつれい)など - TECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
 
 ---
 
 # Slide 6: Feature 3 - Context-Aware Chat
 
-**Core Concept:** Use Knowledge Graph to find related entries for AI context.
-
-**Process Overview:**
-1. **Get entities** from current entry (e.g., 10 entities: Sarah, Jake, happy, nervous...)
-2. **Traverse graph** to find relationships (e.g., "happy" has 8 relationships)
-3. **Score entries** via relationship weights (EMOTIONAL: +0.7, CAUSAL: +0.9...)
-4. **Apply recency decay** (<7 days: ×1.0, 7-30 days: ×0.8, >30 days: ×0.5)
-5. **Filter & sort** → Top 5 related entries
-
-**Real Results from Demo:**
-- **Input**: Entry Oct 25 with 10 entities
-- **Process**: 156 scores from entity relationships → 19 unique entries
-- **Output**: Top 5 entries (scores: 1.68, 1.52, 1.45, 1.32, 1.28)
-- **Each with reason**: "Connected via emotional through happy; via topical through Sarah..."
-
-**Why This Works:**
-- ✅ **Multi-path scoring**: One entry found via multiple entities (accumulated score)
-- ✅ **Type-aware**: CAUSAL (0.9) > EMOTIONAL (0.7) > TEMPORAL (0.5) > TOPICAL (0.4)
-- ✅ **Recency-aware**: Recent entries weighted higher
-- ✅ **Token efficient**: Only top 5, not all 20 entries
-- ✅ **Explainable**: See exact paths (why this entry is related)
-
-**📖 Deep Dive:** See [TECHNICAL_DEEP_DIVE.md - Feature 2](./TECHNICAL_DEEP_DIVE.md#feature-2-context-aware-chat-finding-related-entries) for:
-- Step-by-step graph traversal process
-- Scoring example: Entity "happy" (8 relationships)
-- Score accumulation across entities (156 → 19 → Top 5)
-- Recency decay + filtering logic
-
-**🎤 Speaker Script (Tiếng Việt):**
-
-> "Tính năng 3: Context-Aware Chat. Sử dụng Knowledge Graph để tìm related entries cho AI context.
->
-> Process: Lấy 10 entities từ entry hiện tại → Traverse graph tìm relationships → Score entries dựa vào weights → Apply recency decay → Lấy top 5.
->
-> Kết quả thực từ demo: 10 entities → 156 scores → 19 unique entries → Top 5 với scores từ 1.28 đến 1.68. Mỗi entry có reason rõ ràng: 'Connected via emotional through happy; via topical through Sarah'.
->
-> Tại sao tốt? Multi-path scoring - một entry có thể được tìm qua nhiều entities, scores tích lũy. Type-aware - phân biệt CAUSAL/EMOTIONAL/TEMPORAL/TOPICAL. Recency-aware - entries gần quan trọng hơn. Token efficient - chỉ top 5. Explainable - thấy exact paths.
->
-> Chi tiết step-by-step graph traversal, scoring logic, và recency decay xem trong TECHNICAL_DEEP_DIVE document."
-
-**🎤 Speaker Script (日本語):**
-
-> "機能(きのう)3：Context-Aware Chat。Knowledge Graphを使(つか)ってAIコンテキストの関連(かんれん)エントリーを見(み)つけます。
->
-> プロセス：現在(げんざい)のエントリーから10エンティティを取得(しゅとく) → Graphをtraverseしてrelationshipsを検索(けんさく) → Weightsに基(もと)づいてエントリーをスコアリング → Recency decayを適用(てきよう) → トップ5を取得(しゅとく)。
->
-> デモからの実際(じっさい)の結果(けっか)：10エンティティ → 156スコア → 19ユニークエントリー → 1.28から1.68のスコアのトップ5。各(かく)エントリーには明確(めいかく)な理由(りゆう)：'Connected via emotional through happy; via topical through Sarah'。
->
-> なぜ良(よ)いか？Multi-path scoring - 1つのエントリーが複数(ふくすう)のentitiesで見(み)つかる、スコア累積(るいせき)。Type-aware - CAUSAL/EMOTIONAL/TEMPORAL/TOPICALを区別(くべつ)。Recency-aware - 最近(さいきん)のエントリーがより重要(じゅうよう)。Token efficient - トップ5のみ。Explainable - 正確(せいかく)なパスが見(み)える。
->
-> Step-by-stepのgraph traversal、scoringロジック、recency decayの詳細(しょうさい)はTECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
-
----
-
-# Slide 7: Complete 4-Phase RAG System
-
-**Architecture:** Comprehensive context building for AI chat.
+**AI Chat với Complete Context:**
 
 ```mermaid
-graph TB
-    User[👤 User Question:<br/>'When last time with Jake?'] --> Chat[💬 AIChatView]
+graph LR
+    User[👤 User opens chat<br/>for Entry Oct 25] --> Context[📦 Context Loading]
 
-    Chat --> Phase1[Phase 1: Temporal<br/>Current + Historical + Recent]
-    Chat --> Phase2[Phase 2: Entities<br/>Extract from entries]
-    Chat --> Phase3[Phase 3: Related Notes<br/>KG Traversal ⭐]
-    Chat --> Phase4[Phase 4: Insights<br/>AI Patterns]
+    Context --> T[Temporal:<br/>Current + Recent<br/>+ Historical]
+    Context --> E[Entities:<br/>10 entities<br/>from entry]
+    Context --> R[Related Notes:<br/>Top 5 via KG<br/>156→19→5]
+    Context --> I[Insights:<br/>AI patterns<br/>if available]
 
-    Phase1 --> Context[📦 Context Package]
-    Phase2 --> Context
-    Phase3 --> Context
-    Phase4 --> Context
+    T --> Package[Complete Package]
+    E --> Package
+    R --> Package
+    I --> Package
 
-    Context --> AI[🤖 OpenRouter API<br/>Claude/GPT/Gemini]
-    AI --> Answer[✅ Answer:<br/>'Oct 25, 4-year checkup<br/>+ ice cream']
+    Package --> AI[🤖 AI Response]
+    AI --> Answer["Answer:<br/>'Oct 25, Jake checkup<br/>+ ice cream'"]
 
-    style Phase3 fill:#ffeb3b
-    style Context fill:#c8e6c9
+    style Context fill:#fff9c4
+    style Package fill:#c8e6c9
     style Answer fill:#90EE90
 ```
 
-**4 Phases:**
-1. **Temporal**: Current entry + historical (same date prev years) + recent (7 days)
-2. **Entities**: 10 entities from entry + related entities
-3. **KG Relations** ⭐: Graph traversal → Top 5 (already explained in Slide 6)
-4. **Insights**: AI-discovered patterns (if available)
+**Context Components (Real Demo):**
+- **Temporal**: Current entry + recent (7 days) + historical (same date prev years)
+- **Entities**: 10 entities extracted from entry
+- **Related Notes** ⭐: Top 5 entries via KG traversal (scores: 1.68-1.28)
+- **Insights**: AI-discovered patterns (e.g., "Sarah 100% coverage")
 
-**Real Context Package (Demo):**
-- 1 current entry (Oct 25)
-- 5 related entries (via KG, scores: 1.68-1.28)
-- 10 entities from entry
-- Access to 105 total relationships
+**Real Example:**
+- **User asks**: "When was last quality time with Jake?"
+- **AI receives**: 1 current + 5 related entries + 10 entities + access to 105 relationships
+- **AI answers**: "October 25th, Jake's 4-year checkup + ice cream after"
 
-**Why Better Than Standard RAG?**
-- ✅ Graph structure (not just vector similarity)
-- ✅ Explainable (knows WHY related)
-- ✅ Type-aware (CAUSAL > EMOTIONAL > TOPICAL)
-- ✅ Recency-aware (recent × 1.0, old × 0.5)
-- ✅ Token efficient (top 5 only)
+**📖 Technical Details:** [TECHNICAL_DEEP_DIVE.md - Feature 2](./TECHNICAL_DEEP_DIVE.md#feature-2-context-aware-chat-finding-related-entries)
 
 **🎤 Speaker Script (Tiếng Việt):**
 
-> "Complete 4-phase RAG system. Phase 1: Temporal context - current + historical + recent. Phase 2: Entities extraction. Phase 3: Related Notes qua KG - đây là innovation chính, đã giải thích ở slide trước. Phase 4: Insights nếu có.
+> "Tính năng 3: Context-Aware Chat. Khi user mở chat, hệ thống load complete context.
 >
-> Kết quả: Context package gồm 1 current entry, 5 related entries với scores và reasons, 10 entities, access tới 105 relationships.
+> 4 loại context: Temporal - current + recent + historical. Entities - 10 entities từ entry. Related Notes - top 5 entries qua KG traversal với scores từ 1.28 đến 1.68. Insights - AI patterns như 'Sarah 100% coverage'.
 >
-> Tại sao tốt hơn standard RAG? Graph structure thay vì chỉ vector similarity. Explainable - biết WHY. Type-aware, Recency-aware, Token efficient."
+> Ví dụ thực: User hỏi 'Lần cuối với Jake?' → AI nhận complete context package → Trả lời instant: 'October 25th, Jake's checkup + ice cream'.
+>
+> Chi tiết graph traversal process, scoring logic 156→19→5, recency decay - xem TECHNICAL_DEEP_DIVE document."
 
 **🎤 Speaker Script (日本語):**
 
-> "完全(かんぜん)な4-phase RAGシステム。Phase 1：Temporal context - current + historical + recent。Phase 2：Entities抽出(ちゅうしゅつ)。Phase 3：KGでRelated Notes - これがメインイノベーション、前(まえ)のスライドで説明(せつめい)しました。Phase 4：Insights（ある場合(ばあい)）。
+> "機能(きのう)3：Context-Aware Chat。ユーザーがchatを開(ひら)くと、システムは完全(かんぜん)なcontextをロードします。
 >
-> 結果(けっか)：Context packageは1つのcurrent entry、5つのrelated entries（スコアと理由(りゆう)付(つ)き）、10エンティティ、105リレーションシップへのアクセス。
+> 4つのcontext types：Temporal - current + recent + historical。Entities - entryから10エンティティ。Related Notes - KG traversalでトップ5エントリー、1.28から1.68のスコア。Insights - 'Sarah 100% coverage'などのAIパターン。
 >
-> なぜstandard RAGより良(よ)いか？Vector similarityだけでなくgraph structure。Explainable - WHYが分(わ)かる。Type-aware、Recency-aware、Token efficient。"
+> 実例(じつれい)：ユーザーが'Jakeと最後(さいご)はいつ？'と聞(き)く → AIが完全(かんぜん)なcontext packageを受(う)け取(と)る → 即座(そくざ)に回答(かいとう)：'October 25th, Jakeのcheckup + ice cream'。
+>
+> Graph traversal process、156→19→5のscoringロジック、recency decayの詳細(しょうさい) - TECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
 
 ---
 
-# Slide 8: Technical Architecture
+# Slide 7: Technical Architecture
 
 ```mermaid
 graph TB
@@ -441,7 +359,7 @@ graph TB
 
 ---
 
-# Slide 9: Future Roadmap
+# Slide 8: Future Roadmap
 
 ```mermaid
 timeline
@@ -486,7 +404,7 @@ timeline
 
 ---
 
-# Slide 10: Q&A
+# Slide 9: Q&A
 
 ```mermaid
 mindmap
@@ -566,7 +484,7 @@ mindmap
 
 ---
 
-# Slide 11: Thank You
+# Slide 10: Thank You
 
 ```
 ╔════════════════════════════════════════╗
@@ -607,38 +525,46 @@ mindmap
 
 **🎤 Speaker Script (Tiếng Việt):**
 
-> "Tổng kết:
+> "Tổng kết 3 tính năng cốt lõi:
 >
-> Năm key takeaways: Problem to Solution - 20 phút thành 1 giây. Real Results - 119 entities + 105 relationships proven. Technical Innovation - Knowledge Graph + 4-phase RAG. Quality - 100% deduplication, explainable. Production-Ready - v0.1.0, MIT license, App Store.
+> 1. Entity Extraction: 119 entities từ 20 entries. 40 emotion entities - emotional intelligence. Sarah 100% coverage - perfect detection.
 >
-> Điều đặc biệt: Emotional intelligence với 40 emotions. Explainability - không black box. Privacy-first - 100% local. Verifiable - mọi số liệu backed by real data.
+> 2. Relationship Discovery: AI tự động tạo 105 relationships với 4 types (CAUSAL, EMOTIONAL, TEMPORAL, TOPICAL) và confidence scores. Explainable với evidence từ văn bản gốc.
 >
-> Tất cả source code, demo data, export JSON đều trên GitHub. Sẵn sàng show live demo hoặc verify các con số.
+> 3. Context-Aware Chat: Graph traversal tìm related entries qua 156 scores → 19 entries → Top 5. Có lý do rõ ràng, recency-aware, explainable.
+>
+> Kết quả: Hệ thống hiểu cảm xúc, ngữ cảnh, và lịch sử của user. AI trả lời chính xác với context đầy đủ.
+>
+> Tất cả source code, demo data, export JSON đều trên GitHub. Production-ready v0.1.0, MIT license, App Store compliant.
 >
 > Cảm ơn các bạn đã lắng nghe!"
 
 **🎤 Speaker Script (日本語):**
 
-> "まとめ：
+> "3つのcore featuresをまとめます：
 >
-> 5つの重要(じゅうよう)ポイント：Problem to Solution - 20分(ふん)が1秒(びょう)に。Real Results - 119エンティティ + 105リレーションシップが証明(しょうめい)済(ず)み。Technical Innovation - Knowledge Graph + 4-phase RAG。Quality - 100%重複排除(じゅうふくはいじょ)、説明可能(せつめいかのう)。Production-Ready - v0.1.0、MITライセンス、App Store準拠(じゅんきょ)。
+> 1. Entity Extraction: 20エントリーから119エンティティ。40の感情(かんじょう)エンティティ - emotional intelligence。Sarah 100%カバレッジ - 完璧(かんぺき)な検出(けんしゅつ)。
 >
-> 特別(とくべつ)な点(てん)：40感情(かんじょう)のEmotional intelligence。Explainability - ブラックボックスではない。Privacy-first - 100%ローカル。Verifiable - すべてのデータが実際(じっさい)のデータに基(もと)づいています。
+> 2. Relationship Discovery: AIが自動的(じどうてき)に105リレーションシップを作成(さくせい)。4 types（CAUSAL、EMOTIONAL、TEMPORAL、TOPICAL）とconfidence scores。元(もと)のテキストのevidenceでexplainable。
 >
-> すべてのソースコード、デモデータ、export JSONはGitHubにあります。ライブデモまたは数字(すうじ)の確認(かくにん)ができます。
+> 3. Context-Aware Chat: Graph traversalで156 scores → 19 entries → Top 5のrelated entriesを見(み)つける。明確(めいかく)な理由(りゆう)、recency-aware、explainable。
+>
+> 結果(けっか): システムはユーザーの感情(かんじょう)、context、履歴(りれき)を理解(りかい)。AIは完全(かんぜん)なcontextで正確(せいかく)に答(こた)えます。
+>
+> すべてのソースコード、デモデータ、export JSONはGitHubにあります。Production-ready v0.1.0、MITライセンス、App Store準拠(じゅんきょ)。
 >
 > ご清聴(せいちょう)ありがとうございました！"
 
 ---
 
 **Presentation Complete!**
-- **Total duration**: ~15-18 minutes (11 slides, concise overview)
-- **Focus**: Product concept, key features, architecture, roadmap
-- **Technical details**: Moved to [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
+- **Total duration**: ~12-15 minutes (10 slides, concise overview)
+- **Focus**: Product concept, key features (high-level only)
+- **Technical details**: All moved to [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
 - **Structure**:
   - Slides 1-3: Problem → Solution → Overview
-  - Slides 4-7: 3 Core Features (Entity Extraction, Relationship Discovery, Context-Aware Chat)
-  - Slides 8-9: Architecture + Roadmap
-  - Slides 10-11: Q&A + Thank You
+  - Slides 4-6: 3 Core Features (diagrams + scripts + links to details)
+  - Slides 7-8: Architecture + Roadmap
+  - Slides 9-10: Q&A + Thank You (with comprehensive closing script)
 - **Languages**: Vietnamese + Japanese (with furigana) speaker scripts for all slides
-- **Use case**: Initial product presentation, high-level overview for stakeholders
+- **Use case**: Stakeholder presentation, product pitch, interview intro
