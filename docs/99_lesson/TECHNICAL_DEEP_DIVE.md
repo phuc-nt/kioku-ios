@@ -6,6 +6,28 @@
 
 ## Feature 1: Relationship Discovery
 
+**📋 Overview - What This Feature Does:**
+
+This feature automatically discovers meaningful connections between entities in your journal entries. When you write "Feeling stressed and guilty for not helping Sarah," the AI doesn't just extract entities (stressed, guilty, Sarah) - it understands that "stressed" CAUSES "guilty" and creates a typed relationship with confidence score and evidence.
+
+**🎯 Key Objectives:**
+1. **Identify relationship types**: 4 types (CAUSAL, EMOTIONAL, TEMPORAL, TOPICAL) with different weights
+2. **Calculate confidence scores**: 0.0-1.0 based on evidence clarity, proximity, and linking words
+3. **Store with evidence**: Each relationship has text excerpt proving the connection
+4. **Build queryable graph**: "Show all causes of stress" becomes possible
+
+**📖 Sections Covered:**
+1. How AI creates relationships (4-question framework)
+2. Understanding 4 relationship types (meanings, examples, weights, use cases)
+3. Weight decision logic (confidence scoring algorithm)
+4. Real example analysis: "stressed → guilty" (0.75 confidence)
+5. Knowledge Graph view (105 relationships visualized)
+
+**💡 Why This Matters:**
+Unlike Vector DB which only finds "similar" entries, this creates explicit, typed, weighted connections with reasons. You can query "What makes me stressed?" and get causal relationships, not just semantic similarity.
+
+---
+
 ### How AI Creates Relationships
 
 ```mermaid
@@ -236,6 +258,44 @@ graph LR
 ---
 
 ## Feature 2: Context-Aware Chat (Finding Related Entries)
+
+**📋 Overview - What This Feature Does:**
+
+When you open chat for an entry (e.g., "Jake's checkup on Oct 25"), the system uses the Knowledge Graph to find the most relevant related entries. Instead of sending ALL 20 entries to AI (expensive, slow, irrelevant), it intelligently selects the TOP 5 most related entries through graph traversal, scoring, and filtering.
+
+**🎯 Key Objectives:**
+1. **Traverse the graph**: Follow entity relationships to discover connected entries
+2. **Score by relevance**: Calculate scores based on relationship types and weights
+3. **Apply recency decay**: Recent entries (< 7 days) matter more than old ones (> 30 days)
+4. **Filter and rank**: Keep only top 5 entries with highest scores and clear reasons
+
+**📖 Sections Covered:**
+1. Phase 1: Graph traversal (10 entities → 156 scores → 19 unique entries)
+2. Scoring example: Entity "happy" (how one entity contributes 8 relationship scores)
+3. Score accumulation (one entry gets scores from multiple entities)
+4. Phase 4: Filter, sort, limit → Top 5 (apply recency decay, filter threshold, rank)
+
+**💡 Why This Matters:**
+
+**Problem**: Sending all 20 entries to AI = 15K tokens, slow, irrelevant context.
+
+**Solution**: Smart filtering via graph traversal:
+- **Step 1**: 10 entities in current entry
+- **Step 2**: Each entity has relationships (happy has 8, Sarah has 20+)
+- **Step 3**: Follow relationships to find connected entries
+- **Step 4**: Score each entry (CAUSAL: +0.9, EMOTIONAL: +0.7, etc.)
+- **Step 5**: Apply recency decay (recent ×1.0, old ×0.5)
+- **Result**: Top 5 entries (3-4K tokens) with explicit reasons
+
+**Example**:
+- User asks: "When was last quality time with Jake?"
+- System finds: Entry Oct 25 scored 1.68 via "happy → taco night" + "Jake → checkup"
+- AI receives: 1 current + 5 related entries (not all 20)
+- AI answers: "October 25th, Jake's checkup + ice cream after"
+
+**Key Advantage**: Explainable ("via emotional through happy") + Efficient (top 5 only) + Type-aware (causal > emotional > topical)
+
+---
 
 ### Phase 1: Graph Traversal (Core Process)
 
