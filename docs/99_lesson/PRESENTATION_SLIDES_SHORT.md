@@ -182,7 +182,7 @@ graph LR
 
 # Slide 5: Feature 2 - Relationship Discovery
 
-## How AI Creates Relationships
+## Part 1: How AI Creates Relationships
 
 ```mermaid
 sequenceDiagram
@@ -203,7 +203,88 @@ sequenceDiagram
     Note over Graph: Type → Weight:<br/>CAUSAL: 0.9 (strongest)<br/>EMOTIONAL: 0.7<br/>TEMPORAL: 0.5<br/>TOPICAL: 0.4
 ```
 
-## Weight Decision Logic
+**🎤 Script for Diagram 1 (Tiếng Việt):**
+
+> "Diagram này cho thấy cách AI tạo relationships. AI nhận entry content và entities đã extract. Ví dụ 'Jake was overtired and threw a tantrum' với 2 entities: Jake và frustrated.
+>
+> AI tự hỏi 4 câu: Question 1 - A có gây ra B không? Question 2 - A có làm tôi cảm thấy B không? Question 3 - A và B cùng thời gian không? Question 4 - A và B cùng chủ đề không?
+>
+> Từ văn bản 'threw a tantrum', AI nhận ra đây là emotional relationship: Jake → frustrated. Tạo relationship với confidence 0.85 và evidence 'threw a tantrum'. Lưu vào graph với weight = 0.7 (emotional type)."
+
+**🎤 Script for Diagram 1 (日本語):**
+
+> "この図(ず)はAIがどのようにリレーションシップを作成(さくせい)するかを示(しめ)します。AIはentry contentと抽出(ちゅうしゅつ)済(ず)みのentitiesを受(う)け取(と)ります。例(れい)：'Jake was overtired and threw a tantrum'、2つのentities：Jakeとfrustratedがあります。
+>
+> AIは4つの質問(しつもん)をします：Question 1 - AはBを引(ひ)き起(お)こすか？Question 2 - AはB感情(かんじょう)を感(かん)じさせるか？Question 3 - AとBは同(おな)じ時間(じかん)か？Question 4 - AとBは同(おな)じトピックか？
+>
+> テキスト'threw a tantrum'から、AIはこれがemotional relationshipだと認識(にんしき)：Jake → frustrated。Confidence 0.85とevidence 'threw a tantrum'でリレーションシップを作成(さくせい)。Weight = 0.7（emotionalタイプ）でgraphに保存(ほぞん)します。"
+
+---
+
+## Part 2: Understanding Relationship Types
+
+**4 Relationship Types and Their Meanings:**
+
+**1. CAUSAL (Nhân quả) - Weight: 0.9**
+- **Meaning**: A causes B, A leads to B
+- **Real examples from demo:**
+  - "stressed → guilty" (feeling stressed CAUSES guilt)
+  - "deployment → anxious" (work deployment CAUSES anxiety)
+- **Why strongest (0.9)?** Direct cause-effect is most meaningful connection
+- **Use case**: "What makes me feel stressed?" → Find all causes of stress
+
+**2. EMOTIONAL (Cảm xúc) - Weight: 0.7**
+- **Meaning**: Person/Event/Place → Emotion felt
+- **Real examples from demo:**
+  - "Jake → frustrated" (Jake's tantrum → frustration)
+  - "Sarah → happy" (time with Sarah → happiness)
+  - "pottery workshop → grateful" (activity → positive feeling)
+- **Why strong (0.7)?** Emotions are key to understanding life patterns
+- **Use case**: "When do I feel happy?" → Find happiness triggers
+
+**3. TEMPORAL (Thời gian) - Weight: 0.5**
+- **Meaning**: A and B happened at same time, or A before/after B
+- **Real examples from demo:**
+  - "Sarah → home" (Sarah was at home - co-occurrence)
+  - "Jake → home" (Jake also at home - same time)
+- **Why medium (0.5)?** Useful but less meaningful than cause or emotion
+- **Use case**: "What happened when I was at home?" → Timeline reconstruction
+
+**4. TOPICAL (Chủ đề) - Weight: 0.4**
+- **Meaning**: A and B share same topic/theme
+- **Real examples from demo:**
+  - "work-life balance → stressed" (both about work topic)
+  - "Sarah → Jake" (both family members - family topic)
+- **Why weakest (0.4)?** Most general connection, less specific
+- **Use case**: "All entries about family" → Thematic grouping
+
+**🎤 Script for Relationship Types (Tiếng Việt):**
+
+> "4 loại relationships có ý nghĩa khác nhau và weight khác nhau.
+>
+> CAUSAL - nhân quả - weight 0.9, mạnh nhất. A GÂY RA B. Ví dụ thực: 'stressed gây ra guilty', 'deployment gây ra anxious'. Đây là loại quan trọng nhất vì cho thấy causality. Dùng để trả lời: 'Điều gì khiến tôi stressed?'
+>
+> EMOTIONAL - cảm xúc - weight 0.7, mạnh. Người/sự kiện/địa điểm → cảm xúc. Ví dụ: 'Jake → frustrated', 'Sarah → happy', 'pottery workshop → grateful'. Quan trọng để hiểu patterns cảm xúc. Dùng để trả lời: 'Khi nào tôi cảm thấy hạnh phúc?'
+>
+> TEMPORAL - thời gian - weight 0.5, trung bình. A và B cùng thời điểm. Ví dụ: 'Sarah at home', 'Jake at home' - cùng lúc ở nhà. Useful nhưng ít meaningful hơn. Dùng để reconstruct timeline.
+>
+> TOPICAL - chủ đề - weight 0.4, yếu nhất. A và B cùng topic. Ví dụ: 'work-life balance và stressed cùng về work', 'Sarah và Jake cùng family topic'. General nhất, ít specific. Dùng để group theo theme."
+
+**🎤 Script for Relationship Types (日本語):**
+
+> "4つのrelationship typesは異(こと)なる意味(いみ)と異(こと)なるweightがあります。
+>
+> CAUSAL - 因果(いんが) - weight 0.9、最強(さいきょう)。AがBを引(ひ)き起(お)こす。実例(じつれい)：'stressedがguiltyを引(ひ)き起(お)こす'、'deploymentがanxiousを引(ひ)き起(お)こす'。最(もっと)も重要(じゅうよう)な種類(しゅるい)、因果関係(いんがかんけい)を示(しめ)します。使用例(しようれい)：'何(なに)が私(わたし)をstressedにするか？'
+>
+> EMOTIONAL - 感情(かんじょう) - weight 0.7、強(つよ)い。人(ひと)/イベント/場所(ばしょ) → 感情(かんじょう)。例(れい)：'Jake → frustrated'、'Sarah → happy'、'pottery workshop → grateful'。感情(かんじょう)パターンを理解(りかい)するために重要(じゅうよう)。使用例(しようれい)：'いつ幸(しあわ)せを感(かん)じるか？'
+>
+> TEMPORAL - 時間(じかん) - weight 0.5、中程度(ちゅうていど)。AとBが同(おな)じ時(とき)。例(れい)：'Sarah at home'、'Jake at home' - 同時(どうじ)に家(いえ)にいる。有用(ゆうよう)だが、meaningfulさは少(すく)ない。Timelineの再構築(さいこうちく)に使用(しよう)。
+>
+> TOPICAL - トピック - weight 0.4、最弱(さいじゃく)。AとBが同(おな)じトピック。例(れい)：'work-life balanceとstressedは両方(りょうほう)workについて'、'SarahとJakeは両方(りょうほう)family topic'。最(もっと)も一般的(いっぱんてき)、具体性(ぐたいせい)が少(すく)ない。Themeでグループ化(か)するために使用(しよう)。"
+
+---
+
+## Part 3: Weight Decision Logic
 
 **How AI assigns confidence (0.0-1.0):**
 
@@ -237,7 +318,29 @@ graph TD
     style Final fill:#fff9c4
 ```
 
-## Real Example: stressed → guilty
+**🎤 Script for Diagram 2 (Tiếng Việt):**
+
+> "Diagram này cho thấy logic AI quyết định confidence score.
+>
+> Bước 1: Check proximity - Evidence cùng câu không? Cùng câu thì +0.2 confidence. Nearby sentences thì +0.1. Khác đoạn thì base confidence thấp.
+>
+> Bước 2: Check linking words - Có từ nối mạnh như 'caused', 'made me feel' không? Có thì +0.15. Từ vừa như 'and', 'then', 'because' thì +0.08. Không có từ nối rõ thì +0.0.
+>
+> Bước 3: Tính final confidence. Bước 4: Filter - chỉ giữ relationships có confidence ≥ 0.6. Dưới 0.6 bị reject vì evidence quá yếu."
+
+**🎤 Script for Diagram 2 (日本語):**
+
+> "この図(ず)はAIがconfidence scoreを決定(けってい)するロジックを示(しめ)します。
+>
+> Step 1：Proximityチェック - Evidenceは同(おな)じ文(ぶん)にあるか？同(おな)じ文(ぶん)なら+0.2 confidence。近(ちか)くの文(ぶん)なら+0.1。別(べつ)の段落(だんらく)ならbase confidenceは低(ひく)い。
+>
+> Step 2：Linking wordsチェック - 'caused'、'made me feel'のような強(つよ)い接続語(せつぞくご)があるか？あれば+0.15。'and'、'then'、'because'のような中程度(ちゅうていど)なら+0.08。明確(めいかく)な接続語(せつぞくご)がなければ+0.0。
+>
+> Step 3：Final confidenceを計算(けいさん)。Step 4：Filter - confidence ≥ 0.6のリレーションシップのみ保持(ほじ)。0.6未満(みまん)はevidenceが弱(よわ)すぎるためreject。"
+
+---
+
+## Part 4: Real Example - stressed → guilty
 
 **Entry text:** "Feeling stressed and guilty for not being there to help"
 
@@ -253,7 +356,25 @@ graph TD
 - Evidence: "Feeling stressed and guilty..."
 - Weight for scoring: **0.9** (causal type)
 
-## Knowledge Graph View
+**🎤 Script for Example (Tiếng Việt):**
+
+> "Ví dụ cụ thể: văn bản 'Feeling stressed and guilty for not being there to help'.
+>
+> AI analysis: Check 1 - cùng câu, proximity cao, +0.2. Check 2 - có từ 'and', medium strength, +0.08. Check 3 - logic causal rõ ràng: stressed GÂY RA guilty. Nhưng không có từ mạnh như 'caused', nên không +0.15.
+>
+> Kết quả: confidence = 0.75 (medium-high). Type là CAUSAL vì có causality rõ. Evidence trích từ văn bản gốc. Weight cho scoring sau này là 0.9 - mạnh nhất vì là causal type."
+
+**🎤 Script for Example (日本語):**
+
+> "具体例(ぐたいれい)：テキスト'Feeling stressed and guilty for not being there to help'。
+>
+> AI分析(ぶんせき)：Check 1 - 同(おな)じ文(ぶん)、proximity高(たか)い、+0.2。Check 2 - 'and'という語(ご)がある、medium strength、+0.08。Check 3 - causalロジックが明確(めいかく)：stressedがguiltyを引(ひ)き起(お)こす。しかし'caused'のような強(つよ)い語(ご)はない、+0.15なし。
+>
+> 結果(けっか)：confidence = 0.75（medium-high）。Typeは因果関係(いんがかんけい)が明確(めいかく)なのでCAUSAL。Evidenceは元(もと)のテキストから抽出(ちゅうしゅつ)。後(あと)のスコアリング用(よう)weightは0.9 - causal typeのため最強(さいきょう)。"
+
+---
+
+## Part 5: Knowledge Graph View
 
 ```mermaid
 graph TD
@@ -294,25 +415,29 @@ graph TD
 - ✅ **Weighted**: Understand strength (0.9 > 0.4)
 - ✅ **Queryable**: "Show all emotional relationships with Sarah"
 
-**🎤 Speaker Script (Tiếng Việt):**
+**🎤 Script for Diagram 3 (Tiếng Việt):**
 
-> "Tính năng 2: Relationship Discovery. AI đọc entry và tự hỏi 4 câu: A có gây ra B? A có làm tôi cảm thấy B? A và B cùng thời gian? A và B cùng chủ đề?
+> "Đây là knowledge graph view cho thấy 105 relationships thực tế.
 >
-> AI quyết định confidence dựa vào: proximity (cùng câu = cao), linking words ('caused' mạnh hơn 'and'), và logic rõ ràng. Ví dụ 'stressed and guilty' → confidence 0.75 vì cùng câu, có 'and', logic causal rõ.
+> Nhìn vào graph: Các node màu xanh là people (Sarah, Jake, Emma). Màu xanh dương là places (home). Màu hồng là events (taco night, checkup). Màu hồng nhạt là emotions (happy, nervous, proud).
 >
-> Mỗi relationship type có weight: CAUSAL 0.9 (mạnh nhất), EMOTIONAL 0.7, TEMPORAL 0.5, TOPICAL 0.4. Weight này dùng để score related entries sau.
+> Mỗi arrow là một relationship với type và weight. Ví dụ: Sarah → happy là emotional với weight 0.90. Jake → home là temporal với weight 0.90. Happy → taco night là emotional với weight 0.85.
 >
-> Từ 20 entries, tìm được 105 relationships. Mỗi relationship có evidence trích từ văn bản gốc - user verify được. Tại sao KG tốt hơn Vector DB? Explainable, Typed, Weighted, Queryable."
+> Từ 20 entries, phát hiện được 105 relationships - trung bình 5.25 per entry. Mỗi relationship có đầy đủ: type, confidence, evidence từ văn bản, và weight.
+>
+> Tại sao KG tốt hơn Vector DB? Explainable - thấy evidence chính xác. Typed - biết nature của relationship. Weighted - hiểu được strength. Queryable - có thể query như 'Show all emotional relationships with Sarah'."
 
-**🎤 Speaker Script (日本語):**
+**🎤 Script for Diagram 3 (日本語):**
 
-> "機能(きのう)2：Relationship Discovery。AIはエントリーを読(よ)んで4つの質問(しつもん)をします：AはBを引(ひ)き起(お)こすか？AはB感情(かんじょう)を感(かん)じさせるか？AとBは同(おな)じ時間(じかん)か？AとBは同(おな)じトピックか？
+> "これは105の実際(じっさい)のrelationshipsを示(しめ)すknowledge graph viewです。
 >
-> AIはconfidenceを決(き)めます：proximity（同(おな)じ文(ぶん) = 高(たか)い）、linking words（'caused'は'and'より強(つよ)い）、明確(めいかく)なロジック。例(れい)：'stressed and guilty' → confidence 0.75、同(おな)じ文(ぶん)、'and'あり、causalロジック明確(めいかく)。
+> Graphを見(み)ると：緑(みどり)のノードはpeople（Sarah、Jake、Emma）。青(あお)はplaces（home）。ピンクはevents（taco night、checkup）。薄(うす)いピンクはemotions（happy、nervous、proud）。
 >
-> 各(かく)relationship typeにはweight：CAUSAL 0.9（最強(さいきょう)）、EMOTIONAL 0.7、TEMPORAL 0.5、TOPICAL 0.4。このweightは後(あと)でrelated entriesのスコアに使(つか)います。
+> 各(かく)矢印(やじるし)はtypeとweightを持(も)つrelationshipです。例(れい)：Sarah → happyはemotional、weight 0.90。Jake → homeはtemporal、weight 0.90。Happy → taco nightはemotional、weight 0.85。
 >
-> 20エントリーから105リレーションシップ発見(はっけん)。各(かく)relationshipにはテキストからのevidence - ユーザーが確認(かくにん)できます。なぜKGがVector DBより良(よ)いか？Explainable、Typed、Weighted、Queryable。"
+> 20エントリーから105リレーションシップ発見(はっけん) - 平均(へいきん)5.25。各(かく)relationshipは完全(かんぜん)に：type、confidence、テキストからのevidence、weightがあります。
+>
+> なぜKGがVector DBより良(よ)いか？Explainable - 正確(せいかく)なevidenceが見(み)える。Typed - relationshipのnatureが分(わ)かる。Weighted - strengthが理解(りかい)できる。Queryable - 'Show all emotional relationships with Sarah'のようにクエリできる。"
 
 ---
 
