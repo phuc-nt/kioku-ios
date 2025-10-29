@@ -2,7 +2,8 @@
 ## Technical Presentation Slides (Short Version)
 
 **Duration**: 15-20 minutes
-**Style**: Visual Diagrams + Concise Explanations
+**Focus**: Product Overview + Key Concepts
+**Technical Details**: See [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
 
 ---
 
@@ -182,199 +183,7 @@ graph LR
 
 # Slide 5: Feature 2 - Relationship Discovery
 
-## Part 1: How AI Creates Relationships
-
-```mermaid
-sequenceDiagram
-    participant Entry as Entry Oct 25
-    participant AI as AI Analysis
-    participant Graph as Knowledge Graph
-
-    Entry->>AI: Entry content + Entities
-    Note over Entry: "Jake was overtired and<br/>threw a tantrum at bedtime"<br/><br/>Entities: Jake, frustrated
-
-    AI->>AI: Analyze text for connections
-    Note over AI: Question 1: Does A cause B?<br/>Question 2: Does A → emotion?<br/>Question 3: Are A and B in same time?<br/>Question 4: Do A and B share topic?
-
-    AI->>Graph: Create relationship
-    Note over Graph: Jake --[emotional]--> frustrated<br/>confidence: 0.85<br/>evidence: "threw a tantrum"
-
-    Graph->>Graph: Store with weight
-    Note over Graph: Type → Weight:<br/>CAUSAL: 0.9 (strongest)<br/>EMOTIONAL: 0.7<br/>TEMPORAL: 0.5<br/>TOPICAL: 0.4
-```
-
-**🎤 Script for Diagram 1 (Tiếng Việt):**
-
-> "Diagram này cho thấy cách AI tạo relationships. AI nhận entry content và entities đã extract. Ví dụ 'Jake was overtired and threw a tantrum' với 2 entities: Jake và frustrated.
->
-> AI tự hỏi 4 câu: Question 1 - A có gây ra B không? Question 2 - A có làm tôi cảm thấy B không? Question 3 - A và B cùng thời gian không? Question 4 - A và B cùng chủ đề không?
->
-> Từ văn bản 'threw a tantrum', AI nhận ra đây là emotional relationship: Jake → frustrated. Tạo relationship với confidence 0.85 và evidence 'threw a tantrum'. Lưu vào graph với weight = 0.7 (emotional type)."
-
-**🎤 Script for Diagram 1 (日本語):**
-
-> "この図(ず)はAIがどのようにリレーションシップを作成(さくせい)するかを示(しめ)します。AIはentry contentと抽出(ちゅうしゅつ)済(ず)みのentitiesを受(う)け取(と)ります。例(れい)：'Jake was overtired and threw a tantrum'、2つのentities：Jakeとfrustratedがあります。
->
-> AIは4つの質問(しつもん)をします：Question 1 - AはBを引(ひ)き起(お)こすか？Question 2 - AはB感情(かんじょう)を感(かん)じさせるか？Question 3 - AとBは同(おな)じ時間(じかん)か？Question 4 - AとBは同(おな)じトピックか？
->
-> テキスト'threw a tantrum'から、AIはこれがemotional relationshipだと認識(にんしき)：Jake → frustrated。Confidence 0.85とevidence 'threw a tantrum'でリレーションシップを作成(さくせい)。Weight = 0.7（emotionalタイプ）でgraphに保存(ほぞん)します。"
-
----
-
-## Part 2: Understanding Relationship Types
-
-**4 Relationship Types and Their Meanings:**
-
-**1. CAUSAL (Nhân quả) - Weight: 0.9**
-- **Meaning**: A causes B, A leads to B
-- **Real examples from demo:**
-  - "stressed → guilty" (feeling stressed CAUSES guilt)
-  - "deployment → anxious" (work deployment CAUSES anxiety)
-- **Why strongest (0.9)?** Direct cause-effect is most meaningful connection
-- **Use case**: "What makes me feel stressed?" → Find all causes of stress
-
-**2. EMOTIONAL (Cảm xúc) - Weight: 0.7**
-- **Meaning**: Person/Event/Place → Emotion felt
-- **Real examples from demo:**
-  - "Jake → frustrated" (Jake's tantrum → frustration)
-  - "Sarah → happy" (time with Sarah → happiness)
-  - "pottery workshop → grateful" (activity → positive feeling)
-- **Why strong (0.7)?** Emotions are key to understanding life patterns
-- **Use case**: "When do I feel happy?" → Find happiness triggers
-
-**3. TEMPORAL (Thời gian) - Weight: 0.5**
-- **Meaning**: A and B happened at same time, or A before/after B
-- **Real examples from demo:**
-  - "Sarah → home" (Sarah was at home - co-occurrence)
-  - "Jake → home" (Jake also at home - same time)
-- **Why medium (0.5)?** Useful but less meaningful than cause or emotion
-- **Use case**: "What happened when I was at home?" → Timeline reconstruction
-
-**4. TOPICAL (Chủ đề) - Weight: 0.4**
-- **Meaning**: A and B share same topic/theme
-- **Real examples from demo:**
-  - "work-life balance → stressed" (both about work topic)
-  - "Sarah → Jake" (both family members - family topic)
-- **Why weakest (0.4)?** Most general connection, less specific
-- **Use case**: "All entries about family" → Thematic grouping
-
-**🎤 Script for Relationship Types (Tiếng Việt):**
-
-> "4 loại relationships có ý nghĩa khác nhau và weight khác nhau.
->
-> CAUSAL - nhân quả - weight 0.9, mạnh nhất. A GÂY RA B. Ví dụ thực: 'stressed gây ra guilty', 'deployment gây ra anxious'. Đây là loại quan trọng nhất vì cho thấy causality. Dùng để trả lời: 'Điều gì khiến tôi stressed?'
->
-> EMOTIONAL - cảm xúc - weight 0.7, mạnh. Người/sự kiện/địa điểm → cảm xúc. Ví dụ: 'Jake → frustrated', 'Sarah → happy', 'pottery workshop → grateful'. Quan trọng để hiểu patterns cảm xúc. Dùng để trả lời: 'Khi nào tôi cảm thấy hạnh phúc?'
->
-> TEMPORAL - thời gian - weight 0.5, trung bình. A và B cùng thời điểm. Ví dụ: 'Sarah at home', 'Jake at home' - cùng lúc ở nhà. Useful nhưng ít meaningful hơn. Dùng để reconstruct timeline.
->
-> TOPICAL - chủ đề - weight 0.4, yếu nhất. A và B cùng topic. Ví dụ: 'work-life balance và stressed cùng về work', 'Sarah và Jake cùng family topic'. General nhất, ít specific. Dùng để group theo theme."
-
-**🎤 Script for Relationship Types (日本語):**
-
-> "4つのrelationship typesは異(こと)なる意味(いみ)と異(こと)なるweightがあります。
->
-> CAUSAL - 因果(いんが) - weight 0.9、最強(さいきょう)。AがBを引(ひ)き起(お)こす。実例(じつれい)：'stressedがguiltyを引(ひ)き起(お)こす'、'deploymentがanxiousを引(ひ)き起(お)こす'。最(もっと)も重要(じゅうよう)な種類(しゅるい)、因果関係(いんがかんけい)を示(しめ)します。使用例(しようれい)：'何(なに)が私(わたし)をstressedにするか？'
->
-> EMOTIONAL - 感情(かんじょう) - weight 0.7、強(つよ)い。人(ひと)/イベント/場所(ばしょ) → 感情(かんじょう)。例(れい)：'Jake → frustrated'、'Sarah → happy'、'pottery workshop → grateful'。感情(かんじょう)パターンを理解(りかい)するために重要(じゅうよう)。使用例(しようれい)：'いつ幸(しあわ)せを感(かん)じるか？'
->
-> TEMPORAL - 時間(じかん) - weight 0.5、中程度(ちゅうていど)。AとBが同(おな)じ時(とき)。例(れい)：'Sarah at home'、'Jake at home' - 同時(どうじ)に家(いえ)にいる。有用(ゆうよう)だが、meaningfulさは少(すく)ない。Timelineの再構築(さいこうちく)に使用(しよう)。
->
-> TOPICAL - トピック - weight 0.4、最弱(さいじゃく)。AとBが同(おな)じトピック。例(れい)：'work-life balanceとstressedは両方(りょうほう)workについて'、'SarahとJakeは両方(りょうほう)family topic'。最(もっと)も一般的(いっぱんてき)、具体性(ぐたいせい)が少(すく)ない。Themeでグループ化(か)するために使用(しよう)。"
-
----
-
-## Part 3: Weight Decision Logic
-
-**How AI assigns confidence (0.0-1.0):**
-
-```mermaid
-graph TD
-    Start[AI reads entry text] --> Check1{Evidence in<br/>same sentence?}
-    Check1 -->|Yes| High1[+0.2 confidence]
-    Check1 -->|No| Check2{Evidence in<br/>nearby sentences?}
-    Check2 -->|Yes| Med1[+0.1 confidence]
-    Check2 -->|No| Low1[Base confidence]
-
-    High1 --> Check3{Strong linking<br/>words?}
-    Med1 --> Check3
-    Low1 --> Check3
-
-    Check3 -->|caused, made me feel| High2[+0.15]
-    Check3 -->|and, then, because| Med2[+0.08]
-    Check3 -->|No clear link| Low2[+0.0]
-
-    High2 --> Final[Final Confidence]
-    Med2 --> Final
-    Low2 --> Final
-
-    Final --> Filter{≥ 0.6?}
-    Filter -->|Yes| Keep[✅ Keep relationship]
-    Filter -->|No| Reject[❌ Reject]
-
-    style Start fill:#e3f2fd
-    style Keep fill:#c8e6c9
-    style Reject fill:#ffcdd2
-    style Final fill:#fff9c4
-```
-
-**🎤 Script for Diagram 2 (Tiếng Việt):**
-
-> "Diagram này cho thấy logic AI quyết định confidence score.
->
-> Bước 1: Check proximity - Evidence cùng câu không? Cùng câu thì +0.2 confidence. Nearby sentences thì +0.1. Khác đoạn thì base confidence thấp.
->
-> Bước 2: Check linking words - Có từ nối mạnh như 'caused', 'made me feel' không? Có thì +0.15. Từ vừa như 'and', 'then', 'because' thì +0.08. Không có từ nối rõ thì +0.0.
->
-> Bước 3: Tính final confidence. Bước 4: Filter - chỉ giữ relationships có confidence ≥ 0.6. Dưới 0.6 bị reject vì evidence quá yếu."
-
-**🎤 Script for Diagram 2 (日本語):**
-
-> "この図(ず)はAIがconfidence scoreを決定(けってい)するロジックを示(しめ)します。
->
-> Step 1：Proximityチェック - Evidenceは同(おな)じ文(ぶん)にあるか？同(おな)じ文(ぶん)なら+0.2 confidence。近(ちか)くの文(ぶん)なら+0.1。別(べつ)の段落(だんらく)ならbase confidenceは低(ひく)い。
->
-> Step 2：Linking wordsチェック - 'caused'、'made me feel'のような強(つよ)い接続語(せつぞくご)があるか？あれば+0.15。'and'、'then'、'because'のような中程度(ちゅうていど)なら+0.08。明確(めいかく)な接続語(せつぞくご)がなければ+0.0。
->
-> Step 3：Final confidenceを計算(けいさん)。Step 4：Filter - confidence ≥ 0.6のリレーションシップのみ保持(ほじ)。0.6未満(みまん)はevidenceが弱(よわ)すぎるためreject。"
-
----
-
-## Part 4: Real Example - stressed → guilty
-
-**Entry text:** "Feeling stressed and guilty for not being there to help"
-
-**AI Analysis:**
-1. ✅ Same sentence (proximity: high)
-2. ✅ Linking word "and" (medium strength)
-3. ✅ Clear causal logic: stress CAUSES guilt
-4. ⚠️ No strong word like "caused"
-
-**Result:**
-- Type: **CAUSAL**
-- Confidence: **0.75** (medium-high)
-- Evidence: "Feeling stressed and guilty..."
-- Weight for scoring: **0.9** (causal type)
-
-**🎤 Script for Example (Tiếng Việt):**
-
-> "Ví dụ cụ thể: văn bản 'Feeling stressed and guilty for not being there to help'.
->
-> AI analysis: Check 1 - cùng câu, proximity cao, +0.2. Check 2 - có từ 'and', medium strength, +0.08. Check 3 - logic causal rõ ràng: stressed GÂY RA guilty. Nhưng không có từ mạnh như 'caused', nên không +0.15.
->
-> Kết quả: confidence = 0.75 (medium-high). Type là CAUSAL vì có causality rõ. Evidence trích từ văn bản gốc. Weight cho scoring sau này là 0.9 - mạnh nhất vì là causal type."
-
-**🎤 Script for Example (日本語):**
-
-> "具体例(ぐたいれい)：テキスト'Feeling stressed and guilty for not being there to help'。
->
-> AI分析(ぶんせき)：Check 1 - 同(おな)じ文(ぶん)、proximity高(たか)い、+0.2。Check 2 - 'and'という語(ご)がある、medium strength、+0.08。Check 3 - causalロジックが明確(めいかく)：stressedがguiltyを引(ひ)き起(お)こす。しかし'caused'のような強(つよ)い語(ご)はない、+0.15なし。
->
-> 結果(けっか)：confidence = 0.75（medium-high）。Typeは因果関係(いんがかんけい)が明確(めいかく)なのでCAUSAL。Evidenceは元(もと)のテキストから抽出(ちゅうしゅつ)。後(あと)のスコアリング用(よう)weightは0.9 - causal typeのため最強(さいきょう)。"
-
----
-
-## Part 5: Knowledge Graph View
+**Core Concept:** AI analyzes entry text to find meaningful connections between entities.
 
 ```mermaid
 graph TD
@@ -405,272 +214,169 @@ graph TD
 ```
 
 **Real Results:**
-- **105 relationships** discovered (5.25 per entry average)
+- **105 relationships** from 20 entries (avg 5.25 per entry)
 - **4 types**: CAUSAL (0.9), EMOTIONAL (0.7), TEMPORAL (0.5), TOPICAL (0.4)
-- **Each relationship has**: type, confidence, evidence, weight
+- **Each has**: type, confidence (0.6-0.95), evidence text, weight
+
+**4 Relationship Types:**
+1. **CAUSAL** (0.9): "stressed → guilty" - A causes B
+2. **EMOTIONAL** (0.7): "Jake → frustrated" - Person/Event → Emotion
+3. **TEMPORAL** (0.5): "Sarah & Jake → home" - Time-based co-occurrence
+4. **TOPICAL** (0.4): "work-life balance → stressed" - Shared theme
 
 **Why Knowledge Graph > Vector DB?**
 - ✅ **Explainable**: See exact evidence from text
-- ✅ **Typed**: Know relationship nature (cause? emotion? time?)
+- ✅ **Typed**: Know relationship nature (cause vs emotion)
 - ✅ **Weighted**: Understand strength (0.9 > 0.4)
-- ✅ **Queryable**: "Show all emotional relationships with Sarah"
+- ✅ **Queryable**: "Show all causes of stress"
 
-**🎤 Script for Diagram 3 (Tiếng Việt):**
-
-> "Đây là knowledge graph view cho thấy 105 relationships thực tế.
->
-> Nhìn vào graph: Các node màu xanh là people (Sarah, Jake, Emma). Màu xanh dương là places (home). Màu hồng là events (taco night, checkup). Màu hồng nhạt là emotions (happy, nervous, proud).
->
-> Mỗi arrow là một relationship với type và weight. Ví dụ: Sarah → happy là emotional với weight 0.90. Jake → home là temporal với weight 0.90. Happy → taco night là emotional với weight 0.85.
->
-> Từ 20 entries, phát hiện được 105 relationships - trung bình 5.25 per entry. Mỗi relationship có đầy đủ: type, confidence, evidence từ văn bản, và weight.
->
-> Tại sao KG tốt hơn Vector DB? Explainable - thấy evidence chính xác. Typed - biết nature của relationship. Weighted - hiểu được strength. Queryable - có thể query như 'Show all emotional relationships with Sarah'."
-
-**🎤 Script for Diagram 3 (日本語):**
-
-> "これは105の実際(じっさい)のrelationshipsを示(しめ)すknowledge graph viewです。
->
-> Graphを見(み)ると：緑(みどり)のノードはpeople（Sarah、Jake、Emma）。青(あお)はplaces（home）。ピンクはevents（taco night、checkup）。薄(うす)いピンクはemotions（happy、nervous、proud）。
->
-> 各(かく)矢印(やじるし)はtypeとweightを持(も)つrelationshipです。例(れい)：Sarah → happyはemotional、weight 0.90。Jake → homeはtemporal、weight 0.90。Happy → taco nightはemotional、weight 0.85。
->
-> 20エントリーから105リレーションシップ発見(はっけん) - 平均(へいきん)5.25。各(かく)relationshipは完全(かんぜん)に：type、confidence、テキストからのevidence、weightがあります。
->
-> なぜKGがVector DBより良(よ)いか？Explainable - 正確(せいかく)なevidenceが見(み)える。Typed - relationshipのnatureが分(わ)かる。Weighted - strengthが理解(りかい)できる。Queryable - 'Show all emotional relationships with Sarah'のようにクエリできる。"
-
----
-
-# Slide 6: Feature 3 - How to Find Related Entries
-
-## Phase 3 Deep Dive: Knowledge Graph Traversal
-
-**Input: Entry Oct 25** (Jake's 4-year checkup)
-- Has 10 entities: Sarah, Emma, Jake, happy, nervous, chaotic, checkup, taco night, childhood development, family time
-
-### Step-by-Step Process
-
-```mermaid
-graph LR
-    subgraph Step1["Step 1: Get Entities"]
-        E1[📝 Entry Oct 25] --> Ent[10 Entities:<br/>Sarah, Jake, Emma,<br/>happy, nervous, etc.]
-    end
-
-    subgraph Step2["Step 2: Find Relationships"]
-        Ent --> R1[happy has 8 relationships]
-        Ent --> R2[Sarah has 20+ relationships]
-        Ent --> R3[Jake has 17 relationships]
-    end
-
-    subgraph Step3["Step 3: Get Connected Entities"]
-        R1 --> C1[pottery workshop<br/>pizza night<br/>taco night<br/>candy...]
-        R2 --> C2[farmers market<br/>pumpkin carving<br/>family time...]
-        R3 --> C3[soccer game<br/>school<br/>tantrum...]
-    end
-
-    subgraph Step4["Step 4: Find Entries"]
-        C1 --> Entry1[Entry Oct 5<br/>pottery class]
-        C2 --> Entry2[Entry Oct 1<br/>farmers market]
-        C3 --> Entry3[Entry Oct 12<br/>soccer game]
-    end
-
-    style E1 fill:#e3f2fd
-    style Ent fill:#fff9c4
-    style Entry1 fill:#c8e6c9
-    style Entry2 fill:#c8e6c9
-    style Entry3 fill:#c8e6c9
-```
-
-### Scoring Example: Entity "happy"
-
-**happy** has 8 relationships:
-1. happy --[emotional]--> pottery workshop (Oct 5 entry)
-2. happy --[emotional]--> pizza night (Oct 1 entry)
-3. happy --[emotional]--> taco night (Oct 25 entry - SELF, skip)
-4. happy --[emotional]--> candy (Oct 31 entry)
-5. happy --[emotional]--> family traditions (Oct 19 entry)
-6. happy --[emotional]--> Sarah (20 entries!)
-7. happy --[emotional]--> farmers market (Oct 1 entry)
-8. happy --[emotional]--> pottery workshop (Oct 12 entry)
-
-**Scoring each related entry:**
-
-Entry Oct 5 (pottery class):
-- Found via: happy → pottery workshop
-- Relationship type: EMOTIONAL
-- **Score: +0.7** (emotional weight)
-- Reason: "Connected via emotional relationship through happy"
-
-Entry Oct 5 can be found via MULTIPLE paths:
-- Via happy → pottery workshop: +0.7
-- Via Sarah → pottery workshop: +0.4 (topical)
-- Via grateful → Sarah: +0.7 (emotional)
-- **Total: 0.7 + 0.4 + 0.7 = 1.8**
-
-### Accumulation Across All Entities
-
-```mermaid
-graph TD
-    Entry25[📝 Entry Oct 25<br/>10 entities] --> Process{For each entity}
-
-    Process --> E1[Entity: happy<br/>8 relationships]
-    Process --> E2[Entity: Sarah<br/>20+ relationships]
-    Process --> E3[Entity: Jake<br/>17 relationships]
-    Process --> E4[Entity: nervous<br/>2 relationships]
-
-    E1 --> Scores1[+56 scores<br/>from happy paths]
-    E2 --> Scores2[+80 scores<br/>from Sarah paths]
-    E3 --> Scores3[+15 scores<br/>from Jake paths]
-    E4 --> Scores4[+5 scores<br/>from nervous paths]
-
-    Scores1 --> Total[Total: 156 scores]
-    Scores2 --> Total
-    Scores3 --> Total
-    Scores4 --> Total
-
-    Total --> Combine[Combine by entry:<br/>19 unique entries]
-
-    Combine --> List[Entry Oct 5: 2.1<br/>Entry Oct 12: 1.8<br/>Entry Oct 1: 1.4<br/>...]
-
-    style Entry25 fill:#e3f2fd
-    style Total fill:#fff9c4
-    style List fill:#c8e6c9
-```
-
-### Recency Decay + Filtering
-
-**Apply time-based decay:**
-
-```mermaid
-graph LR
-    Raw[Raw Scores] --> Decay{Recency Factor}
-
-    Decay -->|"< 7 days"| Recent[× 1.0<br/>100% weight]
-    Decay -->|"7-30 days"| Medium[× 0.8<br/>80% weight]
-    Decay -->|"> 30 days"| Old[× 0.5<br/>50% weight]
-
-    Recent --> Final1[Entry Oct 20: 1.8 × 1.0 = 1.8]
-    Medium --> Final2[Entry Oct 5: 2.1 × 0.8 = 1.68]
-    Old --> Final3[Entry Sep 1: 1.4 × 0.5 = 0.7]
-
-    Final1 --> Filter[Filter minRelevance ≥ 0.1]
-    Final2 --> Filter
-    Final3 --> Filter
-
-    Filter --> Sort[Sort by score DESC]
-    Sort --> Top5[Top 5 entries]
-
-    style Raw fill:#e3f2fd
-    style Top5 fill:#c8e6c9
-    style Filter fill:#fff9c4
-```
-
-**Final Result (Top 5):**
-1. Entry Oct 18: **1.52** - "via emotional through Jake; via temporal through checkup..."
-2. Entry Oct 5: **1.68** - "via emotional through happy; via topical through Sarah..."
-3. Entry Oct 12: **1.45** - "via emotional through Sarah; via topical through family time..."
-4. Entry Oct 3: **1.32** - "via causal through stressed; via emotional through happy..."
-5. Entry Oct 19: **1.28** - "via emotional through Emma; via topical through Jake..."
+**📖 Deep Dive:** See [TECHNICAL_DEEP_DIVE.md - Feature 1](./TECHNICAL_DEEP_DIVE.md#feature-1-relationship-discovery) for:
+- How AI creates relationships (4 questions framework)
+- Weight decision logic (confidence scoring)
+- Real example analysis: "stressed → guilty"
 
 **🎤 Speaker Script (Tiếng Việt):**
 
-> "Bây giờ giải thích chi tiết Phase 3: Cách tìm related entries qua Knowledge Graph.
+> "Tính năng 2: Relationship Discovery. AI phân tích văn bản để tìm connections giữa entities.
 >
-> Step 1: Lấy 10 entities từ entry. Step 2: Với MỖI entity, tìm tất cả relationships. Ví dụ 'happy' có 8 relationships: pottery workshop, pizza night, candy, Sarah...
+> Có 4 loại relationships: CAUSAL - nhân quả (0.9), EMOTIONAL - cảm xúc (0.7), TEMPORAL - thời gian (0.5), TOPICAL - chủ đề (0.4). Weight cao hơn = meaningful hơn.
 >
-> Step 3: Với MỖI relationship, lấy entity đầu kia. 'happy → pottery workshop' → lấy 'pottery workshop'. Step 4: Tìm tất cả entries chứa entity đó. 'pottery workshop' xuất hiện trong entry Oct 5, Oct 12.
+> Kết quả thực: 105 relationships từ 20 entries. Mỗi relationship có evidence từ văn bản gốc, confidence score, và type rõ ràng.
 >
-> Tính score: Entry Oct 5 được tìm thấy qua happy → pottery workshop. Relationship type là EMOTIONAL, weight = 0.7. Nhưng Oct 5 còn được tìm qua Sarah → pottery workshop (+0.4 topical), và grateful → Sarah (+0.7 emotional). Tổng = 2.1.
+> Tại sao tốt hơn Vector DB? Explainable - thấy lý do. Typed - biết nature. Weighted - hiểu strength. Queryable - có thể query specific.
 >
-> Làm như vậy với 10 entities → 156 scores → 19 unique entries. Apply recency decay: gần đây × 1.0, 7-30 ngày × 0.8, cũ hơn × 0.5. Filter minRelevance ≥ 0.1, sort, lấy top 5. Kết quả: 5 entries liên quan nhất với reasons rõ ràng."
+> Chi tiết kỹ thuật về cách AI tạo relationships và logic confidence scoring xem trong TECHNICAL_DEEP_DIVE document."
 
 **🎤 Speaker Script (日本語):**
 
-> "Phase 3の詳細(しょうさい)を説明(せつめい)します：Knowledge Graphで関連(かんれん)エントリーを見(み)つける方法(ほうほう)。
+> "機能(きのう)2：Relationship Discovery。AIはテキストを分析(ぶんせき)してentities間(かん)のconnectionsを見(み)つけます。
 >
-> Step 1：エントリーから10エンティティを取得(しゅとく)。Step 2：各(かく)エンティティのすべてのリレーションシップを検索(けんさく)。例(れい)：'happy'は8リレーションシップ：pottery workshop、pizza night、candy、Sarah...
+> 4つのrelationship types：CAUSAL - 因果(いんが)（0.9）、EMOTIONAL - 感情(かんじょう)（0.7）、TEMPORAL - 時間(じかん)（0.5）、TOPICAL - トピック（0.4）。Weightが高(たか)い = より意味(いみ)がある。
 >
-> Step 3：各(かく)リレーションシップで、もう一方(いっぽう)のエンティティを取得(しゅとく)。'happy → pottery workshop' → 'pottery workshop'を取(と)る。Step 4：そのエンティティを含(ふく)むすべてのエントリーを検索(けんさく)。'pottery workshop'はOct 5、Oct 12に登場(とうじょう)。
+> 実際(じっさい)の結果(けっか)：20エントリーから105リレーションシップ。各(かく)relationshipは元(もと)のテキストからのevidence、confidence score、明確(めいかく)なtypeがあります。
 >
-> スコア計算(けいさん)：Entry Oct 5はhappy → pottery workshopで発見(はっけん)。Relationship typeはEMOTIONAL、weight = 0.7。しかしOct 5はSarah → pottery workshop（+0.4 topical）とgrateful → Sarah（+0.7 emotional）でも発見(はっけん)。合計(ごうけい) = 2.1。
+> なぜVector DBより良(よ)いか？Explainable - 理由(りゆう)が見(み)える。Typed - natureが分(わ)かる。Weighted - strengthが理解(りかい)できる。Queryable - 特定(とくてい)のクエリ可能(かのう)。
 >
-> 10エンティティで同(おな)じ処理(しょり) → 156スコア → 19ユニークエントリー。Recency decay適用(てきよう)：最近(さいきん) × 1.0、7-30日(にち) × 0.8、古(ふる)い × 0.5。minRelevance ≥ 0.1でフィルター、ソート、トップ5を取得(しゅとく)。結果(けっか)：5つの最(もっと)も関連(かんれん)するエントリー、理由(りゆう)が明確(めいかく)。"
+> AIがどのようにrelationshipsを作成(さくせい)するか、confidence scoringのロジックなどの技術的(ぎじゅつてき)な詳細(しょうさい)はTECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
 
 ---
 
-# Slide 7: Feature 3 - Complete 4-Phase RAG
+# Slide 6: Feature 3 - Context-Aware Chat
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Chat as AIChatView
-    participant Context as ChatContextService
-    participant Related as RelatedNotesService
-    participant KG as Knowledge Graph
-    participant AI as OpenRouter API
+**Core Concept:** Use Knowledge Graph to find related entries for AI context.
 
-    User->>Chat: Open chat for Oct 25 entry (Jake's checkup)
-    Chat->>Context: generateContextForNote(entry)
+**Process Overview:**
+1. **Get entities** from current entry (e.g., 10 entities: Sarah, Jake, happy, nervous...)
+2. **Traverse graph** to find relationships (e.g., "happy" has 8 relationships)
+3. **Score entries** via relationship weights (EMOTIONAL: +0.7, CAUSAL: +0.9...)
+4. **Apply recency decay** (<7 days: ×1.0, 7-30 days: ×0.8, >30 days: ×0.5)
+5. **Filter & sort** → Top 5 related entries
 
-    Note over Context: Phase 1: Temporal Context
-    Context->>Context: Current entry (Oct 25)
-    Context->>Context: Historical notes (Oct 25 prev years)
-    Context->>Context: Recent notes (past 7 days)
+**Real Results from Demo:**
+- **Input**: Entry Oct 25 with 10 entities
+- **Process**: 156 scores from entity relationships → 19 unique entries
+- **Output**: Top 5 entries (scores: 1.68, 1.52, 1.45, 1.32, 1.28)
+- **Each with reason**: "Connected via emotional through happy; via topical through Sarah..."
 
-    Note over Context: Phase 2: Entity Context
-    Context->>KG: Fetch entities from entry
-    KG-->>Context: Sarah, Emma, Jake, happy, nervous, etc. (10 entities)
-    Context->>KG: Fetch entities from date range
-    KG-->>Context: All entities from recent entries
+**Why This Works:**
+- ✅ **Multi-path scoring**: One entry found via multiple entities (accumulated score)
+- ✅ **Type-aware**: CAUSAL (0.9) > EMOTIONAL (0.7) > TEMPORAL (0.5) > TOPICAL (0.4)
+- ✅ **Recency-aware**: Recent entries weighted higher
+- ✅ **Token efficient**: Only top 5, not all 20 entries
+- ✅ **Explainable**: See exact paths (why this entry is related)
 
-    Note over Context: Phase 3: Related Notes (KG)
-    Context->>Related: findRelatedNotes(entry, limit=5)
-    Related->>KG: Check 10 entities for relationships
-    Note over Related: Found 156 scores via entity relationships<br/>Combined to 19 unique entries
-    Related->>Related: Apply recency decay + relevance filter
-    Related-->>Context: 5 top related notes (scores: 1.68, 1.52...)
-
-    Note over Context: Phase 4: Insights Context
-    Context->>KG: Fetch relevant insights
-    KG-->>Context: Insights (if available)
-
-    Context-->>Chat: Complete context package
-    Note over Chat: Real demo context includes:<br/>- 1 current entry<br/>- 5 related via KG (19 candidates scored)<br/>- 10 entities from entry<br/>- 105 total relationships
-
-    User->>Chat: "When was the last time I spent quality time with Jake?"
-    Chat->>AI: completeWithHistory(messages + full context)
-    AI-->>Chat: "October 25th, Jake's 4-year checkup + ice cream..."
-    Chat->>User: Show response + entry links
-```
-
-**4-Phase Context Building:**
-1. **Temporal**: Current + Historical + Recent (past 7 days)
-2. **Entity**: Extract entities from entry + related entries
-3. **KG Relations**: Score via graph traversal (156 → 19 → Top 5)
-4. **Insights**: Include AI-discovered patterns
-
-**Why This RAG is Better:**
-- ✅ **Not just vector similarity** - uses graph structure
-- ✅ **Explainable scores** - knows WHY entries related
-- ✅ **Type-aware** - causal (0.9) > emotional (0.7) > topical (0.4)
-- ✅ **Recency-aware** - recent entries weighted higher
-- ✅ **Token efficient** - only top 5, not all 20
+**📖 Deep Dive:** See [TECHNICAL_DEEP_DIVE.md - Feature 2](./TECHNICAL_DEEP_DIVE.md#feature-2-context-aware-chat-finding-related-entries) for:
+- Step-by-step graph traversal process
+- Scoring example: Entity "happy" (8 relationships)
+- Score accumulation across entities (156 → 19 → Top 5)
+- Recency decay + filtering logic
 
 **🎤 Speaker Script (Tiếng Việt):**
 
-> "Đây là complete 4-phase RAG system. Phase 1-2 là standard: temporal context và entities. Phase 3 là innovation chính - đã giải thích chi tiết ở slide trước: graph traversal với 156 scores → 19 entries → top 5.
+> "Tính năng 3: Context-Aware Chat. Sử dụng Knowledge Graph để tìm related entries cho AI context.
 >
-> Phase 4 bổ sung insights nếu có. Kết quả là complete context package: 1 current entry, 5 related với scores và reasons, 10 entities, access tới 105 total relationships trong graph.
+> Process: Lấy 10 entities từ entry hiện tại → Traverse graph tìm relationships → Score entries dựa vào weights → Apply recency decay → Lấy top 5.
 >
-> Tại sao RAG này tốt hơn? Không chỉ vector similarity. Explainable scores - biết TẠI SAO. Type-aware - phân biệt causal/emotional/topical. Recency-aware - entries gần quan trọng hơn. Token efficient - chỉ top 5."
+> Kết quả thực từ demo: 10 entities → 156 scores → 19 unique entries → Top 5 với scores từ 1.28 đến 1.68. Mỗi entry có reason rõ ràng: 'Connected via emotional through happy; via topical through Sarah'.
+>
+> Tại sao tốt? Multi-path scoring - một entry có thể được tìm qua nhiều entities, scores tích lũy. Type-aware - phân biệt CAUSAL/EMOTIONAL/TEMPORAL/TOPICAL. Recency-aware - entries gần quan trọng hơn. Token efficient - chỉ top 5. Explainable - thấy exact paths.
+>
+> Chi tiết step-by-step graph traversal, scoring logic, và recency decay xem trong TECHNICAL_DEEP_DIVE document."
 
 **🎤 Speaker Script (日本語):**
 
-> "これは完全(かんぜん)な4-phase RAGシステムです。Phase 1-2は標準(ひょうじゅん)：temporal contextとentities。Phase 3がメインイノベーション - 前(まえ)のスライドで詳細(しょうさい)説明(せつめい)：graph traversalで156スコア → 19エントリー → トップ5。
+> "機能(きのう)3：Context-Aware Chat。Knowledge Graphを使(つか)ってAIコンテキストの関連(かんれん)エントリーを見(み)つけます。
 >
-> Phase 4はinsights追加(ついか)（ある場合(ばあい)）。結果(けっか)は完全(かんぜん)なcontext package：1つのcurrent entry、5つのrelated（スコアと理由(りゆう)付(つ)き）、10エンティティ、graph内(ない)の105総(そう)リレーションシップへのアクセス。
+> プロセス：現在(げんざい)のエントリーから10エンティティを取得(しゅとく) → Graphをtraverseしてrelationshipsを検索(けんさく) → Weightsに基(もと)づいてエントリーをスコアリング → Recency decayを適用(てきよう) → トップ5を取得(しゅとく)。
 >
-> なぜこのRAGが良(よ)いか？vector similarityだけではない。Explainableスコア - 理由(りゆう)が分(わ)かる。Type-aware - causal/emotional/topicalを区別(くべつ)。Recency-aware - 最近(さいきん)のエントリーが重要(じゅうよう)。Token efficient - トップ5のみ。"
+> デモからの実際(じっさい)の結果(けっか)：10エンティティ → 156スコア → 19ユニークエントリー → 1.28から1.68のスコアのトップ5。各(かく)エントリーには明確(めいかく)な理由(りゆう)：'Connected via emotional through happy; via topical through Sarah'。
+>
+> なぜ良(よ)いか？Multi-path scoring - 1つのエントリーが複数(ふくすう)のentitiesで見(み)つかる、スコア累積(るいせき)。Type-aware - CAUSAL/EMOTIONAL/TEMPORAL/TOPICALを区別(くべつ)。Recency-aware - 最近(さいきん)のエントリーがより重要(じゅうよう)。Token efficient - トップ5のみ。Explainable - 正確(せいかく)なパスが見(み)える。
+>
+> Step-by-stepのgraph traversal、scoringロジック、recency decayの詳細(しょうさい)はTECHNICAL_DEEP_DIVEドキュメントを参照(さんしょう)してください。"
+
+---
+
+# Slide 7: Complete 4-Phase RAG System
+
+**Architecture:** Comprehensive context building for AI chat.
+
+```mermaid
+graph TB
+    User[👤 User Question:<br/>'When last time with Jake?'] --> Chat[💬 AIChatView]
+
+    Chat --> Phase1[Phase 1: Temporal<br/>Current + Historical + Recent]
+    Chat --> Phase2[Phase 2: Entities<br/>Extract from entries]
+    Chat --> Phase3[Phase 3: Related Notes<br/>KG Traversal ⭐]
+    Chat --> Phase4[Phase 4: Insights<br/>AI Patterns]
+
+    Phase1 --> Context[📦 Context Package]
+    Phase2 --> Context
+    Phase3 --> Context
+    Phase4 --> Context
+
+    Context --> AI[🤖 OpenRouter API<br/>Claude/GPT/Gemini]
+    AI --> Answer[✅ Answer:<br/>'Oct 25, 4-year checkup<br/>+ ice cream']
+
+    style Phase3 fill:#ffeb3b
+    style Context fill:#c8e6c9
+    style Answer fill:#90EE90
+```
+
+**4 Phases:**
+1. **Temporal**: Current entry + historical (same date prev years) + recent (7 days)
+2. **Entities**: 10 entities from entry + related entities
+3. **KG Relations** ⭐: Graph traversal → Top 5 (already explained in Slide 6)
+4. **Insights**: AI-discovered patterns (if available)
+
+**Real Context Package (Demo):**
+- 1 current entry (Oct 25)
+- 5 related entries (via KG, scores: 1.68-1.28)
+- 10 entities from entry
+- Access to 105 total relationships
+
+**Why Better Than Standard RAG?**
+- ✅ Graph structure (not just vector similarity)
+- ✅ Explainable (knows WHY related)
+- ✅ Type-aware (CAUSAL > EMOTIONAL > TOPICAL)
+- ✅ Recency-aware (recent × 1.0, old × 0.5)
+- ✅ Token efficient (top 5 only)
+
+**🎤 Speaker Script (Tiếng Việt):**
+
+> "Complete 4-phase RAG system. Phase 1: Temporal context - current + historical + recent. Phase 2: Entities extraction. Phase 3: Related Notes qua KG - đây là innovation chính, đã giải thích ở slide trước. Phase 4: Insights nếu có.
+>
+> Kết quả: Context package gồm 1 current entry, 5 related entries với scores và reasons, 10 entities, access tới 105 relationships.
+>
+> Tại sao tốt hơn standard RAG? Graph structure thay vì chỉ vector similarity. Explainable - biết WHY. Type-aware, Recency-aware, Token efficient."
+
+**🎤 Speaker Script (日本語):**
+
+> "完全(かんぜん)な4-phase RAGシステム。Phase 1：Temporal context - current + historical + recent。Phase 2：Entities抽出(ちゅうしゅつ)。Phase 3：KGでRelated Notes - これがメインイノベーション、前(まえ)のスライドで説明(せつめい)しました。Phase 4：Insights（ある場合(ばあい)）。
+>
+> 結果(けっか)：Context packageは1つのcurrent entry、5つのrelated entries（スコアと理由(りゆう)付(つ)き）、10エンティティ、105リレーションシップへのアクセス。
+>
+> なぜstandard RAGより良(よ)いか？Vector similarityだけでなくgraph structure。Explainable - WHYが分(わ)かる。Type-aware、Recency-aware、Token efficient。"
 
 ---
 
@@ -926,13 +632,13 @@ mindmap
 ---
 
 **Presentation Complete!**
-- **Total duration**: ~20-25 minutes (11 slides with detailed explanations)
-- **Enhanced**: Feature 2 and 3 with deep-dive diagrams and step-by-step explanations
-- **Added**: Slide 6 (How to Find Related Entries via KG traversal)
-- **Diagrams**:
-  - Relationship creation process with weight decision logic
-  - Knowledge graph traversal step-by-step
-  - Scoring accumulation across entities
-  - Recency decay and filtering flow
-- **Ready**: For technical interview with detailed Q&A preparation
+- **Total duration**: ~15-18 minutes (11 slides, concise overview)
+- **Focus**: Product concept, key features, architecture, roadmap
+- **Technical details**: Moved to [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
+- **Structure**:
+  - Slides 1-3: Problem → Solution → Overview
+  - Slides 4-7: 3 Core Features (Entity Extraction, Relationship Discovery, Context-Aware Chat)
+  - Slides 8-9: Architecture + Roadmap
+  - Slides 10-11: Q&A + Thank You
 - **Languages**: Vietnamese + Japanese (with furigana) speaker scripts for all slides
+- **Use case**: Initial product presentation, high-level overview for stakeholders
