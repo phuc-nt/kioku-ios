@@ -26,6 +26,22 @@ This feature automatically discovers meaningful connections between entities in 
 **💡 Why This Matters:**
 Unlike Vector DB which only finds "similar" entries, this creates explicit, typed, weighted connections with reasons. You can query "What makes me stressed?" and get causal relationships, not just semantic similarity.
 
+**🎤 Overview Script (Tiếng Việt):**
+
+> "Feature 1: Relationship Discovery tự động tìm connections giữa entities. AI không chỉ extract mà còn hiểu relationships: stressed GÂY RA guilty.
+>
+> 4 objectives chính: Identify 4 relationship types, calculate confidence scores, store evidence, build queryable graph.
+>
+> 5 sections: AI creation process, 4 types explained, confidence logic, real example, graph visualization."
+
+**🎤 Overview Script (日本語):**
+
+> "Feature 1: Relationship Discoveryがentities間(かん)のconnectionsを自動的(じどうてき)に発見(はっけん)。AIは抽出(ちゅうしゅつ)だけでなく、relationshipsを理解(りかい): stressedがguiltyを引(ひ)き起(お)こす。
+>
+> 4つの目標(もくひょう): 4 relationship typesの識別(しきべつ)、confidence scoresの計算(けいさん)、evidenceの保存(ほぞん)、queryable graphの構築(こうちく)。
+>
+> 5つのsections: AI作成(さくせい)プロセス、4 typesの説明(せつめい)、confidenceロジック、実例(じつれい)、graph可視化(かしか)。"
+
 ---
 
 ### How AI Creates Relationships
@@ -42,10 +58,10 @@ sequenceDiagram
     System->>AI: Analyze relationships between entities
 
     Note over AI: AI asks itself 4 questions:
-    Note over AI: 1. TEMPORAL: A xảy ra trước/sau B?
-    Note over AI: 2. CAUSAL: A gây ra B?
-    Note over AI: 3. EMOTIONAL: A → cảm xúc B?
-    Note over AI: 4. TOPICAL: A và B cùng chủ đề?
+    Note over AI: 1. TEMPORAL: Does A happen before/after B?
+    Note over AI: 2. CAUSAL: Does A cause B?
+    Note over AI: 3. EMOTIONAL: Does A → emotion B?
+    Note over AI: 4. TOPICAL: Do A and B share topic?
 
     AI->>AI: Read evidence: "stressed and guilty for..."
     AI->>AI: Determine type: CAUSAL
@@ -294,6 +310,26 @@ When you open chat for an entry (e.g., "Jake's checkup on Oct 25"), the system u
 - AI answers: "October 25th, Jake's checkup + ice cream after"
 
 **Key Advantage**: Explainable ("via emotional through happy") + Efficient (top 5 only) + Type-aware (causal > emotional > topical)
+
+**🎤 Overview Script (Tiếng Việt):**
+
+> "Feature 2: Context-Aware Chat tìm TOP 5 related entries qua graph traversal.
+>
+> Problem: Gửi all 20 entries = 15K tokens, expensive và slow. Solution: Smart filtering → Top 5 = 3-4K tokens với reasons rõ ràng.
+>
+> Process: 10 entities → follow relationships → score entries → apply recency decay → Top 5.
+>
+> 4 sections: Graph traversal, scoring example với 'happy', score accumulation, filtering và ranking."
+
+**🎤 Overview Script (日本語):**
+
+> "Feature 2: Context-Aware ChatがTOP 5のrelated entriesをgraph traversalで見(み)つけます。
+>
+> 問題(もんだい): すべての20エントリーを送(おく)る = 15Kトークン、高価(こうか)で遅(おそ)い。解決策(かいけつさく): Smart filtering → TOP 5 = 3-4Kトークン、明確(めいかく)なreasonsあり。
+>
+> プロセス: 10エンティティ → relationshipsをfollow → entriesをscore → recency decayを適用(てきよう) → TOP 5。
+>
+> 4つのsections: Graph traversal、'happy'のscoring例(れい)、scoreの累積(るいせき)、filteringとranking。"
 
 ---
 
