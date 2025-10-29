@@ -219,8 +219,8 @@ graph TD
     Med1 --> Check3
     Low1 --> Check3
 
-    Check3 -->|"caused", "made me feel"| High2[+0.15]
-    Check3 -->|"and", "then", "because"| Med2[+0.08]
+    Check3 -->|caused, made me feel| High2[+0.15]
+    Check3 -->|and, then, because| Med2[+0.08]
     Check3 -->|No clear link| Low2[+0.0]
 
     High2 --> Final[Final Confidence]
