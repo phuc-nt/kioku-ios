@@ -316,9 +316,9 @@ graph LR
     R2 --> Entry2[Entry Oct 15<br/>taco night]
     R3 --> Entry3[Entry Oct 22<br/>pizza night]
 
-    Entry1 -.score: 0.7.-> S1[Oct 5: +0.7<br/>reason: via emotional through happy]
-    Entry2 -.score: 0.7.-> S2[Oct 15: +0.7<br/>reason: via emotional through happy]
-    Entry3 -.score: 0.7.-> S3[Oct 22: +0.7<br/>reason: via emotional through happy]
+    Entry1 -->|score: 0.7| S1[Oct 5: +0.7<br/>reason: via emotional through happy]
+    Entry2 -->|score: 0.7| S2[Oct 15: +0.7<br/>reason: via emotional through happy]
+    Entry3 -->|score: 0.7| S3[Oct 22: +0.7<br/>reason: via emotional through happy]
 
     style S1 fill:#90EE90
     style S2 fill:#90EE90
