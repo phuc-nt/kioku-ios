@@ -10,6 +10,16 @@ This document illustrates 5-Layer Architecture through a practical example: Cons
 - Quality inspection
 - Reporting
 
+**🎤 Script (Tiếng Việt):**
+> "Tài liệu này giới thiệu 5-Layer Architecture qua ví dụ thực tế: Hệ thống quản lý dự án xây dựng.
+>
+> Hệ thống bao gồm 4 chức năng chính: Quản lý dự án (tiến độ, ngân sách, nhân lực), Quản lý vật tư, Kiểm tra chất lượng, và Báo cáo. Chúng ta sẽ thấy cách các layer tương tác với nhau qua các use case cụ thể."
+
+**🎤 Script (日本語):**
+> "この資料(しりょう)は実際(じっさい)の例(れい)を通(つう)じて5-Layer Architectureを紹介(しょうかい)します：建設(けんせつ)プロジェクト管理(かんり)システム。
+>
+> システムには4つの主要(しゅよう)機能(きのう)：プロジェクト管理(かんり)（進捗(しんちょく)、予算(よさん)、人員(じんいん)）、資材(しざい)管理(かんり)、品質(ひんしつ)検査(けんさ)、レポート。具体的(ぐたいてき)なユースケースを通(つう)じて各(かく)レイヤーの相互(そうご)作用(さよう)を見(み)ていきます。"
+
 ---
 
 ## 5-Layer Overview
