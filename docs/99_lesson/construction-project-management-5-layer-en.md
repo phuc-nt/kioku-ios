@@ -215,6 +215,32 @@ graph TB
 
 ## Layer Details
 
+**🎤 Script (Tiếng Việt):**
+> "Bây giờ chúng ta đi vào chi tiết từng layer. Từ trên xuống dưới:
+>
+> Layer 5 - User Interface: Web, Mobile, API - chỉ gọi qua Gateway, không truy cập trực tiếp Service hay Database.
+>
+> Layer 4 - Gateway: Entry point duy nhất, xử lý authentication, authorization, rate limiting, routing. Không chứa business logic.
+>
+> Layer 3 - Service: Business logic, orchestrate nhiều DALs. Services không gọi nhau trực tiếp mà dùng Message Queue.
+>
+> Layer 2 - Data Access: Repository pattern, ORM mapping, caching. Chỉ layer này được truy cập Database.
+>
+> Layer 1 - Storage: PostgreSQL, Redis cache, S3 file storage. Không ai truy cập trực tiếp ngoài DAL."
+
+**🎤 Script (日本語):**
+> "それでは各(かく)レイヤーの詳細(しょうさい)を見(み)ていきます。上(うえ)から下(した)へ：
+>
+> Layer 5 - User Interface：Web、Mobile、API - Gatewayを通(とお)してのみ呼(よ)び出(だ)し、ServiceやDatabaseに直接(ちょくせつ)アクセス不可(ふか)。
+>
+> Layer 4 - Gateway：唯一(ゆいいつ)のエントリーポイント、authentication、authorization、rate limiting、routing処理(しょり)。ビジネスロジックは含(ふく)まない。
+>
+> Layer 3 - Service：ビジネスロジック、複数(ふくすう)のDALsをオーケストレート。Service同士(どうし)は直接(ちょくせつ)呼(よ)ばずMessage Queueを使用(しよう)。
+>
+> Layer 2 - Data Access：Repositoryパターン、ORMマッピング、キャッシング。このレイヤーのみがDatabaseアクセス可能(かのう)。
+>
+> Layer 1 - Storage：PostgreSQL、Redisキャッシュ、S3ファイルストレージ。DAL以外(いがい)の直接(ちょくせつ)アクセス不可(ふか)。"
+
 ### Layer 5: User Interface
 
 **Purpose**: User interface, handle input, display output.
