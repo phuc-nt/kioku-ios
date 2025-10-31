@@ -1,7 +1,5 @@
 # Kioku - AI Journal
-## Technical Presentation Slides (Short Version)
 
-**Duration**: 15-20 minutes
 **Focus**: Product Overview + Key Concepts
 **Technical Details**: See [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
 
@@ -361,16 +359,3 @@ mindmap
 - ✅ **Verifiable**: All backed by real demo data
 
 ---
-
-**Presentation Complete!**
-- **Total duration**: ~10-12 minutes (10 slides, very concise)
-- **Focus**: Product concept and key ideas only
-- **No detailed numbers**: Removed specific counts (119, 105, etc.)
-- **Technical details**: Link to [TECHNICAL_DEEP_DIVE.md](./TECHNICAL_DEEP_DIVE.md)
-- **Structure**:
-  - Slides 1-3: Problem → Solution → Overview
-  - Slides 4-6: 3 Core Features (diagrams + brief scripts + links)
-  - Slides 7-8: Architecture + Roadmap (streamlined)
-  - Slides 9-10: Q&A + Thank You (concise closing)
-- **Languages**: Vietnamese + Japanese (short scripts)
-- **Use case**: Quick overview, stakeholder pitch, interview intro
