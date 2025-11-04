@@ -14,6 +14,8 @@ Bản đề xuất này trình bày về "Kioku", một tính năng AI mới đ�
 
 "Kioku" là một nhật ký sức khỏe tinh thần được hỗ trợ bởi AI, hoạt động như một **"Domain Agent" (Tác nhân Lĩnh vực)** chuyên biệt về trí tuệ cảm xúc ngay bên trong LINE. Bằng cách xây dựng một **Đồ thị Tri thức Cá nhân (Personalized Knowledge Graph)**, "Kioku" cung cấp những hiểu biết sâu sắc về các tác nhân gây stress, các mối quan-hệ hỗ trợ và các pattern cảm xúc của người dùng.
 
+Điều quan trọng là "Kioku" đại diện cho một **chuyển dịch triết lý AI** - từ "AI Giám sát" (như Google/Meta sử dụng dữ liệu để phục vụ nhà quảng cáo) sang **"AI Trao quyền"** (AI phục vụ trực tiếp lợi ích cá nhân của người dùng). Đây không chỉ là một tính năng mới, mà là cơ hội để LY Corporation dẫn đầu xu hướng AI có trách nhiệm và thực sự đáng tin cậy.
+
 > 📖 **Tài liệu chi tiết**: Để hiểu sâu hơn về sản phẩm "Kioku", vui lòng tham khảo [INTRODUCE_BUSINESS.md](./INTRODUCE_BUSINESS.md) - Bao gồm giải thích chi tiết về công nghệ, trải nghiệm người dùng, và giá trị cốt lõi.
 
 Bằng cách làm sâu sắc thêm vai trò của LINE như một nền tảng cuộc sống ("life platform"), "Kioku" sẽ tạo ra sức mạnh tổng hợp (synergy) chưa từng có trên toàn hệ sinh thái LY—từ việc thúc đẩy các giao dịch được cá nhân hóa trên **Yahoo! Shopping (Commerce)**, đến việc cung cấp một nguồn dữ liệu độc quyền để làm giàu cho mô hình **"LINE Score" (Fintech)**.
@@ -42,7 +44,50 @@ Khi được tích hợp vào LINE, "Kioku" sẽ giải quyết vấn đề cố
 > - Cách hoạt động của Knowledge Graph: [Tại Sao Knowledge Graph Phù Hợp Với Kỷ Niệm?](./INTRODUCE_BUSINESS.md#tại-sao-knowledge-graph-phù-hợp-với-kỷ-niệm)
 > - Trải nghiệm người dùng cụ thể: [Trải Nghiệm Người Dùng - AI Chat Hiểu Ngữ Cảnh](./INTRODUCE_BUSINESS.md#trải-nghiệm-người-dùng---ai-chat-hiểu-ngữ-cảnh)
 
-### 4. Sự Phù hợp Chiến lược với các Mục tiêu Cốt lõi của LY Corporation
+### 4. Sự Khác biệt Cốt lõi: AI Phục vụ Người dùng vs. AI Phục vụ Công ty
+
+Điều quan trọng cần làm rõ là "Kioku" không phải là một phiên bản khác của những gì các công ty công nghệ lớn đang làm với dữ liệu người dùng. Đây là một **phạm trù hoàn toàn khác** về mục đích, công nghệ và triết lý.
+
+#### **Sự khác biệt về Mục đích và Giá trị**
+
+| Khía cạnh | Google/Meta (Mô hình Dự đoán) | Kioku (Mô hình Phản ánh) |
+|-----------|-------------------------------|--------------------------|
+| **Câu hỏi cốt lõi** | "Người dùng này sẽ **mua gì**, **click vào đâu** tiếp theo?" | "**Tại sao** tôi cảm thấy như vậy? **Điều gì** mang lại hạnh phúc hoặc gây stress?" |
+| **Định hướng** | Hướng ngoại - Hành vi tiêu dùng | Hướng nội - Nguyên nhân và cảm xúc |
+| **Người hưởng lợi** | Nhà quảng cáo và nền tảng | Chính người dùng |
+| **Vai trò người dùng** | Sản phẩm được bán cho nhà quảng cáo | Khách hàng được phục vụ |
+
+#### **Sự khác biệt về Nguồn Dữ liệu**
+
+*   **Google/Meta (Dữ liệu Ngầm định):**
+    *   Thu thập thụ động từ hành vi: clicks, likes, lịch sử tìm kiếm, địa điểm check-in
+    *   Dữ liệu rời rạc, nhiễu, chỉ phản ánh bề nổi
+    *   Cho biết *bạn làm gì*, nhưng không giải thích *tại sao*
+
+*   **Kioku (Dữ liệu Tường minh):**
+    *   Thu thập chủ động từ chính người dùng: nhật ký, suy nghĩ, cảm xúc
+    *   Dữ liệu có chiều sâu, giàu ngữ cảnh, mang tính cá nhân cao
+    *   Ghi lại không chỉ sự kiện mà cả **cảm nhận và suy tư** - loại dữ liệu mà không công ty nào thu thập được thụ động
+
+#### **Sự khác biệt về Công nghệ và Tính Minh bạch**
+
+*   **Google/Meta (Hộp đen - Black Box):**
+    *   Mô hình học máy phức tạp trên hàng tỷ điểm dữ liệu
+    *   Kết quả là "hộp đen": khó giải thích tại sao có đề xuất đó
+    *   Người dùng không thể kiểm tra hay tranh luận với logic của mô hình
+
+*   **Kioku (Hộp kính - Glass Box):**
+    *   **Đồ thị Tri thức** mô hình hóa các mối quan-hệ rõ ràng, có ngữ cảnh
+    *   **Explainable AI (XAI)**: Mỗi nhận định đều có bằng chứng cụ thể từ nhật ký
+    *   Người dùng thấy được logic, tin tưởng kết quả và cảm thấy được kiểm soát
+
+#### **Kết luận: Chuyển dịch Triết lý AI**
+
+"Kioku" không cạnh tranh với mô hình kinh doanh của Google/Meta. Nó đại diện cho một chuyển dịch triết lý từ **AI Giám sát (Surveillance AI)** sang **AI Trao quyền (Empowerment AI)**. Đây chính là lợi thế cạnh tranh không thể sao chép - một công cụ AI thực sự đặt quyền lợi người dùng lên hàng đầu, được xây dựng trên nền tảng tin cậy mà họ đã sử dụng hàng ngày.
+
+---
+
+### 5. Sự Phù hợp Chiến lược với các Mục tiêu Cốt lõi của LY Corporation
 
 Việc tích hợp "Kioku" vào LINE sẽ là một động thái chiến lược, giúp tăng tốc các sáng kiến quan trọng nhất của chúng ta.
 
@@ -81,12 +126,16 @@ Tôi tin rằng "Kioku" có tiềm năng trở thành một dự án chiến lư
 
 Tôi rất vinh dự được có cơ hội trình bày trực tiếp bản demo của prototype này cho quý vị và các đội ngũ sản phẩm liên quan để thảo luận sâu hơn về tiềm năng của nó.
 
-### 8. Kết luận
+### 9. Kết luận
 
 Việc tích hợp "Kioku" vào LINE không chỉ là một tính năng mới. Nó là một cơ hội chiến lược để:
+
 1.  **Hiện thực hóa** tầm nhìn "AI Agent hóa" với một trường hợp sử dụng có ý nghĩa sâu sắc.
 2.  **Mở khóa** các sức mạnh tổng hợp mới và có giá trị cao trên toàn hệ sinh thái Media, Commerce và Fintech.
 3.  **Củng cố** lòng tin của người dùng bằng cách tích hợp dịch vụ vào nền tảng LINE đáng tin cậy và tuân thủ các tiêu chuẩn bảo mật cao nhất của tập đoàn.
+4.  **Dẫn đầu** một chuyển dịch triết lý AI - từ "AI Giám sát" sang "AI Trao quyền" - định vị LY Corporation như một công ty công nghệ có trách nhiệm và đáng tin cậy.
+
+Trong khi các công ty công nghệ lớn đang xây dựng những cỗ máy dự đoán hành vi tiêu dùng phức tạp để phục vụ nhà quảng cáo, chúng ta có cơ hội tạo ra một loại AI khác - một AI thực sự phục vụ người dùng, giúp họ hiểu rõ bản thân và cải thiện chất lượng cuộc sống. Đây là giá trị khác biệt mà không thể sao chép được.
 
 Bằng cách đầu tư vào "Kioku", chúng ta không chỉ ra mắt một sản phẩm mới mà còn đang đầu tư vào tương lai của một hệ sinh thái AI đáng tin cậy, thông minh và thực sự mang lại trải nghiệm "WOW!" cho người dùng của chúng ta.
 

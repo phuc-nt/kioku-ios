@@ -14,6 +14,8 @@ This proposal presents "Kioku", a new AI feature proposed for deep integration i
 
 "Kioku" is an AI-powered mental wellness journal that operates as a specialized **"Domain Agent"** focused on emotional intelligence within LINE. By building a **Personalized Knowledge Graph**, "Kioku" provides deep insights into stress triggers, support relationships, and emotional patterns of users.
 
+Importantly, "Kioku" represents a **philosophical shift in AI** - from "Surveillance AI" (like Google/Meta using data to serve advertisers) to **"Empowerment AI"** (AI serving users' personal interests directly). This difference is not just technical but positions LY Corporation as a leader in **human-centered AI development**.
+
 > 📖 **Detailed Documentation**: For a deeper understanding of the "Kioku" product, please refer to [INTRODUCE_BUSINESS_EN.md](./INTRODUCE_BUSINESS_EN.md) - Including detailed explanations of technology, user experience, and core values.
 
 By deepening LINE's role as a life platform, "Kioku" will create unprecedented synergy across the entire LY ecosystem—from driving personalized transactions on **Yahoo! Shopping (Commerce)**, to providing proprietary data to enrich the **"LINE Score" (Fintech)** model.
@@ -42,7 +44,81 @@ When integrated into LINE, "Kioku" will address the core problems that journalin
 > - How Knowledge Graph works: [Why Knowledge Graph is Perfect for Memories?](./INTRODUCE_BUSINESS_EN.md#why-knowledge-graph-is-perfect-for-memories)
 > - Specific user experience: [User Experience - Context-Aware AI Chat](./INTRODUCE_BUSINESS_EN.md#user-experience---context-aware-ai-chat)
 
-### 4. Strategic Alignment with LY Corporation's Core Objectives
+### 4. The Core Difference: AI Serving Users vs. AI Serving Corporations
+
+While large technology companies like Google and Meta build AI systems to predict consumer behavior (serving advertisers), "Kioku" represents a **philosophical shift in AI** - from **"Surveillance AI"** to **"Empowerment AI"**.
+
+#### Understanding the Difference
+
+| Aspect | Google/Meta (Prediction Model) | Kioku (Reflection Model) |
+|--------|-------------------------------|-------------------------|
+| **Core Question** | "What will this user **buy** or **click** next?" | "**Why** do I feel this way?" |
+| **User Role** | Product sold to advertisers | Customer being served |
+| **Data Source** | Behavior tracking: clicks, browsing, purchases | User's own memories: emotions, events, relationships |
+| **AI Purpose** | Maximize engagement & ad revenue | Maximize self-understanding |
+| **Beneficiary** | Advertising companies | The user themselves |
+| **Transparency** | Black box (users don't know what AI knows) | Glass box (users see all connections) |
+
+#### Three Key Differentiators
+
+**1. Purpose and Value Creation**
+
+**Google/Meta's approach:**
+- Track behavior across millions of websites (cookies, pixels)
+- Build predictive models: "User A clicked B → will likely buy C"
+- Value flows to advertisers paying for targeted ads
+- Users are the product being "sold"
+
+**Kioku's approach:**
+- Users voluntarily write about meaningful experiences
+- Build reflective models: "Work → causes stress; Sarah → reduces stress"
+- Value flows directly to users through self-insights
+- Users are customers being served
+
+**2. Data Sources and Ethics**
+
+**Google/Meta:**
+- Passive tracking (users often unaware)
+- Aggregate behavior patterns (lose individual context)
+- Cross-platform profiling (Gmail + Search + YouTube + Instagram)
+- Data used for purposes users didn't explicitly consent to
+
+**Kioku:**
+- Active writing (users consciously create content)
+- Individual context preserved (each relationship has explicit evidence)
+- Single-platform, single-purpose (journal entries only)
+- Data used ONLY for user's personal insights
+
+**3. Technology and Transparency**
+
+**Vector Embeddings (Google/Meta approach):**
+```
+"User similar to other users who bought X"
+→ Recommend X
+→ No explanation why
+```
+
+**Knowledge Graph (Kioku approach):**
+```
+"You felt stressed 5 times → All connected to 'work deadline'"
+"Sarah helped reduce stress 4 times → Evidence in entries from Feb 3, Feb 15..."
+→ Suggest: "Contact Sarah during work stress"
+→ Clear evidence and reasoning
+```
+
+#### From "Surveillance AI" to "Empowerment AI"
+
+While big tech companies build sophisticated machines to predict consumer behavior for advertisers, we have the opportunity to create a **different kind of AI** - one that helps users understand themselves, make better decisions, and live more intentionally.
+
+This is not just a technical difference. It is a **philosophical statement** about the role of AI in society:
+- **Surveillance AI**: Observes behavior → Predicts next action → Monetizes attention
+- **Empowerment AI**: Listens to experiences → Reflects patterns → Returns insights to user
+
+By integrating "Kioku" into LINE, LY Corporation can **lead this paradigm shift** - demonstrating that AI can create value by serving users directly, not by selling their attention to third parties.
+
+---
+
+### 5. Strategic Alignment with LY Corporation's Core Objectives
 
 Integrating "Kioku" into LINE will be a strategic move, accelerating our most critical initiatives.
 
@@ -59,11 +135,11 @@ Integrating "Kioku" into LINE will be a strategic move, accelerating our most cr
 *   **C. Perfect Compatibility with Technical Direction:**
     "Kioku's" architecture is fully compatible with the corporation's **"multi-vendor"** LLM strategy. Moreover, using Knowledge Graph to provide context to LLMs is a practical application of **Retrieval-Augmented Generation (RAG)** architecture, similar to the technology being used for the internal **"SeekAI"** tool.
 
-### 5. Data Management and Privacy Commitment
+### 6. Data Management and Privacy Commitment
 
 We deeply recognize the importance of user trust, especially in the current context. Therefore, "Kioku" is proposed not as a standalone service, but as an inseparable part of the LINE application. This means all user journal data will be managed and protected according to the strictest security and privacy standards that LY Corporation applies to LINE application data. We will inherit all existing commitments, including the **"User Privacy First"** policy, to ensure users can use this new feature in an environment they already trust.
 
-### 6. Potential Use Cases in the LY Ecosystem
+### 7. Potential Use Cases in the LY Ecosystem
 
 | LY Service | "Before Kioku" Scenario | "After Kioku" Scenario (supported by AI Agent) |
 | :--- | :--- | :--- |
@@ -71,7 +147,7 @@ We deeply recognize the importance of user trust, especially in the current cont
 | **Yahoo! Shopping** | User receives generic product recommendations. | AI Agent, knowing that "walking in the park" helps user reduce stress, suggests related products like new running shoes or a thermos for weekend walks. |
 | **LINE Pocket Money** | A user with thin credit history is denied a small loan. | The "LINE Score" model enriched by "Kioku" data (with user consent), recognizes the user has high emotional stability and a strong support network. This allows the system to approve a small, personalized loan. |
 
-### 7. Current Status and Next Steps
+### 8. Current Status and Next Steps
 
 A prototype version (v0.1.0) of "Kioku" has been completed and is operational, demonstrating the feasibility of core technology (successfully extracted 119 entities and 105 relationships from real journal data using Cloud LLM API).
 
@@ -81,13 +157,23 @@ I believe "Kioku" has the potential to become a strategic project, accelerating 
 
 I would be honored to have the opportunity to present a demo of this prototype directly to you and relevant product teams to discuss its potential in more depth.
 
-### 8. Conclusion
+### 9. Conclusion
 
 Integrating "Kioku" into LINE is not just a new feature. It is a strategic opportunity to:
+
 1.  **Realize** the "AI Agentification" vision with a deeply meaningful use case.
 2.  **Unlock** new and highly valuable synergies across the entire Media, Commerce, and Fintech ecosystem.
 3.  **Strengthen** user trust by integrating the service into the trusted LINE platform and adhering to the corporation's highest security standards.
+4.  **Lead** a philosophical shift in AI - from "Surveillance AI" to "Empowerment AI".
 
-By investing in "Kioku", we are not just launching a new product but investing in the future of a trustworthy, intelligent AI ecosystem that truly delivers a "WOW!" experience for our users.
+While major tech companies build complex machines to predict consumer behavior for advertisers, we have the opportunity to create a **different kind of AI** - one that helps users understand themselves, make better decisions, and live more fulfilling lives.
+
+This is not just about technology. It is a **statement about our values**:
+- **Surveillance AI** (Google/Meta): User data → Predict behavior → Monetize attention
+- **Empowerment AI** (Kioku): User memories → Discover patterns → Return insights to user
+
+By integrating "Kioku" into LINE, we are not just launching a new product but positioning LY Corporation as a leader in **human-centered AI development** - demonstrating that AI can create tremendous value by serving users directly, not by selling their attention to third parties.
+
+This is an AI that truly delivers a "WOW!" experience - not through prediction, but through **empowerment**.
 
 Sincerely,
