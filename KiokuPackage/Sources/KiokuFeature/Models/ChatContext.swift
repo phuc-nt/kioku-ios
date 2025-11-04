@@ -47,7 +47,38 @@ struct ChatContext {
     
     /// Generate context summary for AI prompting
     var contextSummary: String {
-        var summary = "Journal Entry for \(selectedDate.formatted(date: .abbreviated, time: .omitted)):\n\n"
+        var summary = ""
+
+        // Count total context entries
+        let totalContextEntries = 1 + relatedNotes.count + historicalNotes.count + recentNotes.count
+
+        // Add context overview header
+        summary += "=== JOURNAL CONTEXT SUMMARY ===\n"
+        summary += "You have access to \(totalContextEntries) journal entries from different dates:\n"
+
+        // List all dates available in context
+        var availableDates: [String] = []
+        availableDates.append(selectedDate.formatted(date: .abbreviated, time: .omitted))
+        for relatedNote in relatedNotes {
+            if let date = relatedNote.entry.date {
+                availableDates.append(date.formatted(date: .abbreviated, time: .omitted))
+            }
+        }
+        for note in historicalNotes {
+            if let date = note.date {
+                availableDates.append(date.formatted(date: .abbreviated, time: .omitted))
+            }
+        }
+        for note in recentNotes {
+            if let date = note.date {
+                availableDates.append(date.formatted(date: .abbreviated, time: .omitted))
+            }
+        }
+        summary += "Available dates: \(availableDates.joined(separator: ", "))\n\n"
+
+        // Current entry (primary context)
+        summary += "=== PRIMARY ENTRY ===\n"
+        summary += "📅 Date: \(selectedDate.formatted(date: .abbreviated, time: .omitted))\n\n"
 
         if let currentNote = currentNote {
             summary += "\(currentNote.content)\n\n"
@@ -57,35 +88,41 @@ struct ChatContext {
 
         // Sprint 16: Related entries via Knowledge Graph (highest priority)
         if !relatedNotes.isEmpty {
-            summary += "--- Related Journal Entries (via Knowledge Graph) ---\n"
+            summary += "=== RELATED ENTRIES (via Knowledge Graph) ===\n"
+            summary += "Found \(relatedNotes.count) related entries based on shared entities, emotions, and topics:\n\n"
+
             for relatedNote in relatedNotes {
                 let entry = relatedNote.entry
                 let dateStr = entry.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
                 let relevanceBadge = relevanceBadge(for: relatedNote.relevanceScore)
 
-                summary += "\n[\(dateStr)] - Relevance: \(relevanceBadge)\n"
-                summary += "Reason: \(relatedNote.reason)\n"
-                summary += "\(entry.content)\n"
+                summary += "📅 Date: \(dateStr) | Relevance: \(relevanceBadge)\n"
+                summary += "🔗 Connection: \(relatedNote.reason)\n"
+                summary += "📝 Content:\n\(entry.content)\n\n"
             }
-            summary += "\n"
         }
 
         // Historical context from same day in previous months
         if !historicalNotes.isEmpty {
-            summary += "--- Past Entries (Same Day in Previous Months) ---\n"
+            summary += "=== HISTORICAL ENTRIES (Same Day in Previous Months) ===\n"
+            summary += "Found \(historicalNotes.count) entries from the same day in previous months:\n\n"
+
             for note in historicalNotes.prefix(3) {
                 let dateStr = note.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
-                summary += "\n[\(dateStr)]\n\(note.content)\n"
+                summary += "📅 Date: \(dateStr)\n"
+                summary += "📝 Content:\n\(note.content)\n\n"
             }
-            summary += "\n"
         }
 
         // Recent context from past week
         if !recentNotes.isEmpty {
-            summary += "--- Recent Entries (Past Week) ---\n"
+            summary += "=== RECENT ENTRIES (Past Week) ===\n"
+            summary += "Found \(recentNotes.count) entries from the past week:\n\n"
+
             for note in recentNotes.prefix(2) {
                 let dateStr = note.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown date"
-                summary += "\n[\(dateStr)]\n\(note.content)\n"
+                summary += "📅 Date: \(dateStr)\n"
+                summary += "📝 Content:\n\(note.content)\n\n"
             }
         }
 

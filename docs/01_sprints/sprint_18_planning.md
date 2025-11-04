@@ -749,6 +749,18 @@ screenshot() // Verify "0 orphaned" after cleanup
 2. **Missing required fields in ExportedEntry** - Fixed with custom decoder and defaults
 3. **Wrong ExportedKGTracking field names** - Fixed field names in default initialization
 
+**Part 4 (Conversation History) - POST-SPRINT HOTFIX (2025-11-04)**:
+1. **AI not seeing related notes context** - Fixed prompt structure in ChatContext.contextSummary
+   - Added explicit summary header: "You have access to N entries from different dates"
+   - Listed all available dates upfront: "Available dates: 23 Oct, 13 Sep, 6 Sep..."
+   - Clear section headers with emoji landmarks: PRIMARY ENTRY, RELATED ENTRIES, etc.
+   - Each entry prefixed with 📅 Date to highlight multiple dates
+2. **System message not refreshing on follow-up messages** - Fixed in AIChatView.generateStreamingAIResponse
+   - Changed from `if messages.isEmpty` (only first message) to ALWAYS include system message
+   - Fresh context sent on every request, not just first message
+   - Ensures AI has latest context even when date or data changes
+   - Trade-off: ~6KB extra per request, but worth it for context accuracy
+
 **Key Learnings**:
 1. **SwiftData deletion order is CRITICAL**: Relationships → Entities → Entries (reverse dependency order)
 2. **Save after each step**: Prevents cascade constraint violations in complex relationships
@@ -757,9 +769,11 @@ screenshot() // Verify "0 orphaned" after cleanup
 5. **Test with real data**: draft_1.md revealed edge cases that test data wouldn't
 6. **UI observation during data changes causes crashes**: Must dismiss views before bulk operations
 7. **Check implementation assumptions**: Always verify existing code behavior before fixing
-8. **Build message history correctly**: System message only on first turn, then full conversation
+8. ~~**Build message history correctly**: System message only on first turn, then full conversation~~ **REVISED**: System message must be sent on EVERY turn with fresh context
 9. **Comprehensive logging is essential**: Detailed logs helped verify conversation history working
 10. **Context-aware AI requires full history**: Each API call needs ALL previous messages
+11. **Prompt structure matters**: AI needs explicit date listing and clear section headers to understand multi-date context
+12. **System message refresh is critical**: Fresh context on every request ensures AI sees latest data (worth the token cost)
 
 **Technical Decisions**:
 
@@ -784,10 +798,11 @@ screenshot() // Verify "0 orphaned" after cleanup
 **Part 4**:
 - ✅ **Add history method**: `completeWithHistory()` alongside existing `completeText()`
 - ✅ **Build full message array**: Include all previous user/assistant messages
-- ✅ **System message strategy**: Include only on first message to avoid repetition
+- ~~✅ **System message strategy**: Include only on first message to avoid repetition~~ **REVISED (Hotfix 2025-11-04)**: Include system message on EVERY request
 - ✅ **Comprehensive logging**: Track message count and content for debugging
-- ✅ **Preserve token efficiency**: Only send what's needed (no redundant system messages)
+- ~~✅ **Preserve token efficiency**: Only send what's needed (no redundant system messages)~~ **REVISED**: Prioritize context accuracy over token efficiency
 - ✅ **Backward compatible**: Existing `completeText()` method still works
+- ✅ **Improved prompt structure (Hotfix)**: Clear date listing, section headers, emoji landmarks for better AI comprehension
 
 ---
 
@@ -815,7 +830,7 @@ screenshot() // Verify "0 orphaned" after cleanup
 - ✅ Real-world validation with 21 journal entries
 - ✅ Comprehensive logging for debugging
 - ✅ Clean code: 182 lines deleted (ChatTabView.swift)
-- ✅ No known bugs or regressions
+- ✅ Post-sprint hotfix applied for context visibility issue (2025-11-04)
 
 **Key Achievements**:
 - Fixed critical SwiftData deletion order bug (prevented app crashes)
@@ -837,8 +852,59 @@ screenshot() // Verify "0 orphaned" after cleanup
 
 **Document Control**
 
-- **Version**: 1.1
+- **Version**: 1.2 (Hotfix Applied)
 - **Author**: AI Assistant
 - **Reviewed**: ✅ Complete (2025-10-23)
+- **Hotfix Applied**: ✅ 2025-11-04 (Context visibility fix)
 - **Approved**: ✅ Sprint Closed (2025-10-23)
 - **Sprint Status**: ✅ COMPLETED
+
+---
+
+## Post-Sprint Hotfix Log
+
+### Hotfix #1: AI Context Visibility (2025-11-04)
+
+**Issue Discovered**:
+- User reported: AI only sees primary entry date, not related notes from Knowledge Graph
+- Despite logs showing 5 related entries loaded and sent to LLM
+- Problem: Prompt structure + system message refresh strategy
+
+**Root Cause Analysis**:
+1. **Prompt Structure Issue**:
+   - Old format had weak date highlighting: "Journal Entry for 23 Oct 2025" as only header
+   - Related entries buried in subsections without clear date emphasis
+   - AI focused on first date mentioned, ignored related entries
+
+2. **System Message Refresh Issue**:
+   - System message only sent on first message (`if messages.isEmpty`)
+   - Follow-up messages had NO system message with fresh context
+   - AI relied on stale context from first message
+
+**Files Modified**:
+- ✅ `ChatContext.swift` (Lines 48-130): Improved `contextSummary` prompt structure
+  - Added explicit header: "You have access to N entries from different dates"
+  - Listed all available dates upfront before content
+  - Clear section headers: PRIMARY ENTRY, RELATED ENTRIES, HISTORICAL, RECENT
+  - Emoji landmarks (📅, 🔗, 📝) for visual separation
+
+- ✅ `AIChatView.swift` (Lines 343-350): Fixed system message refresh
+  - Changed from `if messages.isEmpty` to ALWAYS include system message
+  - Fresh context sent on every request
+  - Added logging to differentiate first vs follow-up messages
+
+**Test Results**:
+- ✅ AI now correctly identifies all 6 dates in context
+- ✅ System message refreshes on every turn with latest data
+- ✅ Follow-up questions have full context awareness
+
+**Trade-offs**:
+- Token cost increased ~6KB per request (system message overhead)
+- Worth it: Context accuracy > token efficiency
+- Alternative approaches (context in user message) would duplicate data
+
+**Lessons Learned**:
+- Prompt engineering: Clear structure > implicit structure
+- Always send fresh context with LLM requests (don't rely on history)
+- Test with real user interactions, not just first message
+- Log analysis is critical for debugging AI behavior

@@ -340,10 +340,13 @@ struct AIChatView: View {
             // Sprint 18: Build full message history for context-aware conversation
             var messageHistory: [OpenRouterService.ChatMessage] = []
 
-            // Add system message with context (only once at the beginning)
+            // Always include system message with fresh context for every request
+            // This ensures AI has latest context even if user changes date or context changes
+            messageHistory.append(.system(prompt))
             if messages.isEmpty {
-                messageHistory.append(.system(prompt))
-                print("🤖 [Chat] First message - including system context")
+                print("🤖 [Chat] First message - including fresh system context")
+            } else {
+                print("🤖 [Chat] Follow-up message - refreshing system context with latest data")
             }
 
             // Add all previous messages from conversation
